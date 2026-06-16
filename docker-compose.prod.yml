@@ -1,0 +1,38 @@
+# docker-compose.prod.yml
+# 生产环境附加配置(挂载 docker socket + 项目代码,让 server 容器能"一键更新")
+# 用法:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# 本地开发不要用这个(本地不挂 docker socket,避免误改宿主)
+#
+# 关键: server 容器是 context: ./server build 的,容器内 /app 有:
+#   - /app/server.js  (主入口)
+#   - /app/auth.js / db.js / captcha.js / middleware.js  (核心代码)
+#   - /app/routes/   (路由目录)
+#   - /app/node_modules/  (build 时 npm ci 装的依赖)
+#   - /app/data/     (named volume server-data,SQLite 持久化)
+#   - /app/package.json
+# 不能用 ./server:/app 整个覆盖!会把容器 node_modules 干掉(宿主机 /server 没有)
+# 改用:逐文件 + 逐子目录 bind mount,精确覆盖源代码,保留 node_modules / data
+
+services:
+  server:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # 让容器能调宿主 docker
+      # 源代码:逐个 bind mount,git pull 后容器内立即看到新代码
+      - ./server/server.js:/app/server.js
+      - ./server/auth.js:/app/auth.js
+      - ./server/captcha.js:/app/captcha.js
+      - ./server/db.js:/app/db.js
+      - ./server/middleware.js:/app/middleware.js
+      - ./server/routes:/app/routes
+      # scripts:WebUI 一键更新用的 update.sh(admin.js 路径: __dirname/../../scripts/update.sh = /app/scripts/update.sh)
+      - ./scripts:/app/scripts
+      # .git:给 admin check 端点(用 git rev-parse 拿当前 commit)
+      # 必须可写(fetch 要写 FETCH_HEAD)
+      - ./.git:/app/.git
+    environment:
+      - CHAOS_PROJECT_DIR=/app
+      - CHAOS_UPDATE_REMOTE=origin
+      - CHAOS_UPDATE_BRANCH=main
+      # 可选:设置 ADMIN_TOKEN 启用更新端点鉴权
+      # - ADMIN_TOKEN=your-secret-token-here

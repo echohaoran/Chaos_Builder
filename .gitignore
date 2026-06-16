@@ -1,0 +1,12 @@
+.DS_Store
+.env
+node_modules/
+*.db
+*.db-shm
+*.db-wal
+
+# Tool directories
+.od-skills/
+.omo/
+.mimocode/
+.worktrees/

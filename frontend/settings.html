@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>混沌艺术 · 设置</title>
+  <link rel="stylesheet" href="css/design-system.css" />
+  <style>
+    .lang-toggle {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 200;
+    }
+
+    .page-header {
+      padding-top: 120px;
+      padding-bottom: var(--space-8);
+      text-align: center;
+    }
+
+    .page-header h1 {
+      margin-bottom: var(--space-4);
+    }
+
+    .page-header .lead {
+      margin: 0 auto;
+    }
+
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-8);
+      align-items: start;
+      margin-bottom: var(--section-y-desktop);
+    }
+
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--elev-raised);
+    }
+
+    .settings-card h2 {
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-card .field + .field {
+      margin-top: var(--space-5);
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-8);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--border);
+    }
+
+    .settings-actions .btn-primary {
+      flex: 1;
+    }
+
+    .settings-actions .btn-secondary {
+      flex: 1;
+    }
+
+    /* 应用更新区域状态色 */
+    .update-result.up-to-date { border-left: 3px solid #16a34a; }
+    .update-result.has-update { border-left: 3px solid var(--accent); }
+    .update-result.error { border-left: 3px solid var(--danger); }
+    .update-result .update-status { font-size: var(--text-sm); font-weight: 500; }
+    .update-result .update-status strong { font-size: var(--text-base); }
+
+    .toast {
+      position: fixed;
+      bottom: var(--space-8);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--fg);
+      color: var(--surface);
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--motion-fast) var(--ease-standard),
+                  transform var(--motion-fast) var(--ease-standard);
+      z-index: 300;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .footer {
+      padding: var(--space-8) 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--space-5);
+    }
+
+    .footer-links a {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--fg);
+    }
+
+    @media (max-width: 991px) {
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+      .page-header {
+        padding-top: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-actions .btn:not(.lang-toggle) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="landing.html" class="nav-logo" data-i18n="brandName">混沌艺术</a>
+      <nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu">
+        <a href="text-to-image.html" data-i18n="navTextToImage">文生图</a>
+        <a href="image-to-image.html" data-i18n="navImageToImage">图生图</a>
+        <a href="multi-image.html" data-i18n="navMultiImage">多图生图</a>
+        <a href="preset-styles.html" data-i18n="navPresetStyles">预设风格</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
+        <div class="user-menu" id="user-menu"></div>
+        <button type="button" class="btn btn-secondary lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
+      </div>
+      <button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <header class="page-header">
+      <div class="eyebrow" data-i18n="pageSettingsTitle">设置</div>
+      <h1 data-i18n="pageSettingsTitle">设置</h1>
+      <p class="lead" data-i18n="pageSettingsSubtitle">配置 API、输出偏好与账户选项。</p>
+    </header>
+
+    <form class="settings-layout" id="settings-form">
+      <section class="settings-card">
+        <h2 data-i18n="settingsApiSection">API 配置</h2>
+
+        <div class="field">
+          <label for="provider" data-i18n="settingProvider">供应商</label>
+          <select id="provider" name="provider">
+            <option value="ppio" data-i18n="providerPpio">PPIO · gpt-image-2</option>
+            <option value="agnes" data-i18n="providerAgnes">Agnes Image (apihub)</option>
+            <option value="openai" data-i18n="providerOpenai">OpenAI (DALL·E / gpt-image-1)</option>
+            <option value="anthropic" data-i18n="providerAnthropic">Anthropic (via gateway)</option>
+            <option value="seedream" data-i18n="providerSeedream">Seedream · 火山方舟</option>
+            <option value="banana" data-i18n="providerBanana">Banana (serverless ComfyUI)</option>
+            <option value="comfy" data-i18n="providerComfy">ComfyUI (self-hosted)</option>
+            <option value="sd" data-i18n="providerSd">Stable Diffusion (WebUI / SD.Next)</option>
+          </select>
+          <span class="field-help" data-i18n="providerHint">切换供应商以接入不同的图像生成模型</span>
+          <a class="provider-agnes-link"
+            id="provider-agnes-link"
+            href="https://platform.agnes-ai.com/settings/apiKeys"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+            data-i18n="providerAgnesKeyLink">获取Agnes免费生图API</a>
+          <a class="provider-agnes-link"
+            id="provider-agnes-tutorial-link"
+            href="https://fl2x3d4eo2.feishu.cn/wiki/BWpgwFEiHiG7fPk4ENuceExQnyg?from=from_copylink"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+            data-i18n="providerAgnesTutorialLink">获取教程</a>
+        </div>
+
+        <div class="field">
+          <label for="apiBaseUrl" data-i18n="settingApiBaseUrl">API 服务地址</label>
+          <input type="url" id="apiBaseUrl" name="apiBaseUrl" value="https://api.ppio.com" />
+          <span class="field-help" data-i18n="apiBaseUrlHint">PPIO 直连 https://api.ppio.com(端点 /v3/gpt-image-2-text-to-image)</span>
+        </div>
+
+        <div class="field">
+          <label for="apiKey" data-i18n="settingApiKey">API Key</label>
+          <input type="password" id="apiKey" name="apiKey" placeholder="sk-..." />
+          <span class="field-help" data-i18n="apiKeyHint">留空则使用服务器默认 Key</span>
+        </div>
+
+        <div class="field">
+          <label for="model" data-i18n="settingModel">默认模型</label>
+          <input type="text" id="model" name="model" value="gpt-image-2" />
+          <span class="field-help" data-i18n="modelHint">例如 gpt-image-2</span>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <h2 data-i18n="settingsOutputSection">输出默认选项</h2>
+
+        <div class="field">
+          <label for="defaultSize" data-i18n="settingDefaultSize">默认尺寸</label>
+          <select id="defaultSize" name="defaultSize">
+            <option value="1024x1024" selected>1024 × 1024</option>
+            <option value="1024x1536">1024 × 1536</option>
+            <option value="1536x1024">1536 × 1024</option>
+            <option value="2048x2048">2048 × 2048</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="defaultQuality" data-i18n="settingDefaultQuality">默认画质</label>
+          <select id="defaultQuality" name="defaultQuality">
+            <option value="standard" data-i18n="settingQualityStandard">标准</option>
+            <option value="hd" selected data-i18n="settingQualityHd">高清</option>
+          </select>
+        </div>
+
+        <div class="settings-actions">
+          <button type="submit" class="btn btn-primary" data-i18n="settingSave">保存设置</button>
+          <button type="button" class="btn btn-secondary" id="reset-btn" data-i18n="resetDefaults">恢复默认</button>
+        </div>
+      </section>
+    </form>
+
+    <section class="settings-card" style="margin-top: var(--space-6);">
+      <h2 data-i18n="settingsUpdateSection">应用更新</h2>
+      <p class="settings-hint" data-i18n="settingsUpdateHint">当前版本 <strong id="current-version">v1.0.0</strong> · 从 GitHub 仓库检查更新</p>
+      <div class="field" style="display:flex; gap: var(--space-3); align-items: center;">
+        <button type="button" class="btn btn-primary" id="check-update-btn" data-i18n="settingsCheckUpdate">检查更新</button>
+        <a class="btn btn-ghost" href="https://github.com/echohaoran/Chaos_Builder" target="_blank" rel="noopener noreferrer" data-i18n="settingsViewRepo">在 GitHub 查看</a>
+      </div>
+      <div class="update-result" id="update-result" hidden style="margin-top: var(--space-4); padding: var(--space-3); border-radius: var(--radius-sm); background: var(--bg);">
+        <div class="update-status"></div>
+        <div class="update-meta" style="font-size: var(--text-sm); color: var(--muted); margin-top: var(--space-2);"></div>
+        <div class="update-actions" style="margin-top: var(--space-3); display: flex; gap: var(--space-2);"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
+      <nav class="footer-links">
+        <a href="landing.html" data-i18n="navHome">首页</a>
+        <a href="text-to-image.html" data-i18n="navTextToImage">文生图</a>
+        <a href="image-to-image.html" data-i18n="navImageToImage">图生图</a>
+        <a href="multi-image.html" data-i18n="navMultiImage">多图生图</a>
+        <a href="preset-styles.html" data-i18n="navPresetStyles">预设风格</a>
+        <a href="settings.html" data-i18n="navSettings">设置</a>
+      </nav>
+      <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" data-i18n="settingSaved">已保存</div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    (function () {
+      const btn = document.getElementById('lang-toggle');
+      const titleEl = document.querySelector('title');
+      const form = document.getElementById('settings-form');
+      const resetBtn = document.getElementById('reset-btn');
+      const toast = document.getElementById('toast');
+
+      function updateTitle() {
+        const brand = I18N.t('brandName');
+        const page = I18N.t('pageSettingsTitle');
+        titleEl.textContent = brand + ' · ' + page;
+      }
+
+      function updateToggleLabel() {
+        const next = I18N.locale() === 'zh-CN' ? 'en' : 'zh-CN';
+        btn.textContent = next === 'zh-CN' ? I18N.t('langZh') : I18N.t('langEn');
+      }
+
+      function loadSettings() {
+        const config = ChaosAPI.getConfig();
+        const slot = (config && config[config.provider]) || {};
+        form.provider.value = config.provider || 'ppio';
+        form.apiBaseUrl.value = slot.apiBaseUrl || config.apiBaseUrl || '';
+        form.apiKey.value = slot.apiKey !== undefined ? slot.apiKey : (config.apiKey || '');
+        form.model.value = slot.model || config.model || '';
+        form.defaultSize.value = config.defaultSize;
+        form.defaultQuality.value = config.defaultQuality;
+      }
+
+      function applyProviderDefaults(providerKey) {
+        const meta = ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[providerKey];
+        if (!meta) return;
+        // 优先用该供应商已保存的配置,fallback 到 PROVIDER 默认
+        const cfg = ChaosAPI.getConfig();
+        const slot = (cfg && cfg[providerKey]) || {};
+        if (slot.apiBaseUrl) form.apiBaseUrl.value = slot.apiBaseUrl;
+        else if (meta.apiBaseUrl) form.apiBaseUrl.value = meta.apiBaseUrl;
+        if (slot.model) form.model.value = slot.model;
+        else if (meta.defaultModel) form.model.value = meta.defaultModel;
+        if (slot.apiKey) form.apiKey.value = slot.apiKey;
+        if (meta.apiKeyHint) form.apiKey.placeholder = meta.apiKeyHint;
+        // Agnes 时显示 Key 获取入口 + 教程,其他供应商隐藏
+        const agnesLink = document.getElementById('provider-agnes-link');
+        const agnesTutorialLink = document.getElementById('provider-agnes-tutorial-link');
+        if (agnesLink) agnesLink.hidden = (providerKey !== 'agnes');
+        if (agnesTutorialLink) agnesTutorialLink.hidden = (providerKey !== 'agnes');
+      }
+
+      function showToast() {
+        toast.classList.add('show');
+        setTimeout(function () {
+          toast.classList.remove('show');
+        }, 2000);
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        ChaosAPI.saveConfig({
+          provider: form.provider.value,
+          apiBaseUrl: form.apiBaseUrl.value.trim(),
+          apiKey: form.apiKey.value.trim(),
+          model: form.model.value.trim(),
+          defaultSize: form.defaultSize.value,
+          defaultQuality: form.defaultQuality.value,
+        });
+        showToast();
+      });
+
+      resetBtn.addEventListener('click', function () {
+        ChaosAPI.resetConfig();
+        loadSettings();
+        showToast();
+      });
+
+      form.provider.addEventListener('change', function () {
+        applyProviderDefaults(form.provider.value);
+      });
+
+      btn.addEventListener('click', function () {
+        I18N.toggle();
+      });
+
+      document.addEventListener('i18n:changed', function () {
+        updateTitle();
+        updateToggleLabel();
+      });
+
+      // 应用更新检查
+      (function initUpdateChecker() {
+        var btn = document.getElementById('check-update-btn');
+        var resultEl = document.getElementById('update-result');
+        var statusEl = resultEl && resultEl.querySelector('.update-status');
+        var metaEl = resultEl && resultEl.querySelector('.update-meta');
+        var actionsEl = resultEl && resultEl.querySelector('.update-actions');
+        if (!btn || !resultEl) return;
+
+        var REPO_API = 'https://api.github.com/repos/echohaoran/Chaos_Builder';
+        var REPO_URL = 'https://github.com/echohaoran/Chaos_Builder';
+
+        function parseSemver(tag) {
+          if (!tag) return null;
+          var m = String(tag).replace(/^v/i, '').match(/(\d+)\.(\d+)\.(\d+)/);
+          if (!m) return null;
+          return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+        }
+        function cmpSemver(a, b) {
+          for (var i = 0; i < 3; i++) { if (a[i] !== b[i]) return a[i] - b[i]; }
+          return 0;
+        }
+        function escapeHtml(s) {
+          return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        function setBusy(busy) {
+          btn.disabled = busy;
+          btn.textContent = busy
+            ? I18N.t('settingsChecking', '检查中…')
+            : I18N.t('settingsCheckUpdate', '检查更新');
+        }
+        function showResult(kind, statusText, metaText, actions) {
+          resultEl.className = 'update-result ' + kind;
+          resultEl.hidden = false;
+          statusEl.innerHTML = statusText;
+          if (metaEl) metaEl.textContent = metaText || '';
+          if (actionsEl) actionsEl.innerHTML = actions || '';
+        }
+        function handleRelease(rel) {
+          var currentText = (document.getElementById('current-version') || {}).textContent || 'v1.0.0';
+          var current = parseSemver(currentText);
+          var remote = parseSemver(rel.tag_name);
+          var releaseUrl = rel.html_url || REPO_URL + '/releases';
+          var newVersion = rel.tag_name || '';
+          var name = rel.name || rel.tag_name || '';
+          var date = rel.published_at ? rel.published_at.slice(0, 10) : '';
+          var body = rel.body ? String(rel.body).slice(0, 240) : '';
+          if (current && remote && cmpSemver(remote, current) > 0) {
+            showResult(
+              'has-update',
+              '<strong>' + I18N.t('settingsUpdateNew', '有新版本可用') + '</strong>: ' + escapeHtml(rel.tag_name),
+              I18N.t('settingsUpdateCurrent', '当前') + ' ' + escapeHtml(currentText) + '  →  ' + escapeHtml(rel.tag_name) + (date ? '  ·  ' + date : ''),
+              '<button type="button" class="btn btn-primary" id="run-update-btn">' + escapeHtml(I18N.t('settingsUpdateApply', '立即更新')) + '</button>' +
+              '<a class="btn btn-ghost" href="' + escapeHtml(releaseUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(I18N.t('settingsUpdateView', '查看更新')) + '</a>' +
+              '<a class="btn btn-ghost" href="' + escapeHtml(releaseUrl) + '.zip" target="_blank" rel="noopener noreferrer">' + escapeHtml(I18N.t('settingsUpdateDownload', '下载 zip')) + '</a>' +
+              '<div id="update-log" style="display:none; margin-top: var(--space-3); padding: var(--space-3); background: #0d1117; color: #c9d1d9; border-radius: var(--radius-sm); font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; max-height: 280px; overflow-y: auto; white-space: pre-wrap;"></div>'
+            );
+            var runBtn = document.getElementById('run-update-btn');
+            if (runBtn) runBtn.addEventListener('click', function () { runServerUpdate(runBtn); });
+          } else {
+            showResult(
+              'up-to-date',
+              '<strong>' + I18N.t('settingsUpdateLatest', '已是最新版本') + '</strong>',
+              I18N.t('settingsUpdateCurrent', '当前') + ' ' + escapeHtml(currentText) + (name ? '  ·  ' + escapeHtml(name) : '') + (date ? '  ·  ' + date : ''),
+              body ? '<details><summary>' + escapeHtml(I18N.t('settingsUpdateChangelog', '更新日志')) + '</summary><pre style="white-space:pre-wrap; margin: var(--space-2) 0 0; font-size: var(--text-xs);">' + escapeHtml(body) + '</pre></details>' : ''
+            );
+          }
+        }
+        function handleCommit(commit) {
+          var currentText = (document.getElementById('current-version') || {}).textContent || 'v1.0.0';
+          var sha = (commit.sha || '').slice(0, 7);
+          var date = commit.commit && commit.commit.author ? commit.commit.author.date : '';
+          date = date ? date.slice(0, 10) : '';
+          showResult(
+            'up-to-date',
+            '<strong>' + I18N.t('settingsUpdateLatest', '已是最新版本') + '</strong>',
+            I18N.t('settingsUpdateCurrent', '当前') + ' ' + escapeHtml(currentText) + '  ·  ' + (sha ? escapeHtml(sha) : '') + (date ? '  ·  ' + date : ''),
+            ''
+          );
+        }
+        function showError(msg) {
+          showResult('error', '<strong>' + I18N.t('settingsUpdateError', '检查失败') + '</strong>', msg, '');
+        }
+
+        // 一键更新:调用后端 /api/admin/update + SSE 拉日志
+        function runServerUpdate(triggerBtn) {
+          var logEl = document.getElementById('update-log');
+          if (logEl) { logEl.style.display = 'block'; logEl.textContent = '▶ 准备开始更新…\n'; }
+          if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = I18N.t('settingsUpdating', '更新中…'); }
+
+          var adminBase = (window.ChaosAPI && window.ChaosAPI.AUTH_SERVER_URL) || (window.location.origin);
+
+          // 1) 触发更新
+          fetch(adminBase + '/api/admin/update', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+            .then(function (r) {
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.json();
+            })
+            .then(function (data) {
+              if (logEl) logEl.textContent += '✓ 已启动 (pid ' + data.pid + ')\n=== 拉取实时日志…\n';
+              // 2) 打开 SSE 流
+              if (typeof EventSource === 'undefined') {
+                if (logEl) logEl.textContent += '(浏览器不支持 EventSource,刷新页面看结果)\n';
+                return;
+              }
+              var es = new EventSource(adminBase + '/api/admin/update/stream');
+              es.onmessage = function (e) {
+                try {
+                  var msg = JSON.parse(e.data);
+                  if (msg.type === 'log' || msg.type === 'error') {
+                    if (logEl) { logEl.textContent += msg.line + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+                  } else if (msg.type === 'done') {
+                    if (logEl) logEl.textContent += '\n✅ 更新完成 — 请刷新页面加载新版本\n';
+                    es.close();
+                    if (triggerBtn) {
+                      triggerBtn.disabled = false;
+                      triggerBtn.textContent = I18N.t('settingsUpdateDone', '更新完成 - 刷新');
+                      triggerBtn.onclick = function () { window.location.reload(); };
+                    }
+                  } else if (msg.type === 'start') {
+                    if (logEl) logEl.textContent += '(日志文件: ' + (msg.logFile || '') + ')\n';
+                  }
+                } catch (parseErr) { /* ignore */ }
+              };
+              es.onerror = function () {
+                if (logEl) logEl.textContent += '\n⚠️ 日志连接断开(可能 server 正在重启,刷新页面看结果)\n';
+                es.close();
+                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = I18N.t('settingsUpdateRetry', '重试更新'); }
+              };
+            })
+            .catch(function (err) {
+              if (logEl) logEl.textContent += '\n✗ 启动失败: ' + (err.message || err) + '\n(请检查后端 admin 端点是否启用 + docker socket 是否挂载)\n';
+              if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = I18N.t('settingsUpdateApply', '立即更新'); }
+            });
+        }
+        btn.addEventListener('click', function () {
+          setBusy(true);
+          resultEl.hidden = true;
+          fetch(REPO_API + '/releases/latest', { headers: { 'Accept': 'application/vnd.github+json' } })
+            .then(function (r) {
+              if (r.status === 404) {
+                return fetch(REPO_API + '/commits/main', { headers: { 'Accept': 'application/vnd.github+json' } })
+                  .then(function (r2) {
+                    if (!r2.ok) throw new Error('HTTP ' + r2.status);
+                    return r2.json().then(function (c) { return { kind: 'commit', data: c }; });
+                  });
+              }
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.json().then(function (j) { return { kind: 'release', data: j }; });
+            })
+            .then(function (out) {
+              if (out.kind === 'release') handleRelease(out.data);
+              else handleCommit(out.data);
+            })
+            .catch(function (err) {
+              showError(err.message || I18N.t('settingsUpdateError', '检查失败'));
+            })
+            .then(function () { setBusy(false); });
+        });
+      })();
+
+      Auth.requireAuth();
+      Auth.renderUserMenu('#user-menu');
+      updateTitle();
+      updateToggleLabel();
+      loadSettings();
+    })();
+  </script>
+</body>
+</html>

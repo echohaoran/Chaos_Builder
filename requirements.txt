@@ -1,0 +1,7 @@
+# ChaosBuilder API Server (api_server.py) 依赖
+# 用法:pip3 install -r requirements.txt
+
+flask>=3.0,<4.0
+flask-cors>=4.0,<6.0
+requests>=2.31,<3.0
+python-dotenv>=1.0,<2.0

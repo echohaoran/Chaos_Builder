@@ -1,0 +1,12 @@
+server/node_modules
+server/*.db
+server/.env
+.git
+.gitignore
+.DS_Store
+.od-skills
+.omo
+.mimocode
+.worktrees
+docs
+*.md
