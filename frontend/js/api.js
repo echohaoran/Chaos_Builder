@@ -1164,6 +1164,28 @@ async function saveServerSettings(settings) {
   } catch (e) { return false; }
 }
 
+// Admin global settings
+async function fetchAdminSettings() {
+  const token = getAuthToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(AUTH_SERVER_URL + '/api/settings/admin', { headers: authHeaders() });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) { return null; }
+}
+
+async function saveAdminSettings(settings) {
+  const token = getAuthToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(AUTH_SERVER_URL + '/api/settings/admin', {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(settings)
+    });
+    return res.ok;
+  } catch (e) { return false; }
+}
+
 /**
  * Bind a progress monitor to a root element with this skeleton:
  *
@@ -1273,6 +1295,8 @@ window.ChaosAPI = {
   deleteServerPreset,
   fetchServerSettings,
   saveServerSettings,
+  fetchAdminSettings,
+  saveAdminSettings,
   createProgressMonitor,
   onConfigChange,
   getCurrentProviderInfo,

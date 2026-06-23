@@ -64,9 +64,12 @@ async function apiRegister(username, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Registration failed');
-  return data;
+  const text = await res.text();
+  if (!res.ok) {
+    try { var d = JSON.parse(text); throw new Error(d.error || 'Registration failed'); }
+    catch (e) { if (e instanceof SyntaxError) throw new Error('后端服务异常 (HTTP ' + res.status + ')，请确认后端已重启'); throw e; }
+  }
+  try { return JSON.parse(text); } catch (e) { throw new Error('后端返回异常数据'); }
 }
 
 async function apiLogin(username, password) {
@@ -75,9 +78,12 @@ async function apiLogin(username, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Login failed');
-  return data;
+  const text = await res.text();
+  if (!res.ok) {
+    try { var d = JSON.parse(text); throw new Error(d.error || 'Login failed'); }
+    catch (e) { if (e instanceof SyntaxError) throw new Error('后端服务异常 (HTTP ' + res.status + ')，请确认后端已重启'); throw e; }
+  }
+  try { return JSON.parse(text); } catch (e) { throw new Error('后端返回异常数据'); }
 }
 
 async function apiGetMe() {
@@ -108,11 +114,49 @@ async function register(username, password) {
   const data = await apiRegister(username, password);
   setToken(data.token);
   setCurrentUser(data.user);
-  // 注册后同样从服务器拉(服务器会返回空列表)
   if (window.ChaosAPI && typeof window.ChaosAPI.syncFromServer === 'function') {
     window.ChaosAPI.syncFromServer().catch(function (e) { console.warn('sync after register:', e); });
   }
   return data.user;
+}
+
+async function registerEmail(username, password, email, code) {
+  const data = await apiRegisterEmail(username, password, email, code);
+  setToken(data.token);
+  setCurrentUser(data.user);
+  if (window.ChaosAPI && typeof window.ChaosAPI.syncFromServer === 'function') {
+    window.ChaosAPI.syncFromServer().catch(function (e) { console.warn('sync after email register:', e); });
+  }
+  return data.user;
+}
+
+// ─── Email registration ─────────────────────────────────
+async function apiSendCode(email) {
+  const res = await fetch(getAuthServerUrl() + '/api/auth/send-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    try { var d = JSON.parse(text); throw new Error(d.error || 'Failed to send code'); }
+    catch (e) { if (e instanceof SyntaxError) throw new Error('后端服务异常 (HTTP ' + res.status + ')，请确认后端已重启'); throw e; }
+  }
+  try { return JSON.parse(text); } catch (e) { throw new Error('后端返回异常数据'); }
+}
+
+async function apiRegisterEmail(username, password, email, code) {
+  const res = await fetch(getAuthServerUrl() + '/api/auth/register-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, email, code })
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    try { var d = JSON.parse(text); throw new Error(d.error || 'Registration failed'); }
+    catch (e) { if (e instanceof SyntaxError) throw new Error('后端服务异常 (HTTP ' + res.status + ')，请确认后端已重启'); throw e; }
+  }
+  try { return JSON.parse(text); } catch (e) { throw new Error('后端返回异常数据'); }
 }
 
 function logout() {
@@ -251,8 +295,11 @@ function createLoginModal() {
       '<button type="button" class="auth-modal-close" aria-label="' + escapeHtml(translate('actionClose', 'Close')) + '">' +
         '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
       '</button>' +
-      '<h2 id="auth-modal-heading" class="auth-modal-title" data-i18n="authLoginTitle">登录 / 注册</h2>' +
-      '<p class="auth-modal-subtitle" data-i18n="authLoginSubtitle">输入账号密码登录，新用户将自动注册。</p>' +
+      '<div class="auth-tabs" style="display:flex;gap:0;margin-bottom:var(--space-5);border-bottom:1px solid var(--border);">' +
+        '<button type="button" class="auth-tab active" data-tab="login" style="flex:1;padding:var(--space-2) var(--space-4);border:none;background:transparent;cursor:pointer;font-size:var(--text-sm);font-weight:500;color:var(--accent);border-bottom:2px solid var(--accent);transition:all 0.15s;">账号密码</button>' +
+        '<button type="button" class="auth-tab" data-tab="email" style="flex:1;padding:var(--space-2) var(--space-4);border:none;background:transparent;cursor:pointer;font-size:var(--text-sm);font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.15s;">邮箱注册</button>' +
+      '</div>' +
+      '<h2 id="auth-modal-heading" class="auth-modal-title" data-i18n="authLoginTitle">登录</h2>' +
       '<form class="auth-form" id="auth-login-form" novalidate>' +
         '<div class="field">' +
           '<label for="auth-username" data-i18n="authUsernameLabel">用户名</label>' +
@@ -262,43 +309,110 @@ function createLoginModal() {
           '<label for="auth-password" data-i18n="authPasswordLabel">密码</label>' +
           '<input type="password" id="auth-password" name="password" autocomplete="current-password" minlength="6" placeholder="输入密码（至少6位）" />' +
         '</div>' +
-        '<button type="submit" class="btn btn-primary" data-i18n="authLoginBtn">登录 / 注册</button>' +
+        '<div class="field" id="email-field" style="display:none;">' +
+          '<label for="auth-email">邮箱</label>' +
+          '<div style="display:flex;gap:var(--space-2);">' +
+            '<input type="email" id="auth-email" name="email" placeholder="your@email.com" style="flex:1;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);" />' +
+            '<button type="button" class="btn btn-secondary btn-sm" id="send-code-btn" style="white-space:nowrap;">发送验证码</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field" id="code-field" style="display:none;">' +
+          '<label for="auth-code">验证码</label>' +
+          '<input type="text" id="auth-code" name="code" maxlength="6" placeholder="输入6位验证码" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);" />' +
+        '</div>' +
+        '<button type="submit" class="btn btn-primary" id="auth-submit-btn" data-i18n="authLoginBtn">登录 / 注册</button>' +
       '</form>' +
     '</div>';
   document.body.appendChild(overlay);
 
-  const closeBtn = overlay.querySelector('.auth-modal-close');
+  var closeBtn = overlay.querySelector('.auth-modal-close');
   closeBtn.addEventListener('click', hideLoginModal);
   overlay.addEventListener('click', function (e) {
     if (e.target === overlay) hideLoginModal();
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      const activeOverlay = document.getElementById('chaos-login-modal');
+      var activeOverlay = document.getElementById('chaos-login-modal');
       if (activeOverlay && activeOverlay.classList.contains('active')) hideLoginModal();
     }
   });
 
-  const form = document.getElementById('auth-login-form');
+  // Tab switching
+  var tabs = overlay.querySelectorAll('.auth-tab');
+  var emailField = document.getElementById('email-field');
+  var codeField = document.getElementById('code-field');
+  var submitBtn = document.getElementById('auth-submit-btn');
+  var titleEl = overlay.querySelector('.auth-modal-title');
+  tabs.forEach(function(t) {
+    t.addEventListener('click', function() {
+      var isEmail = t.dataset.tab === 'email';
+      tabs.forEach(function(x) {
+        x.style.color = x === t ? 'var(--accent)' : 'var(--muted)';
+        x.style.borderBottomColor = x === t ? 'var(--accent)' : 'transparent';
+      });
+      emailField.style.display = isEmail ? '' : 'none';
+      codeField.style.display = isEmail ? '' : 'none';
+      titleEl.textContent = isEmail ? '邮箱注册' : '登录';
+      submitBtn.textContent = isEmail ? '注册' : '登录 / 注册';
+    });
+  });
+
+  // Send verification code
+  var sendCodeBtn = document.getElementById('send-code-btn');
+  var codeTimer = null;
+  sendCodeBtn.addEventListener('click', async function() {
+    var email = document.getElementById('auth-email').value.trim();
+    if (!email || !email.includes('@')) { showFormError(form, '请输入有效的邮箱地址'); return; }
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = '发送中…';
+    try {
+      await apiSendCode(email);
+      var countdown = 60;
+      sendCodeBtn.textContent = countdown + 's';
+      codeTimer = setInterval(function() {
+        countdown--;
+        if (countdown <= 0) { clearInterval(codeTimer); sendCodeBtn.disabled = false; sendCodeBtn.textContent = '重新发送'; }
+        else { sendCodeBtn.textContent = countdown + 's'; }
+      }, 1000);
+    } catch (err) {
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.textContent = '发送验证码';
+      showFormError(form, err.message || '发送失败');
+    }
+  });
+
+  var form = document.getElementById('auth-login-form');
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearFormError(form);
-    const input = document.getElementById('auth-username');
-    const passwordInput = document.getElementById('auth-password');
-    const rawName = input.value;
-    const password = passwordInput.value;
-    const validation = validateUsername(rawName);
-    if (!validation.valid) {
-      showFormError(form, validation.error);
-      input.focus();
+    var input = document.getElementById('auth-username');
+    var passwordInput = document.getElementById('auth-password');
+    var rawName = input.value;
+    var password = passwordInput.value;
+    var validation = validateUsername(rawName);
+    if (!validation.valid) { showFormError(form, validation.error); input.focus(); return; }
+    if (!password || password.length < 6) { showFormError(form, '密码至少需要6个字符'); passwordInput.focus(); return; }
+
+    var isEmailMode = document.getElementById('email-field').style.display !== 'none';
+    if (isEmailMode) {
+      var email = document.getElementById('auth-email').value.trim();
+      var code = document.getElementById('auth-code').value.trim();
+      if (!email || !email.includes('@')) { showFormError(form, '请输入有效的邮箱地址'); return; }
+      if (!code || code.length !== 6) { showFormError(form, '请输入6位验证码'); return; }
+      setButtonLoading(submitBtn, true);
+      try {
+        var user = await registerEmail(validation.value, password, email, code);
+        setButtonLoading(submitBtn, false);
+        hideLoginModal();
+        if (typeof overlay._onLogin === 'function') overlay._onLogin(user);
+        dispatchChanged('login');
+      } catch (err) {
+        setButtonLoading(submitBtn, false);
+        showFormError(form, err.message || '注册失败');
+      }
       return;
     }
-    if (!password || password.length < 6) {
-      showFormError(form, '密码至少需要6个字符');
-      passwordInput.focus();
-      return;
-    }
-    const submitBtn = form.querySelector('button[type="submit"]');
+
     setButtonLoading(submitBtn, true);
     try {
       let user;
@@ -565,6 +679,9 @@ window.Auth = {
   getToken: getToken,
   login: login,
   register: register,
+  registerEmail: registerEmail,
+  sendCode: apiSendCode,
+  registerEmail: apiRegisterEmail,
   logout: logout,
   switchUser: showLoginModal,
   requireAuth: requireAuth,
@@ -574,6 +691,10 @@ window.Auth = {
   hideLoginModal: hideLoginModal,
   apiGetMe: apiGetMe,
   init: init,
+  isAdmin: function() {
+    var user = getCurrentUser();
+    return user && user.role === 'admin';
+  },
 };
 
 if (document.readyState === 'loading') {

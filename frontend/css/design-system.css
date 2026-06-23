@@ -328,13 +328,14 @@ h4 {
 }
 
 .nav-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   height: 64px;
 }
 
 .nav-logo {
+  justify-self: start;
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 500;
@@ -348,6 +349,7 @@ h4 {
 }
 
 .nav-links {
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: var(--space-6);
@@ -1118,9 +1120,12 @@ h4 {
   align-items: center;
 }
 
-/* 抵消 .nav-actions flex gap,让 user-menu 和 lang-toggle 紧贴 */
-.nav-actions .lang-toggle {
-  margin-left: calc(-1 * var(--space-2));
+/* nav-actions: 右侧按钮组 */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: end;
 }
 
 /* 页脚版权小字 */

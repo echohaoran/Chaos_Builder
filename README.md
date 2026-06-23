@@ -96,53 +96,58 @@ ChaosBuilder/
 ├── .gitignore
 ├── .dockerignore
 │
-├── docker-compose.yml              # frontend + server 两服务编排
-├── Dockerfile.frontend             # 前端 nginx 镜像
-│
 ├── api_server.py                   # 可选:PPIO OpenAI 兼容代理(:8766)
 ├── requirements.txt                # api_server.py Python 依赖
-├── start.sh                        # 本地一键启动(后端 + 前端)
-├── start_api.sh                    # 启动 8766(PPIO 代理)
-├── start_frontend.sh               # 启动前端静态服务(:8080)
-├── start_server.sh                 # 启动后端(:3001)
 │
-├── docs/
+├── page/                           # 文档与设计规格
 │   ├── API_GUIDE.md                # api_server.py 协议契约 + 跨供应商
 │   └── compose/                    # 设计 / 实施计划(历史快照)
 │       ├── plans/
 │       └── specs/
 │
+├── docker/                         # Docker 部署相关文件
+│   ├── docker-compose.yml          # frontend + server 两服务编排
+│   ├── docker-compose.prod.yml     # 生产扩展配置(bind mount+docker.sock)
+│   ├── Dockerfile.frontend         # 前端 nginx 镜像
+│   └── nginx/
+│       └── default.conf            # 前端容器 nginx 配置
+│
+├── script/                         # 本地部署与运维脚本
+│   ├── start.sh                    # 本地一键启动(后端 + 前端)
+│   ├── start_api.sh                # 启动 8766(PPIO 代理)
+│   ├── start_frontend.sh           # 启动前端静态服务(:8080)
+│   ├── start_server.sh             # 启动后端(:3001)
+│   └── update.sh                   # git pull + docker compose rebuild
+│
 ├── frontend/                       # 纯静态站点(无构建步骤)
-│   ├── index.html                  # 登录 / 注册入口
-│   ├── landing.html                # 品牌落地页
-│   ├── text-to-image.html          # 文生图
-│   ├── image-to-image.html         # 图生图
-│   ├── multi-image.html            # 多图合成
-│   ├── preset-styles.html          # 预设风格库
-│   ├── preset-detail.html          # 预设详情
-│   ├── settings.html               # 设置(供应商切换 + API 配置)
+│   ├── html/                       # HTML 页面
+│   │   ├── index.html              # 登录 / 注册入口
+│   │   ├── landing.html            # 品牌落地页
+│   │   ├── text-to-image.html      # 文生图
+│   │   ├── image-to-image.html     # 图生图
+│   │   ├── multi-image.html        # 多图合成
+│   │   ├── preset-styles.html      # 预设风格库
+│   │   ├── preset-detail.html      # 预设详情
+│   │   └── settings.html           # 设置(供应商切换 + API 配置)
 │   ├── css/
 │   │   └── design-system.css       # 自研设计系统 + 错误弹窗样式
 │   ├── js/
 │   │   ├── api.js                  # 多供应商 SDK + 同步层
-│   │   ├── auth.js                 # JWT 客户端 + 验证码
+│   │   ├── auth.js                 # JWT 客户端
 │   │   └── i18n.js                 # 中英双语字典
 │   └── assets/
 │       ├── posters/                # 落地页海报样图
 │       └── presets/                # 预设封面图
 │
-├── nginx/
-│   └── default.conf                # 前端容器 nginx 配置
-│
 └── server/                         # Express 后端
     ├── Dockerfile                  # 后端镜像构建
     ├── package.json
-    ├── server.js                   # 入口(无 authLimiter)
-    ├── db.js                       # SQLite 初始化 + DAO
-    ├── auth.js                     # /api/auth/* 路由(含 captcha 校验)
-    ├── captcha.js                  # 动态图形验证码(SVG, 内存池)
+    ├── server.js                   # 入口(含 graceful shutdown)
+    ├── db.js                       # SQLite 初始化 + DAO(5表)
+    ├── auth.js                     # /api/auth/* 路由(register/login/me/change-password)
     ├── middleware.js               # JWT 中间件 + apiLimiter
     ├── routes/
+    │   ├── admin.js                # WebUI 一键更新(check/update/SSE)
     │   ├── history.js              # /api/history
     │   ├── presets.js              # /api/presets
     │   └── settings.js             # /api/settings
@@ -166,12 +171,12 @@ cp .env.example .env
 # 编辑 .env:JWT_SECRET 改成强随机串
 # 编辑 PPIO_API_KEY 填入你的供应商 Key(如果走 8766 代理)
 
-docker compose up -d --build
+docker compose -f docker/docker-compose.yml up -d --build
 ```
 
 打开 `http://localhost:5418/` → 用 index.html 登录入口注册 / 登录。
 
-> ⚠️ `docker-compose.yml` 当前**只编排 frontend + server**。`api_server.py` 是可选代理层,如果要部署,在 compose 里加一个 service(参见下方"扩展 Docker Compose")。
+> ⚠️ `docker/docker-compose.yml` 当前**只编排 frontend + server**。`api_server.py` 是可选代理层,如果要部署,在 compose 里加一个 service(参见下方"扩展 Docker Compose")。
 
 ### 方式 B — 本地裸跑(开发)
 
@@ -187,9 +192,9 @@ cp .env.example .env
 # PPIO_API_KEY=sk_xxx  (8766 代理需要,直连则不需要)
 
 # 4. 启动三个进程(每个一行,各占一个终端)
-./start_api.sh       # 可选:http://localhost:8766
-./start_server.sh    # 必选:http://localhost:3001
-./start_frontend.sh  # 必选:http://localhost:8080
+./script/start_api.sh       # 可选:http://localhost:8766
+./script/start_server.sh    # 必选:http://localhost:3001
+./script/start_frontend.sh  # 必选:http://localhost:8080
 ```
 
 打开 `http://localhost:8080/`,登录后即可使用。
@@ -256,7 +261,7 @@ OpenAI 兼容接口,prompt 完全自由,字段自动映射到 PPIO 原生:
 | GET | `/v1` | 服务自检 |
 | GET | `/health` | 健康检查 |
 
-完整协议示例见 [`docs/API_GUIDE.md`](docs/API_GUIDE.md)。
+完整协议示例见 [`page/API_GUIDE.md`](page/API_GUIDE.md)。
 
 ### 二次开发:加新供应商
 
@@ -275,7 +280,7 @@ PROVIDERS.yourname = {
 
 加一个供应商:
 1. 在 `PROVIDERS` 加一项
-2. `frontend/settings.html` 的 `<select id="provider">` 加 `<option>`
+2. `frontend/html/settings.html` 的 `<select id="provider">` 加 `<option>`
 3. `frontend/js/i18n.js` 中英字典各加 label
 
 协议差异由 `buildGenerationRequest` / `buildEditRequest` 隔离,主调用代码无需改动。
@@ -311,7 +316,7 @@ PROVIDERS.yourname = {
 ## 🛠️ 开发约定
 
 - **零前端构建步骤**:改 `frontend/` 任意文件,浏览器 Cmd+Shift+R 强刷即生效。
-- **后端修改后需重启**:`./start_server.sh` 启动的是裸 `node`,改完手动重启。
+- **后端修改后需重启**:`./script/start_server.sh` 启动的是裸 `node`,改完手动重启。
 - **SQLite WAL**:`chaosbuilder.db` + `.db-shm` + `.db-wal` 三件套,**别手动删 `-wal`**,会丢未 checkpoint 的事务。已 gitignored。
 - **不要把 API Key commit 到仓库**:`frontend/js/api.js` 的 `DEFAULT_CONFIG.apiKey` 默认空字符串,`server/.env` 在 `.gitignore` 里。
 - **依赖要锁版本**:`server/package.json` / `requirements.txt` 都已写死主要依赖。
@@ -320,19 +325,19 @@ PROVIDERS.yourname = {
 
 ## 📦 扩展 Docker Compose(把 8766 加进生产)
 
-在 `docker-compose.yml` 追加:
+在 `docker/docker-compose.yml` 追加:
 
 ```yaml
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api   # 需新增,FROM python:3.11-alpine
-    ports:
-      - "8766:8766"
-    environment:
-      - PPIO_API_KEY=${PPIO_API_KEY}
-      - API_PORT=8766
-    restart: unless-stopped
+   api:
+     build:
+       context: ..
+       dockerfile: docker/Dockerfile.api   # 需新增,FROM python:3.11-alpine, COPY api_server.py /app/
+     ports:
+       - "8766:8766"
+     environment:
+       - PPIO_API_KEY=${PPIO_API_KEY}
+       - API_PORT=8766
+     restart: unless-stopped
 ```
 
 同时建议:把前端 nginx 的 `proxy_pass` 增补 `location /v1/ { proxy_pass http://api:8766; }`,让前端在同源下调用,避免 CORS 警告。
@@ -352,7 +357,7 @@ PROVIDERS.yourname = {
 ## 🤝 贡献
 
 欢迎 PR。改动前请:
-1. 看 `docs/compose/specs/` 下的设计文档
+1. 看 `page/compose/specs/` 下的设计文档
 2. 前端保持"零构建"原则(不引入 npm/Vite/webpack)
 3. 新增路由请同时更新 README 的 API 表
 4. 后端改动加测试,前端改动至少手动回归浏览器
@@ -427,7 +432,7 @@ exit 0
 如果换了机器 clone,记得复制 hook:
 
 ```bash
-cp docs/hooks/post-commit .git/hooks/post-commit   # 或手动设
+cp page/hooks/post-commit .git/hooks/post-commit   # 或手动设
 chmod +x .git/hooks/post-commit
 ```
 

@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const UPDATE_SCRIPT = path.resolve(__dirname, '..', 'scripts', 'update.sh');
+const UPDATE_SCRIPT = path.resolve(__dirname, '..', '..', 'script', 'update.sh');
 const LOG_FILE = path.join(os.tmpdir(), 'chaos-update.log');
 // 项目目录:优先环境变量,其次推断(本地开发用 __dirname/../..)
 const PROJECT_DIR = process.env.CHAOS_PROJECT_DIR || path.resolve(__dirname, '../..');

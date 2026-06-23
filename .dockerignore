@@ -8,5 +8,5 @@ server/.env
 .omo
 .mimocode
 .worktrees
-docs
+page
 *.md

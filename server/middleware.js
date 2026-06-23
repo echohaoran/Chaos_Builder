@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'chaosbuilder-dev-secret-change-in-
 const JWT_EXPIRES_IN = '7d';
 
 function signToken(user) {
-  return jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ userId: user.id, username: user.username, role: user.role || 'user' }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 function authMiddleware(req, res, next) {
@@ -16,6 +16,12 @@ function authMiddleware(req, res, next) {
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET);
+    // 检查用户是否被禁用
+    const db = require('./db');
+    const user = db.findUserById(payload.userId);
+    if (user && user.disabled) {
+      return res.status(403).json({ error: 'Account disabled', message: '该账户已被禁用，请联系管理员。' });
+    }
     req.user = payload;
     next();
   } catch (err) {
@@ -23,8 +29,11 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// 登录/注册不限流(self-hosted 个人项目,暴力破解风险低,
-// 也避免 "Too many attempts, please try again later" 影响正常使用)
+function adminMiddleware(req, res, next) {
+  if (req.user && req.user.role === 'admin') return next();
+  return res.status(403).json({ error: 'Admin access required' });
+}
+
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
@@ -33,4 +42,4 @@ const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
-module.exports = { signToken, authMiddleware, JWT_SECRET, apiLimiter };
+module.exports = { signToken, authMiddleware, adminMiddleware, JWT_SECRET, apiLimiter };

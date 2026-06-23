@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
+const emailSvc = require('./email');
 const { signToken, authMiddleware } = require('./middleware');
 
 const router = express.Router();
@@ -19,6 +20,12 @@ function validatePassword(password) {
   return null;
 }
 
+function validateEmail(email) {
+  if (!email || typeof email !== 'string') return 'Email is required';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email format';
+  return null;
+}
+
 router.post('/register', (req, res) => {
   const { username, password } = req.body;
 
@@ -33,10 +40,64 @@ router.post('/register', (req, res) => {
   }
 
   const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
-  const user = db.createUser(username, hash);
+  const user = db.createUser(username, null, hash);
   const token = signToken(user);
 
-  res.status(201).json({ token, user: { id: user.id, username: user.username } });
+  res.status(201).json({ token, user: { id: user.id, username: user.username, role: user.role, email: null, email_verified: 0 } });
+});
+
+router.post('/register-email', (req, res) => {
+  const { username, password, email, code } = req.body;
+
+  const userErr = validateUsername(username);
+  if (userErr) return res.status(400).json({ error: userErr });
+
+  const passErr = validatePassword(password);
+  if (passErr) return res.status(400).json({ error: passErr });
+
+  const emailErr = validateEmail(email);
+  if (emailErr) return res.status(400).json({ error: emailErr });
+
+  if (!code) return res.status(400).json({ error: 'Verification code is required' });
+
+  if (db.findUserByUsername(username)) {
+    return res.status(409).json({ error: 'Username already taken' });
+  }
+  if (db.findUserByEmail(email)) {
+    return res.status(409).json({ error: 'Email already registered' });
+  }
+
+  // Verify code
+  if (!db.verifyEmailCode(email, code)) {
+    return res.status(400).json({ error: 'Invalid or expired verification code' });
+  }
+
+  const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
+  const user = db.createUser(username, email, hash);
+  const token = signToken(user);
+
+  res.status(201).json({ token, user: { id: user.id, username: user.username, email, role: user.role, email_verified: 1 } });
+});
+
+router.post('/send-code', async (req, res) => {
+  const { email } = req.body;
+  const emailErr = validateEmail(email);
+  if (emailErr) return res.status(400).json({ error: emailErr });
+
+  if (db.findUserByEmail(email)) {
+    return res.status(409).json({ error: 'Email already registered' });
+  }
+
+  // Generate 6-digit code
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  db.saveEmailCode(email, code, expiresAt);
+
+  const result = await emailSvc.sendVerificationEmail(email, code);
+  if (!result.ok) {
+    return res.status(500).json({ error: 'Failed to send email: ' + (result.error || 'SMTP not configured') });
+  }
+  res.json({ message: 'Verification code sent' });
 });
 
 router.post('/login', (req, res) => {
@@ -58,13 +119,13 @@ router.post('/login', (req, res) => {
   }
 
   const token = signToken(user);
-  res.json({ token, user: { id: user.id, username: user.username } });
+  res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, email_verified: user.email_verified } });
 });
 
 router.get('/me', authMiddleware, (req, res) => {
   const user = db.findUserById(req.user.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ user: { id: user.id, username: user.username } });
+  res.json({ user: { id: user.id, username: user.username, email: user.email, role: user.role, email_verified: user.email_verified } });
 });
 
 router.post('/change-password', authMiddleware, (req, res) => {
@@ -76,7 +137,9 @@ router.post('/change-password', authMiddleware, (req, res) => {
   const user = db.findUserById(req.user.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  if (!bcrypt.compareSync(oldPassword, user.password_hash)) {
+  // Need the full user with password_hash
+  const fullUser = db.getDb().prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.userId);
+  if (!fullUser || !bcrypt.compareSync(oldPassword, fullUser.password_hash)) {
     return res.status(401).json({ error: 'Current password is incorrect' });
   }
 
