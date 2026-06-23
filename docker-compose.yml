@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5418:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-chaosbuilder-production-secret-change-me}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - DATA_DIR=/app/data
+    volumes:
+      - server-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  server-data:
