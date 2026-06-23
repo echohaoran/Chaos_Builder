@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>混沌艺术 · 风格详情</title>
+  <link rel="stylesheet" href="../css/design-system.css" />
+  <style>
+    .lang-toggle {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 200;
+    }
+
+    .page-header {
+      padding-top: 120px;
+      padding-bottom: var(--space-8);
+      text-align: center;
+    }
+
+    .page-header h1 {
+      margin-bottom: var(--space-4);
+    }
+
+    .page-header .lead {
+      margin: 0 auto;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-8);
+      align-items: stretch;
+      margin-bottom: var(--section-y-desktop);
+    }
+
+    .detail-form-panel,
+    .generator-result {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-image-wrap img {
+      max-height: 28vh;
+    }
+
+    .detail-image-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--elev-raised);
+    }
+
+    .detail-image-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      display: block;
+    }
+
+    .detail-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+
+    .detail-form-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--elev-raised);
+    }
+
+    .detail-form-panel .field + .field {
+      margin-top: var(--space-5);
+    }
+
+    .detail-form-panel .btn-primary {
+      width: 100%;
+      margin-top: var(--space-6);
+    }
+
+    .detail-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-meta-item {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .detail-meta-item strong {
+      color: var(--fg-2);
+      font-weight: 500;
+      min-width: 5em;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+
+    .detail-actions .btn {
+      flex: 1;
+    }
+
+    .result-section {
+      margin-bottom: var(--section-y-desktop);
+    }
+
+    .result-section h2 {
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-4);
+    }
+
+    .generator-result {
+      min-height: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--elev-raised);
+    }
+
+    .result-empty {
+      height: 100%;
+      min-height: 280px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--meta);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .result-item {
+      position: relative;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+    }
+
+    .result-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .result-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--space-3);
+      background: linear-gradient(to top, rgba(20, 20, 19, 0.7), transparent);
+      display: flex;
+      gap: var(--space-2);
+      opacity: 0;
+      transition: opacity var(--motion-fast) var(--ease-standard);
+    }
+
+    .result-item:hover .result-actions,
+    .result-item:focus-within .result-actions {
+      opacity: 1;
+    }
+
+    .result-actions .btn {
+      flex: 1;
+      font-size: var(--text-sm);
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-4);
+    }
+
+    .status.info {
+      background: var(--surface-warm);
+      color: var(--fg-2);
+    }
+
+    .status.error {
+      background: rgba(181, 51, 51, 0.08);
+      color: var(--danger);
+    }
+
+    .status[hidden] {
+      display: none;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .footer {
+      padding: var(--space-8) 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--space-5);
+    }
+
+    .footer-links a {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--fg);
+    }
+
+    @media (max-width: 991px) {
+      .detail-layout {
+        grid-template-columns: 1fr;
+      }
+      .detail-image-panel {
+        position: static;
+      }
+      .page-header {
+        padding-top: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-actions .btn:not(.lang-toggle) {
+        display: none;
+      }
+      .detail-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="landing.html" class="nav-logo" data-i18n="brandName">混沌艺术</a>
+      <nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu">
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
+        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
+        <div class="user-menu" id="user-menu"></div>
+      </div>
+      <button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <header class="page-header">
+      <div class="eyebrow" data-i18n="pagePresetStylesTitle">预设风格</div>
+      <h1 data-i18n="presetDetailTitle">风格详情</h1>
+      <p class="lead" data-i18n="pagePresetStylesSubtitle">即开即用的场景风格模板。</p>
+    </header>
+
+    <section class="detail-layout">
+      <div class="detail-form-panel">
+        <div class="detail-image-wrap">
+          <img id="preset-image" src="" alt="" />
+        </div>
+        <div class="detail-badges" id="preset-badges"></div>
+        <div class="detail-meta-list" id="preset-meta"></div>
+
+        <form id="generate-form">
+          <div class="provider-indicator" id="provider-indicator" aria-live="polite"></div>
+          <div class="field">
+            <label for="prompt" data-i18n="presetPromptLabel">固定提示词</label>
+            <textarea id="prompt" name="prompt" rows="8" data-i18n-attr="placeholder" data-i18n-placeholder="txtPromptPlaceholder"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="size" data-i18n="labelSize">尺寸</label>
+            <select id="size" name="size">
+              <option value="1024x1024" selected>1024 × 1024</option>
+              <option value="1024x1536">1024 × 1536</option>
+              <option value="1536x1024">1536 × 1024</option>
+              <option value="2048x2048">2048 × 2048</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="quality" data-i18n="labelQuality">画质</label>
+            <select id="quality" name="quality">
+              <option value="standard" data-i18n="settingQualityStandard">标准</option>
+              <option value="hd" selected data-i18n="settingQualityHd">高清</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="n" data-i18n="labelCount">数量</label>
+            <select id="n" name="n">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <span data-i18n="presetDetailGenerate">生成图片</span>
+          </button>
+        </form>
+
+        <div class="detail-actions">
+          <a href="preset-styles.html" class="btn btn-secondary" data-i18n="presetDetailBack">← 返回预设风格</a>
+          <a href="generate.html" class="btn btn-ghost" id="open-text-link" data-i18n="presetDetailOpenText">在文生图中打开</a>
+        </div>
+      </div>
+
+      <div class="generator-result" id="result-section" hidden>
+        <div class="status info" id="status-info" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <span data-i18n="statusGenerating">正在生成…</span>
+        </div>
+        <div class="status error" id="status-error" hidden>
+          <span data-i18n="statusError">生成失败</span>：<span id="error-message"></span>
+        </div>
+        <div class="result-empty" id="result-empty">
+          <div>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <p data-i18n="emptyResult">生成的图片将显示在这里</p>
+          </div>
+        </div>
+        <div class="result-grid" id="result-grid" hidden></div>
+      </div>
+    </section>
+
+    <section class="history-section" id="history-section">
+      <div class="history-header">
+        <h2 data-i18n="historyTitle">生成历史</h2>
+        <button type="button" class="btn btn-ghost" id="clear-history-btn" data-i18n="actionClearHistory">清空历史</button>
+      </div>
+      <div class="history-empty" id="history-empty" data-i18n="historyEmpty">暂无历史记录</div>
+      <div class="history-grid" id="history-grid" hidden></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
+      <nav class="footer-links">
+        <a href="landing.html" data-i18n="navHome">首页</a>
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+        <a href="settings.html" data-i18n="navSettings">设置</a>
+      </nav>
+      <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
+    </div>
+  </footer>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    (function () {
+      const PRESETS = [
+        {
+          id: 'perfume',
+          nameKey: 'presetPerfume',
+          industryKey: 'presetPerfumeIndustry',
+          styleKey: 'presetPerfumeStyle',
+          image: '../assets/presets/01_香水_9x16_超写实CG.png',
+          aspect: '9:16',
+          dimensions: '720 × 1280',
+          size: '1024x1536',
+          prompt: `A premium luxury perfume poster ad, ultra realistic CG render, a tall glass perfume bottle with deep amber liquid inside, surrounded by suspended water droplets catching the light, dark velvet background, golden volumetric light beams, soft bokeh, extreme detail on glass refraction, hyper realistic product photography, cinematic luxury commercial advertisement, 8k quality`,
+        },
+        {
+          id: 'coffee',
+          nameKey: 'presetCoffee',
+          industryKey: 'presetCoffeeIndustry',
+          styleKey: 'presetCoffeeStyle',
+          image: '../assets/presets/02_咖啡_1x1_复古插画.png',
+          aspect: '1:1',
+          dimensions: '1024 × 1024',
+          size: '1024x1024',
+          prompt: `A retro vintage coffee shop advertisement poster in 1950s mid-century modern illustration style, hand drawn with textured paper grain, warm pastel color palette of muted teal, mustard yellow, and burnt orange, a steaming ceramic coffee cup on a small round table by a window, sun rays casting long geometric shadows, a croissant on a side plate, hand-lettered typography saying GOOD MORNING, halftone print texture, charming nostalgic advertising art`,
+        },
+        {
+          id: 'sneaker',
+          nameKey: 'presetSneaker',
+          industryKey: 'presetSneakerIndustry',
+          styleKey: 'presetSneakerStyle',
+          image: '../assets/presets/03_运动鞋_21x9_街头摄影.png',
+          aspect: '21:9',
+          dimensions: '1344 × 576',
+          size: '1536x1024',
+          prompt: `A gritty urban street photography sneaker advertisement, raw documentary photojournalism style, a single neon green and black running shoe lying on wet asphalt at night, reflections of city neon signs in the puddle beneath, motion blur on cars passing in the background, harsh direct flash lighting on the shoe, graffiti tags slightly out of focus in the back, gritty street texture, professional sportswear editorial, shot on 35mm film`,
+        },
+        {
+          id: 'techAi',
+          nameKey: 'presetTechAi',
+          industryKey: 'presetTechAiIndustry',
+          styleKey: 'presetTechAiStyle',
+          image: '../assets/presets/04_科技AI_16x9_极简未来.png',
+          aspect: '16:9',
+          dimensions: '1280 × 720',
+          size: '1536x1024',
+          prompt: `A minimalist futuristic AI technology product poster, ultra clean geometric design, deep midnight black background with a single subtle horizon line glow, a translucent holographic sphere floating at center emitting soft cyan light particles, ultra thin sans-serif typography in the corner saying INTELLIGENCE REDEFINED, negative space dominant, bauhaus inspired composition, premium product launch advertisement, dramatic but restrained, single accent color of electric cyan, 4k`,
+        },
+        {
+          id: 'mooncake',
+          nameKey: 'presetMooncake',
+          industryKey: 'presetMooncakeIndustry',
+          styleKey: 'presetMooncakeStyle',
+          image: '../assets/presets/05_中式糕点_4x5_水墨国风.png',
+          aspect: '4:5',
+          dimensions: '768 × 960',
+          size: '1024x1024',
+          prompt: `A traditional Chinese mooncake poster advertisement in classical Chinese ink wash painting style, hand brushed with rice paper texture, soft sepia and charcoal tones with subtle vermillion red accents, a single round mooncake on an antique celadon porcelain plate, misty mountains in the distant background, bamboo branch silhouette on the side, calligraphic brushstrokes, traditional Chinese painting aesthetic, elegant and timeless, low saturation muted palette`,
+        },
+        {
+          id: 'baroque',
+          nameKey: 'presetBaroque',
+          industryKey: 'presetBaroqueIndustry',
+          styleKey: 'presetBaroqueStyle',
+          image: '../assets/baroque_relief_complex.png',
+          aspect: '4:3',
+          dimensions: '1024 × 768',
+          size: '1024x1024',
+          prompt: `A dramatic baroque relief sculpture rendered in monochrome plaster, intricate ornamental scrollwork and floral motifs, deep chiaroscuro lighting carving out shadows, museum-quality classical art, highly detailed stone texture, black and white fine art photography, elegant luxury aesthetic, dramatic side light, high contrast, timeless sculptural composition`,
+        },
+      ];
+
+      const USER_PRESETS_KEY = 'chaos_builder_user_presets';
+
+      function getUserPresets() {
+        try {
+          const raw = localStorage.getItem(USER_PRESETS_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function getUserPreset(id) {
+        return getUserPresets().find(function (p) { return p.id === id; });
+      }
+
+      function userPresetToApiSize(p) {
+        if (p.width >= p.height) return '1536x1024';
+        return '1024x1536';
+      }
+
+      const params = new URLSearchParams(location.search);
+      const presetId = params.get('id');
+      const userPresetId = params.get('userId');
+      const preset = PRESETS.find(function (p) { return p.id === presetId; }) || (userPresetId ? getUserPreset(userPresetId) : null);
+      const isUserPreset = !!userPresetId;
+
+      const titleEl = document.querySelector('title');
+      const pageTitle = document.querySelector('main h1');
+      const imageEl = document.getElementById('preset-image');
+      const badgesEl = document.getElementById('preset-badges');
+      const metaEl = document.getElementById('preset-meta');
+      const form = document.getElementById('generate-form');
+      const openTextLink = document.getElementById('open-text-link');
+      const submitBtn = document.getElementById('submit-btn');
+      const resultSection = document.getElementById('result-section');
+      const statusInfo = document.getElementById('status-info');
+      const statusError = document.getElementById('status-error');
+      const errorMessage = document.getElementById('error-message');
+      const resultEmpty = document.getElementById('result-empty');
+      const resultGrid = document.getElementById('result-grid');
+      const historyGrid = document.getElementById('history-grid');
+      const historyEmpty = document.getElementById('history-empty');
+      const clearHistoryBtn = document.getElementById('clear-history-btn');
+      const HISTORY_TYPE = 'preset';
+
+      function render() {
+        if (!preset) {
+          pageTitle.textContent = I18N.t('presetDetailTitle');
+          form.hidden = true;
+          return;
+        }
+
+        const name = isUserPreset ? preset.name : I18N.t(preset.nameKey);
+        const industry = isUserPreset ? (preset.tags.join(', ') || I18N.t('presetUserStyle')) : I18N.t(preset.industryKey);
+        const style = isUserPreset ? I18N.t('presetUserStyle') : I18N.t(preset.styleKey);
+        const image = isUserPreset ? preset.src : preset.image;
+        const size = isUserPreset ? userPresetToApiSize(preset) : preset.size;
+
+        pageTitle.textContent = name;
+        titleEl.textContent = I18N.t('brandName') + ' · ' + name;
+
+        imageEl.src = image;
+        imageEl.alt = name;
+
+        badgesEl.innerHTML =
+          '<span class="badge">' + preset.aspect + '</span>' +
+          '<span class="badge badge-muted">' + preset.dimensions + '</span>';
+
+        metaEl.innerHTML =
+          '<div class="detail-meta-item"><strong data-i18n="presetIndustryLabel">' + I18N.t('presetIndustryLabel') + '</strong> ' + industry + '</div>' +
+          '<div class="detail-meta-item"><strong data-i18n="presetStyleLabel">' + I18N.t('presetStyleLabel') + '</strong> ' + style + '</div>' +
+          '<div class="detail-meta-item"><strong data-i18n="presetAspectLabel">' + I18N.t('presetAspectLabel') + '</strong> ' + preset.aspect + '</div>' +
+          '<div class="detail-meta-item"><strong data-i18n="presetDimensionsLabel">' + I18N.t('presetDimensionsLabel') + '</strong> ' + preset.dimensions + '</div>';
+
+        form.prompt.value = preset.prompt || '';
+        form.size.value = size;
+        openTextLink.href = 'text-to-image.html?prompt=' + encodeURIComponent(preset.prompt || '');
+      }
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        statusInfo.hidden = !loading;
+        statusError.hidden = true;
+      }
+
+      function showError(msg) {
+        errorMessage.textContent = msg;
+        statusError.hidden = false;
+        statusInfo.hidden = true;
+      }
+
+      function renderResults(data) {
+        resultSection.hidden = false;
+        resultEmpty.hidden = true;
+        resultGrid.hidden = false;
+        resultGrid.innerHTML = '';
+
+        (data.data || []).forEach(function (item) {
+          const url = ChaosAPI.resultToImageUrl(item);
+          if (!url) return;
+
+          ChaosAPI.syncSaveHistory(HISTORY_TYPE, url, {
+            prompt: form.prompt.value.trim(),
+            size: form.size.value,
+            quality: form.quality.value,
+            preset: preset ? preset.id : '',
+          });
+
+          const card = ChaosAPI.makeImageCard(url, {
+            className: 'result-item',
+            loading: 'lazy',
+            filename: 'chaosbuilder-preset-' + Date.now() + '.png',
+          });
+          resultGrid.appendChild(card);
+        });
+
+        renderHistory();
+      }
+
+      function renderHistory() {
+        const history = ChaosAPI.getHistory(HISTORY_TYPE);
+        historyGrid.innerHTML = '';
+        if (!history.length) {
+          if (localStorage.getItem('chaos_builder_token') && !window._chaosbuilder_history_pulled) {
+            window._chaosbuilder_history_pulled = true;
+            ChaosAPI.syncFromServer().then(renderHistory);
+          }
+                    historyEmpty.hidden = false;
+          historyGrid.hidden = true;
+          return;
+        }
+        historyEmpty.hidden = true;
+        historyGrid.hidden = false;
+        history.forEach(function (entry) {
+          const card = ChaosAPI.makeImageCard(entry.url, {
+            className: 'history-item',
+            loading: 'lazy',
+            title: I18N.t('historyItemHint'),
+            filename: 'chaosbuilder-preset-' + entry.createdAt + '.png',
+            onDelete: function () {
+              ChaosAPI.deleteHistory(HISTORY_TYPE, entry);
+              renderHistory();
+            },
+          });
+          historyGrid.appendChild(card);
+        });
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const prompt = form.prompt.value.trim();
+        if (!prompt) {
+          showError(I18N.t('errorNoPrompt'));
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const data = await ChaosAPI.generateImage(prompt, {
+            size: form.size.value,
+            quality: form.quality.value,
+            n: Number(form.n.value),
+          });
+          renderResults(data);
+        } catch (err) {
+          showError(err.title || err.message || I18N.t('statusError'));
+          ChaosAPI.showErrorModal(err);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      clearHistoryBtn.addEventListener('click', function () {
+        ChaosAPI.clearHistory(HISTORY_TYPE);
+        renderHistory();
+      });
+
+      const btn = document.getElementById('lang-toggle');
+
+      function updateToggleLabel() {
+        const next = I18N.locale() === 'zh-CN' ? 'en' : 'zh-CN';
+        btn.textContent = next === 'zh-CN' ? I18N.t('langZh') : I18N.t('langEn');
+      }
+
+      btn.addEventListener('click', function () {
+        I18N.toggle();
+      });
+
+      document.addEventListener('i18n:changed', function () {
+        render();
+        updateToggleLabel();
+      });
+
+      Auth.requireAuth();
+      Auth.renderUserMenu('#user-menu');
+      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
+      render();
+      renderHistory();
+
+      // 实时显示当前供应商 + 模型(settings 页面切换后会同步更新)
+      (function syncProviderIndicator() {
+        var indicator = document.getElementById('provider-indicator');
+        if (!indicator || !ChaosAPI.getCurrentProviderInfo) return;
+        function paint() {
+          var info = ChaosAPI.getCurrentProviderInfo();
+          indicator.textContent = (info.label || info.key) + ' · ' + (info.model || '');
+        }
+        paint();
+        ChaosAPI.onConfigChange(paint);
+      })();
+
+      updateToggleLabel();
+      if (window.I18N) I18N.apply();
+    })();
+  </script>
+</body>
+</html>

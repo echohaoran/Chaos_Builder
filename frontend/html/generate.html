@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>混沌艺术 · 图片生成</title>
+  <link rel="stylesheet" href="../css/design-system.css" />
+  <style>
+    .lang-toggle {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 200;
+    }
+    .page-header {
+      padding-top: 120px;
+      padding-bottom: var(--space-4);
+      text-align: center;
+    }
+    .page-header h1 { margin-bottom: var(--space-4); }
+    .page-header .lead { margin: 0 auto; }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: var(--space-1);
+      justify-content: center;
+      margin-bottom: var(--space-8);
+      background: var(--bg);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-1);
+      border: 1px solid var(--border);
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: var(--space-2) var(--space-4);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--border-radius);
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .mode-tab:hover { color: var(--text); }
+    .mode-tab.active {
+      background: var(--surface);
+      color: var(--accent);
+      box-shadow: var(--elev-low);
+    }
+
+    /* Generator two-column grid */
+    .generator {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: var(--space-8);
+      align-items: stretch;
+      margin-bottom: var(--section-y-desktop);
+    }
+    .generator-panel,
+    .generator-result { min-height: 0; }
+
+    .generator-panel {
+      position: sticky;
+      top: 88px;
+      background: var(--surface);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--elev-raised);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .generator-panel .field + .field { margin-top: 0; }
+    .generator-panel .btn-primary { width: 100%; }
+
+    /* Upload zone (shared) */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; overflow: hidden;
+      pointer-events: none;
+    }
+    .upload-zone svg { display: block; margin: 0 auto var(--space-2); color: var(--accent); }
+    .upload-zone .label { font-weight: 500; color: var(--text); margin-bottom: var(--space-1); }
+    .upload-zone .hint { font-size: var(--text-sm); color: var(--muted); }
+
+    /* Image previews */
+    .preview-list {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+    }
+    .preview-item {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-item .remove-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      line-height: 18px;
+      cursor: pointer;
+      padding: 0;
+      text-align: center;
+    }
+
+    /* Mode-specific sections */
+    .mode-section { display: none; }
+    .mode-section.active { display: block; }
+
+    /* Result panel */
+    .generator-result {
+      background: var(--surface);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--elev-raised);
+      padding: var(--space-6);
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+    }
+    .result-empty {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+    }
+    .result-empty[hidden] { display: none !important; }
+    .result-empty svg { opacity: 0.3; margin-bottom: var(--space-4); }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      min-height: 400px;
+    }
+    .result-grid[hidden] { display: none; }
+    .result-item {
+      position: relative;
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+    }
+    .result-item img {
+      width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+    }
+
+    /* Progress monitor */
+    .progress-monitor {
+      background: color-mix(in srgb, var(--accent) 4%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+      border-radius: var(--border-radius);
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-sm);
+    }
+    .progress-monitor[hidden] { display: none; }
+    .progress-monitor .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+    .progress-monitor .progress-steps {
+      display: flex;
+      gap: var(--space-3);
+      overflow-x: auto;
+    }
+    .progress-monitor .step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: var(--text-xs);
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .progress-monitor .step .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .progress-monitor .step.active {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .progress-monitor .step.active .dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+      animation: pulse 1s infinite;
+    }
+    .progress-monitor .step.done { color: #16a34a; }
+    .progress-monitor .step.done .dot { background: #16a34a; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+      50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 15%, transparent); }
+    }
+    .progress-monitor .elapsed {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      font-size: var(--text-xs);
+    }
+    .progress-monitor .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: var(--space-1);
+    }
+    .progress-monitor .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #fff));
+      border-radius: 2px;
+      transition: width 0.4s;
+    }
+    .progress-monitor .progress-text {
+      color: var(--muted);
+      font-size: var(--text-xs);
+    }
+
+    /* Result actions */
+    .result-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: linear-gradient(transparent, rgba(0,0,0,0.4));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .result-item:hover .result-actions { opacity: 1; }
+    .result-actions .btn { flex: 1; font-size: var(--text-sm); }
+
+    /* Status */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--space-3);
+    }
+    .status.info { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    .status.error { background: #fef2f2; color: #dc2626; }
+    .status[hidden] { display: none; }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Preset cards */
+    .preset-card { border:1px solid var(--border);border-radius:var(--border-radius-lg);overflow:hidden;cursor:pointer;background:var(--bg);transition:border-color .2s,box-shadow .2s; }
+    .preset-card:hover { border-color:var(--accent);box-shadow:var(--elev-raised); }
+    .preset-card-img { width:100%;height:180px;object-fit:cover;display:block;background:var(--surface-warm); }
+    .preset-card-body { padding:var(--space-3); }
+    .preset-card-name { font-weight:600;font-size:var(--text-sm);margin-bottom:var(--space-1);color:var(--fg); }
+    .preset-card-meta { font-size:var(--text-xs);color:var(--muted);margin-bottom:var(--space-2); }
+    .preset-card-prompt { font-size:var(--text-xs);color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+    /* Preset preview panel */
+    .preset-preview { flex:1;display:flex;flex-direction:column; }
+    .preset-preview[hidden] { display:none; }
+    .preset-preview-img { display:grid;place-items:center;min-height:200px;max-height:500px;background:var(--bg);border-radius:var(--border-radius-lg);border:1px solid var(--border);margin-bottom:var(--space-4);overflow:hidden; }
+    .preset-preview-img img { max-width:100%;max-height:500px;object-fit:contain;display:block;margin:0 auto; }
+    .preset-preview-placeholder { color:var(--muted);font-size:var(--text-sm); }
+    .preset-preview-info { padding:var(--space-2) 0; }
+    .preset-preview-name { font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-1); }
+    .preset-preview-desc { font-size:var(--text-sm);color:var(--muted);margin-bottom:var(--space-3); }
+    .preset-preview-prompt { font-size:var(--text-sm);color:var(--text);line-height:1.5;padding:var(--space-3);background:var(--bg);border-radius:var(--border-radius-sm);max-height:200px;overflow-y:auto; }
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+    }
+
+    /* History */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+    }
+    .history-header h2 { margin: 0; }
+    .history-empty { text-align: center; padding: var(--space-8); color: var(--muted); }
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--section-y-desktop);
+    }
+    .history-grid[hidden] { display: none; }
+
+    /* Footer */
+    .footer {
+      padding: var(--section-y-desktop) 0 var(--space-8);
+      border-top: 1px solid var(--border);
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo { font-family: var(--font-display, serif); font-size: var(--text-xl); }
+    .footer-links { display: flex; gap: var(--space-6); }
+    .footer-links a { font-size: var(--text-sm); color: var(--muted); }
+    .footer-links a:hover { color: var(--accent); }
+
+    /* Preset grid: show up to 6 (3 rows × 2 cols), scroll beyond */
+    .preset-scroll {
+      max-height: 372px; /* 3 rows × (80px img + padding + margin + gap) */
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .preset-scroll::-webkit-scrollbar { width: 6px; }
+    .preset-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+
+    @media (max-width: 991px) {
+      .generator { grid-template-columns: 1fr; }
+      .generator-panel { position: static; }
+    }
+    @media (max-width: 768px) {
+      .nav-actions .btn:not(.lang-toggle) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Nav -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="landing.html" class="nav-logo" data-i18n="brandName">混沌艺术</a>
+      <nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu">
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
+        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
+        <div class="user-menu" id="user-menu"></div>
+      </div>
+      <button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <header class="page-header">
+      <div class="eyebrow" data-i18n="pageGenerateTitle">图片生成</div>
+      <h1 data-i18n="pageGenerateTitle">图片生成</h1>
+      <p class="lead" data-i18n="pageGenerateSubtitle">选择生成模式，快速创作高质量 AI 图片。</p>
+    </header>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs" role="tablist">
+      <button type="button" class="mode-tab active" data-mode="text" role="tab" aria-selected="true" data-i18n="navTextToImage">文生图</button>
+      <button type="button" class="mode-tab" data-mode="image" role="tab" aria-selected="false" data-i18n="navImageToImage">图生图</button>
+      <button type="button" class="mode-tab" data-mode="multi" role="tab" aria-selected="false" data-i18n="navMultiImage">多图生图</button>
+      <button type="button" class="mode-tab" data-mode="preset" role="tab" aria-selected="false" data-i18n="navPresetStyles">预设风格</button>
+    </div>
+
+    <!-- Generator -->
+    <div class="generator">
+      <!-- Left Panel -->
+      <div class="generator-panel">
+        <div class="provider-indicator" id="provider-indicator" data-i18n="loadingProvider">加载供应商…</div>
+
+        <!-- Text mode -->
+        <div class="mode-section active" data-mode="text">
+          <div class="field">
+            <label for="text-prompt" data-i18n="promptLabel">提示词</label>
+            <textarea id="text-prompt" rows="5" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="输入描述画面内容的提示词…"></textarea>
+          </div>
+          <div class="field">
+            <label for="text-size" data-i18n="sizeLabel">尺寸</label>
+            <select id="text-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="1024x1024">1024 × 1024</option>
+              <option value="1024x1536">1024 × 1536</option>
+              <option value="1536x1024">1536 × 1024</option>
+              <option value="2048x2048">2048 × 2048</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="orientationLabel">方向</label>
+            <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="text-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="text-orientation" value="portrait" /> <span data-i18n="orientationPortrait">竖图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="text-orientation" value="square" /> <span data-i18n="orientationSquare">方图</span>
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="text-quality" data-i18n="qualityLabel">质量</label>
+            <select id="text-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="hd" data-i18n="qualityHd">高清</option>
+              <option value="standard" data-i18n="qualityStandard">标准</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="text-count" data-i18n="countLabel">生成数量</label>
+            <select id="text-count" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Image mode -->
+        <div class="mode-section" data-mode="image">
+          <div class="field">
+            <label data-i18n="uploadLabel">上传参考图</label>
+            <div class="upload-zone" id="image-upload-zone" tabindex="0" role="button">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="label" data-i18n="imgUploadHint">上传参考图片</div>
+              <div class="hint" data-i18n="imgUploadDesc">支持 JPG / PNG / WebP</div>
+              <input type="file" id="image-file-input" accept="image/*" />
+            </div>
+            <div class="preview-list" id="image-preview-list"></div>
+          </div>
+          <div class="field">
+            <label for="image-prompt" data-i18n="promptLabel">提示词</label>
+            <textarea id="image-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何修改参考图…"></textarea>
+          </div>
+          <div class="field">
+            <select id="image-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="1024x1024">1024 × 1024</option>
+              <option value="1024x1536">1024 × 1536</option>
+              <option value="1536x1024">1536 × 1024</option>
+              <option value="2048x2048">2048 × 2048</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="image-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="image-orientation" value="portrait" /> <span data-i18n="orientationPortrait">竖图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="image-orientation" value="square" /> <span data-i18n="orientationSquare">方图</span>
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <select id="image-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="hd" data-i18n="qualityHd">高清</option>
+              <option value="standard" data-i18n="qualityStandard">标准</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Multi mode -->
+        <div class="mode-section" data-mode="multi">
+          <div class="field">
+            <label data-i18n="multiUploadLabel">上传参考图（2~4 张）</label>
+            <div class="upload-zone" id="multi-upload-zone" tabindex="0" role="button">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="label" data-i18n="multiUploadHint">上传多张参考图片</div>
+              <div class="hint" data-i18n="multiUploadDesc">最多 4 张，支持拖拽排序</div>
+              <input type="file" id="multi-file-input" accept="image/*" multiple />
+            </div>
+            <div class="preview-list" id="multi-preview-list"></div>
+          </div>
+          <div class="field">
+            <label for="multi-prompt" data-i18n="promptLabel">提示词</label>
+            <textarea id="multi-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何融合这些参考图…"></textarea>
+          </div>
+          <div class="field">
+            <select id="multi-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="1024x1024">1024 × 1024</option>
+              <option value="1024x1536">1024 × 1536</option>
+              <option value="1536x1024">1536 × 1024</option>
+              <option value="2048x2048">2048 × 2048</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="multi-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="multi-orientation" value="portrait" /> <span data-i18n="orientationPortrait">竖图</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
+                <input type="radio" name="multi-orientation" value="square" /> <span data-i18n="orientationSquare">方图</span>
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <select id="multi-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
+              <option value="hd" data-i18n="qualityHd">高清</option>
+              <option value="standard" data-i18n="qualityStandard">标准</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Preset mode -->
+        <div class="mode-section" data-mode="preset">
+          <div class="preset-scroll">
+            <div class="preset-grid" id="preset-grid">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="generate-btn" data-i18n="generateBtn">生成</button>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="generator-result">
+        <div class="status info" id="status-info" hidden>
+          <div class="spinner"></div>
+          <span data-i18n="generating">正在生成…</span>
+        </div>
+        <div class="status error" id="status-error" hidden>
+          <span id="error-message"></span>
+        </div>
+
+        <div class="progress-monitor" id="progress-monitor" hidden>
+          <div class="progress-header">
+            <div class="progress-steps">
+              <span class="step" data-step="0"><span class="dot"></span> <span data-i18n="progressPrepare">准备请求</span></span>
+              <span class="step" data-step="1"><span class="dot"></span> <span data-i18n="progressSubmit">提交上游</span></span>
+              <span class="step" data-step="2"><span class="dot"></span> <span data-i18n="progressGenerating">生成中</span></span>
+              <span class="step" data-step="3"><span class="dot"></span> <span data-i18n="progressReceive">接收结果</span></span>
+            </div>
+            <span class="elapsed" id="elapsed">0s</span>
+          </div>
+          <div class="progress-bar"><div class="bar-fill" id="bar-fill"></div></div>
+          <div class="progress-text" id="progress-text" data-i18n="progressStarting">开始生成…</div>
+        </div>
+
+        <div class="result-empty" id="result-empty">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p data-i18n="emptyResult">生成的图片将显示在这里</p>
+        </div>
+
+        <div class="result-grid" id="result-grid" hidden></div>
+
+        <!-- Preset preview -->
+        <div class="preset-preview" id="preset-preview" hidden>
+          <div class="preset-preview-img" id="preset-preview-img">
+            <div class="preset-preview-placeholder">选择一个预设风格</div>
+          </div>
+          <div class="preset-preview-info" id="preset-preview-info" hidden>
+            <div class="preset-preview-name" id="preset-preview-name"></div>
+            <div class="preset-preview-desc" id="preset-preview-desc"></div>
+            <div class="preset-preview-prompt" id="preset-preview-prompt"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-header">
+      <h2 data-i18n="historyTitle">生成历史</h2>
+      <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="clearHistory">清空历史</button>
+    </div>
+    <div class="history-empty" id="history-empty" data-i18n="historyEmpty">暂无历史记录</div>
+    <div class="history-grid" id="history-grid" hidden></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
+      <nav class="footer-links">
+        <a href="landing.html" data-i18n="navHome">首页</a>
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+        <a href="settings.html" data-i18n="navSettings">设置</a>
+      </nav>
+      <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
+    </div>
+  </footer>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    // ─── State ──────────────────────────────────────────────
+    var currentMode = 'text'; // 'text' | 'image' | 'multi' | 'preset'
+    var selectedPreset = null;
+    var imageFile = null;
+    var multiFiles = [];
+    var MAX_FILES = 4;
+    var progressTimer = null;
+    var progressStart = 0;
+    var currentStep = 0;
+
+    // ─── DOM refs ──────────────────────────────────────────
+    var modeTabs = document.querySelectorAll('.mode-tab');
+    var modeSections = document.querySelectorAll('.mode-section');
+    var generateBtn = document.getElementById('generate-btn');
+    var statusInfo = document.getElementById('status-info');
+    var statusError = document.getElementById('status-error');
+    var errorMsg = document.getElementById('error-message');
+    var resultEmpty = document.getElementById('result-empty');
+    var resultGrid = document.getElementById('result-grid');
+    var historyGrid = document.getElementById('history-grid');
+    var historyEmpty = document.getElementById('history-empty');
+    var clearHistoryBtn = document.getElementById('clear-history-btn');
+    var progressMonitor = document.getElementById('progress-monitor');
+    var barFill = document.getElementById('bar-fill');
+    var elapsedEl = document.getElementById('elapsed');
+    var progressText = document.getElementById('progress-text');
+    var providerIndicator = document.getElementById('provider-indicator');
+
+    // ─── Mode switching ─────────────────────────────────────
+    modeTabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var mode = tab.dataset.mode;
+        if (mode === currentMode) return;
+        switchMode(mode);
+      });
+    });
+
+    function switchMode(mode) {
+      currentMode = mode;
+      modeTabs.forEach(function(t) { t.classList.toggle('active', t.dataset.mode === mode); });
+      modeSections.forEach(function(s) { s.classList.toggle('active', s.dataset.mode === mode); });
+      if (mode === 'preset') {
+        resultEmpty.hidden = true;
+        resultGrid.hidden = true;
+        document.getElementById('preset-preview').hidden = false;
+      } else {
+        document.getElementById('preset-preview').hidden = true;
+        resultEmpty.hidden = false;
+        resultGrid.hidden = true;
+      }
+      statusError.hidden = true;
+    }
+
+    // ─── File upload handlers ──────────────────────────────
+    function setupUpload(zoneId, inputId, listId, isMulti) {
+      var zone = document.getElementById(zoneId);
+      var input = document.getElementById(inputId);
+      var list = document.getElementById(listId);
+
+      zone.addEventListener('click', function() { input.click(); });
+      zone.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+      });
+      zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (isMulti) handleMultiFiles(e.dataTransfer.files);
+        else handleSingleFile(e.dataTransfer.files[0]);
+      });
+      input.addEventListener('change', function() {
+        if (isMulti) handleMultiFiles(input.files);
+        else if (input.files.length) handleSingleFile(input.files[0]);
+      });
+    }
+
+    function handleSingleFile(file) {
+      if (!file) return;
+      imageFile = file;
+      renderPreview(document.getElementById('image-preview-list'), [file]);
+    }
+
+    function handleMultiFiles(files) {
+      Array.from(files).forEach(function(f) {
+        if (multiFiles.length >= MAX_FILES) return;
+        multiFiles.push(f);
+      });
+      renderPreview(document.getElementById('multi-preview-list'), multiFiles);
+    }
+
+    function renderPreview(container, files) {
+      container.innerHTML = '';
+      files.forEach(function(file, idx) {
+        var item = document.createElement('div');
+        item.className = 'preview-item';
+        var url = URL.createObjectURL(file);
+        item.innerHTML = '<img src="' + url + '" alt="" />' +
+          '<button type="button" class="remove-btn" data-idx="' + idx + '" title="移除">×</button>';
+        item.querySelector('.remove-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (container.id === 'image-preview-list') {
+            imageFile = null;
+            container.innerHTML = '';
+          } else {
+            multiFiles.splice(idx, 1);
+            renderPreview(container, multiFiles);
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    setupUpload('image-upload-zone', 'image-file-input', 'image-preview-list', false);
+    setupUpload('multi-upload-zone', 'multi-file-input', 'multi-preview-list', true);
+
+    // ─── Progress monitor ──────────────────────────────────
+    function startProgress() {
+      progressMonitor.hidden = false;
+      progressStart = Date.now();
+      currentStep = 0;
+      updateSteps();
+      barFill.style.width = '0%';
+      progressTimer = setInterval(function() {
+        var sec = Math.floor((Date.now() - progressStart) / 1000);
+        elapsedEl.textContent = sec + 's';
+      }, 200);
+    }
+
+    function setStep(idx) {
+      currentStep = idx;
+      updateSteps();
+      barFill.style.width = ((idx / 3) * 100) + '%';
+    }
+
+    function finishProgress(success) {
+      clearInterval(progressTimer);
+      if (success) {
+        setStep(3);
+        barFill.style.width = '100%';
+        progressText.textContent = I18N.t('progressDone', '完成');
+        setTimeout(function() { progressMonitor.hidden = true; }, 900);
+      } else {
+        progressMonitor.classList.add('error');
+        progressText.textContent = I18N.t('progressFailed', '生成失败');
+      }
+    }
+
+    function updateSteps() {
+      progressMonitor.querySelectorAll('.step').forEach(function(s) {
+        var idx = parseInt(s.dataset.step);
+        s.classList.toggle('active', idx === currentStep);
+        s.classList.toggle('done', idx < currentStep);
+      });
+    }
+
+    // ─── Generate ──────────────────────────────────────────
+    generateBtn.addEventListener('click', function() {
+      statusError.hidden = true;
+
+      var prompt, size, quality;
+
+      // Preset mode: use selected preset's prompt directly to generate
+      if (currentMode === 'preset') {
+        if (!selectedPreset) { showError(I18N.t('errorNoPreset', '请先选择一个预设风格')); return; }
+        prompt = selectedPreset.prompt;
+        size = document.getElementById('text-size').value;
+        quality = document.getElementById('text-quality').value;
+        generateBtn.disabled = true;
+        statusInfo.hidden = false;
+        resultEmpty.hidden = true;
+        resultGrid.hidden = true;
+        startProgress();
+        setStep(1);
+        var presetCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: parseInt(document.getElementById('text-count').value) || 1 });
+        setStep(2);
+        presetCall.then(function(data) {
+          setStep(3);
+          finishProgress(true);
+          statusInfo.hidden = true;
+          generateBtn.disabled = false;
+          renderResults(data);
+          ChaosAPI.saveHistory({ prompt: prompt, model: ChaosAPI.getConfig().model || '', size: size, quality: quality, n: 1, image_urls: data.data && data.data.map(function(i){return i.url;}) || [], mode: 'text-to-image' }).catch(function(){});
+        }).catch(function(err) {
+          finishProgress(false);
+          statusInfo.hidden = true;
+          generateBtn.disabled = false;
+          showError(err.message || I18N.t('errorGenerate', '生成失败'));
+        });
+        return;
+      }
+
+      if (currentMode === 'text') {
+        prompt = document.getElementById('text-prompt').value.trim();
+        size = document.getElementById('text-size').value;
+        quality = document.getElementById('text-quality').value;
+        if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
+      } else if (currentMode === 'image') {
+        prompt = document.getElementById('image-prompt').value.trim();
+        size = document.getElementById('image-size').value;
+        quality = document.getElementById('image-quality').value;
+        if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
+        if (!imageFile) { showError(I18N.t('errorNoImage', '请上传参考图')); return; }
+      } else {
+        prompt = document.getElementById('multi-prompt').value.trim();
+        size = document.getElementById('multi-size').value;
+        quality = document.getElementById('multi-quality').value;
+        if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
+        if (multiFiles.length < 2) { showError(I18N.t('errorNeedTwoImages', '请至少上传 2 张参考图')); return; }
+      }
+
+      generateBtn.disabled = true;
+      statusInfo.hidden = false;
+      resultEmpty.hidden = true;
+      resultGrid.hidden = true;
+      startProgress();
+
+      var apiCall;
+      if (currentMode === 'text') {
+        setStep(1);
+        apiCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: parseInt(document.getElementById('text-count').value) || 1 });
+      } else if (currentMode === 'image') {
+        setStep(1);
+        apiCall = ChaosAPI.editImage(imageFile, prompt, { size: size, quality: quality });
+      } else {
+        setStep(1);
+        apiCall = ChaosAPI.multiImageEdit(multiFiles, prompt, { size: size, quality: quality });
+      }
+
+      setStep(2);
+      apiCall.then(function(data) {
+        setStep(3);
+        finishProgress(true);
+        statusInfo.hidden = true;
+        generateBtn.disabled = false;
+        renderResults(data);
+      }).catch(function(err) {
+        finishProgress(false);
+        statusInfo.hidden = true;
+        generateBtn.disabled = false;
+        var msg = err.message || I18N.t('errorUnknown', '生成失败');
+        showError(msg);
+        if (ChaosAPI.showErrorModal) ChaosAPI.showErrorModal(err);
+      });
+    });
+
+    function renderResults(data) {
+      resultGrid.hidden = false;
+      resultGrid.innerHTML = '';
+      if (!data || !data.data) return;
+
+      data.data.forEach(function(item) {
+        var url = ChaosAPI.resultToImageUrl(item);
+        if (!url) return;
+
+        var div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = '<img src="' + url + '" alt="" loading="lazy" />' +
+          '<div class="result-actions">' +
+            '<a href="' + url + '" class="btn btn-primary btn-sm" download target="_blank">下载</a>' +
+            '<button type="button" class="btn btn-secondary btn-sm" data-copy="' + url + '">复制链接</button>' +
+          '</div>';
+        div.querySelector('[data-copy]').addEventListener('click', function() {
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url);
+          }
+        });
+        // Lightbox click
+        div.addEventListener('click', function(e) {
+          if (e.target.closest('.result-actions')) return;
+          openLightbox(url);
+        });
+        resultGrid.appendChild(div);
+
+        // Save to history
+        var historyType = currentMode === 'text' ? 'text' : (currentMode === 'image' ? 'image' : 'multi');
+        var meta = { prompt: getCurrentPrompt(), size: getCurrentSize(), quality: getCurrentQuality() };
+        if (ChaosAPI.syncSaveHistory) ChaosAPI.syncSaveHistory(historyType, url, meta);
+      });
+    }
+
+    function openLightbox(url) {
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+      var img = document.createElement('img');
+      img.src = url;
+      img.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:8px;';
+      overlay.appendChild(img);
+      overlay.addEventListener('click', function() { document.body.removeChild(overlay); });
+      document.body.appendChild(overlay);
+    }
+
+    // ─── Helpers ────────────────────────────────────────────
+    function getCurrentPrompt() {
+      if (currentMode === 'text') return document.getElementById('text-prompt').value;
+      if (currentMode === 'image') return document.getElementById('image-prompt').value;
+      return document.getElementById('multi-prompt').value;
+    }
+    function getCurrentSize() {
+      if (currentMode === 'text') return document.getElementById('text-size').value;
+      if (currentMode === 'image') return document.getElementById('image-size').value;
+      return document.getElementById('multi-size').value;
+    }
+    function getCurrentQuality() {
+      if (currentMode === 'text') return document.getElementById('text-quality').value;
+      if (currentMode === 'image') return document.getElementById('image-quality').value;
+      return document.getElementById('multi-quality').value;
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      statusError.hidden = false;
+    }
+
+    function updateTitle() {
+      document.title = (I18N.t('brandNameFull', '混沌艺术') || '混沌艺术') + ' · ' + I18N.t('pageGenerateTitle', '图片生成');
+    }
+    function updateToggleLabel() {
+      var btn = document.getElementById('lang-toggle');
+      if (btn) btn.textContent = I18N.locale() === 'en' ? '中' : 'EN';
+    }
+
+    // ─── History ────────────────────────────────────────────
+    function getHistory() {
+      var key = 'chaos_builder_generate_history';
+      try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; }
+    }
+
+    function renderHistory() {
+      var history = getHistory();
+      historyEmpty.hidden = history.length > 0;
+      historyGrid.hidden = history.length === 0;
+      historyGrid.innerHTML = '';
+      history.forEach(function(entry) {
+        var card = document.createElement('div');
+        card.className = 'result-item';
+        card.style.minHeight = '200px';
+        card.innerHTML = '<img src="' + entry.url + '" alt="" loading="lazy" style="max-height:300px" />';
+        historyGrid.appendChild(card);
+      });
+    }
+
+    clearHistoryBtn.addEventListener('click', function() {
+      localStorage.removeItem('chaos_builder_generate_history');
+      renderHistory();
+    });
+
+    // ─── Presets (from localStorage, shared with preset-styles.html) ───
+    var PRESET_STORAGE_KEY = 'chaos_builder_image_custom_presets';
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+    // IndexedDB — 读取用户上传的预设封面图
+    var ImgDB = {
+      DB_NAME: 'ChaosBuilderPresetImages', VER: 1, STORE: 'images',
+      open: function() {
+        return new Promise(function(res, rej) {
+          var r = indexedDB.open(ImgDB.DB_NAME, ImgDB.VER);
+          r.onupgradeneeded = function(e) { e.target.result.createObjectStore(ImgDB.STORE, { keyPath:'id' }); };
+          r.onsuccess = function(e) { res(e.target.result); };
+          r.onerror = function(e) { rej(e.target.error); };
+        });
+      },
+      loadAll: function() {
+        return ImgDB.open().then(function(db) {
+          return new Promise(function(res, rej) {
+            var tx = db.transaction(ImgDB.STORE, 'readonly');
+            var r = tx.objectStore(ImgDB.STORE).getAll();
+            r.onsuccess = function() { res(r.result || []); };
+            r.onerror = function(e) { rej(e.target.error); };
+          });
+        });
+      },
+    };
+    var imgDataCache = {};
+    function initImgCache() {
+      ImgDB.loadAll().then(function(entries) {
+        entries.forEach(function(e) { imgDataCache[e.id] = e.data; });
+        renderPresets();
+      }).catch(function() {});
+    }
+
+    function loadPresets() {
+      var defaults = [
+        {id:'perfume',name:'高端香水',label:'超写实 CG 渲染',aspect:'9:16',prompt:'A premium luxury perfume poster ad, ultra realistic CG render, a tall glass perfume bottle with deep amber liquid inside, surrounded by suspended water droplets catching the light, dark velvet background, golden volumetric light beams, hyper realistic product photography.'},
+        {id:'coffee',name:'精品咖啡',label:'1950s 复古插画',aspect:'1:1',prompt:'A retro vintage coffee shop advertisement in 1950s mid-century modern illustration style, hand drawn with textured paper grain, warm pastel color palette, a steaming ceramic coffee cup on a small round table by a window.'},
+        {id:'sneaker',name:'街头运动鞋',label:'都市纪实摄影',aspect:'21:9',prompt:'A gritty urban street photography sneaker advertisement, raw documentary photojournalism style, a single neon green and black running shoe lying on wet asphalt at night, reflections of city neon signs in the puddle beneath.'},
+        {id:'techAi',name:'科技 / AI',label:'极简未来',aspect:'16:9',prompt:'A minimalist futuristic AI technology product poster, ultra clean geometric design, deep midnight black background with a single subtle horizon line glow, a translucent holographic sphere floating at center emitting soft cyan light particles.'},
+        {id:'mooncake',name:'中式糕点',label:'水墨国风',aspect:'4:5',prompt:'A traditional Chinese mooncake poster in classical Chinese ink wash painting style, hand brushed with rice paper texture, soft sepia and charcoal tones with subtle vermillion red accents, a single round mooncake on an antique celadon porcelain plate.'},
+      ];
+      try {
+        var raw = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY));
+        if (raw && raw.length) {
+          var ids = raw.map(function(p){return p.id;});
+          defaults.forEach(function(d){ if(ids.indexOf(d.id)===-1) raw.push(d); });
+          // 补上 IndexedDB 中的封面图
+          return raw.map(function(p) {
+            if (imgDataCache[p.id]) { var c = {}; for(var k in p) c[k]=p[k]; c.imgData = imgDataCache[p.id]; return c; }
+            return p;
+          });
+        }
+      } catch(e) {}
+      try { localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(defaults)); } catch(e) {}
+      return defaults;
+    }
+
+    var PRESET_MAP = { perfume:'perfume.png', coffee:'coffee.png', sneaker:'sneaker.png', techAi:'techai.png', mooncake:'mooncake.png' };
+
+    function renderPresets() {
+      var grid = document.getElementById('preset-grid');
+      if (!grid) return;
+      var presets = loadPresets();
+      grid.innerHTML = '';
+      if (presets.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:var(--space-8);">暂无预设。</div>';
+        return;
+      }
+      presets.forEach(function(p) {
+        var imgSrc = PRESET_MAP[p.id] ? '../assets/presets/' + PRESET_MAP[p.id] : (p.imgData || '');
+        var card = document.createElement('div');
+        card.className = 'preset-card';
+        card.dataset.presetId = p.id;
+        // 与 preset-styles.html 完全相同的 img + innerHTML 方式
+        card.innerHTML =
+          (imgSrc ? '<img class="preset-card-img" src="' + imgSrc + '" alt="" />' : '') +
+          '<div class="preset-card-body">' +
+            '<div class="preset-card-name">' + esc(p.name) + '</div>' +
+            '<div class="preset-card-meta">' + esc(p.label||'') + (p.aspect ? ' · ' + esc(p.aspect) : '') + '</div>' +
+            '<div class="preset-card-prompt">' + esc(p.prompt.substring(0, 80)) + '…</div>' +
+          '</div>';
+        card.addEventListener('click', function() { selectPreset(p); switchMode('preset'); });
+        grid.appendChild(card);
+      });
+    }
+
+    function selectPreset(preset) {
+      selectedPreset = preset;
+      document.querySelectorAll('.preset-card').forEach(function(c) {
+        c.style.borderColor = c.dataset.presetId === preset.id ? 'var(--accent)' : 'var(--border)';
+        c.style.boxShadow = c.dataset.presetId === preset.id ? 'var(--elev-raised)' : 'none';
+      });
+      var preview = document.getElementById('preset-preview');
+      preview.hidden = false;
+      var imgContainer = document.getElementById('preset-preview-img');
+      imgContainer.innerHTML = '';
+      var imgSrc = PRESET_MAP[preset.id] ? '../assets/presets/' + PRESET_MAP[preset.id] : (preset.imgData || null);
+      if (imgSrc) {
+        imgContainer.innerHTML = '<img src="' + imgSrc + '" alt="' + (preset.name||'') + '" style="max-width:100%;max-height:500px;object-fit:contain;display:block;" onerror="this.parentElement.innerHTML=\'<div style=\\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:var(--text-sm);\\\'>' + (preset.name||'') + '</div>\'" />';
+      } else {
+        imgContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:var(--text-sm);">' + (preset.name||'预设') + '</div>';
+      }
+      document.getElementById('preset-preview-name').textContent = preset.name || '';
+      document.getElementById('preset-preview-desc').textContent = (preset.label||'') + (preset.aspect ? ' · ' + preset.aspect : '');
+      document.getElementById('preset-preview-prompt').textContent = preset.prompt || '';
+      document.getElementById('preset-preview-info').hidden = false;
+    }
+
+    // ─── Orientation → Size filter ──────────────────────────
+    function applySizeFilter(orientation, sizeSelectId) {
+      var sel = document.getElementById(sizeSelectId);
+      if (!sel || !ChaosAPI.getSizesByOrientation) return;
+      var sizes = ChaosAPI.getSizesByOrientation(orientation);
+      sel.innerHTML = '';
+      sizes.forEach(function(opt) {
+        var option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        sel.appendChild(option);
+      });
+      if (sizes.length) sel.value = sizes[0].value;
+    }
+
+    // Wire orientation radios per mode and init defaults
+    function wireOrientationFilter(radioName, sizeId) {
+      var radios = document.querySelectorAll('input[name="' + radioName + '"]');
+      if (!radios.length) return;
+      var checked = document.querySelector('input[name="' + radioName + '"]:checked');
+      if (checked) applySizeFilter(checked.value, sizeId);
+      radios.forEach(function(r) {
+        r.addEventListener('change', function() {
+          if (r.checked) applySizeFilter(r.value, sizeId);
+        });
+      });
+    }
+    wireOrientationFilter('text-orientation', 'text-size');
+    wireOrientationFilter('image-orientation', 'image-size');
+    wireOrientationFilter('multi-orientation', 'multi-size');
+
+    // ─── I18n ──────────────────────────────────────────────
+    document.getElementById('lang-toggle').addEventListener('click', function() { I18N.toggle(); });
+    document.addEventListener('i18n:changed', function() {
+      updateTitle();
+      updateToggleLabel();
+    });
+
+    // ─── Init ──────────────────────────────────────────────
+    Auth.requireAuth();
+    Auth.renderUserMenu('#user-menu');
+    if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
+    renderPresets(); initImgCache();
+    renderHistory();
+    updateTitle();
+    updateToggleLabel();
+    if (window.I18N) I18N.apply();
+
+    if (ChaosAPI && ChaosAPI.getCurrentProviderInfo) {
+      var info = ChaosAPI.getCurrentProviderInfo();
+      if (info) providerIndicator.textContent = info.label + ' · ' + info.model;
+      if (ChaosAPI.onConfigChange) {
+        ChaosAPI.onConfigChange(function() {
+          var info2 = ChaosAPI.getCurrentProviderInfo();
+          if (info2) providerIndicator.textContent = info2.label + ' · ' + info2.model;
+        });
+      }
+    }
+
+  })();
+  </script>
+</body>
+</html>

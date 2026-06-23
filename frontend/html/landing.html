@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>混沌艺术 · 名为制造混乱，实则制造艺术</title>
+  <link rel="stylesheet" href="../css/design-system.css" />
+  <style>
+    /* Hero */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      padding-top: 80px;
+      padding-bottom: var(--section-y-desktop);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    body.landing-hero-active .hero {
+      padding-top: 0;
+    }
+
+    body.landing-hero-active header.nav {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-100%);
+      transition: opacity 400ms var(--ease-standard), transform 400ms var(--ease-standard);
+    }
+
+    header.nav {
+      transition: opacity 400ms var(--ease-standard), transform 400ms var(--ease-standard);
+    }
+
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero > .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .hero-content-card {
+      position: relative;
+      display: inline-block;
+      max-width: 860px;
+      padding: var(--space-8);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero-content-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(250, 249, 245, 0.7);
+      -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 45%, transparent 100%);
+      mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 45%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 820px;
+    }
+
+    .hero-eyebrow {
+      margin-bottom: var(--space-5);
+    }
+
+    .hero h1 {
+      font-size: clamp(52px, 8vw, 96px);
+      line-height: 1.05;
+      margin-bottom: var(--space-5);
+    }
+
+    .hero-slogan {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3.5vw, 36px);
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--accent);
+      margin-bottom: var(--space-5);
+    }
+
+    .hero .lead {
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-8);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    /* Page enter transition */
+    body.is-entering {
+      opacity: 0;
+    }
+
+    body.is-entering {
+      animation: landingEnter 650ms cubic-bezier(0.2, 0, 0, 1) 80ms forwards;
+    }
+
+    @keyframes landingEnter {
+      from {
+        opacity: 0;
+        transform: scale(1.005);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.is-entering {
+        animation: none;
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .hero {
+        padding-top: 100px;
+        min-height: auto;
+      }
+      .hero-content-card {
+        padding: var(--space-6);
+        max-width: 100%;
+      }
+    }
+
+    /* Section header */
+    .section-header {
+      margin-bottom: var(--space-8);
+    }
+
+    .section-header h2 {
+      margin-bottom: var(--space-4);
+    }
+
+    /* Features */
+    .features-section {
+      background: var(--surface);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-5);
+    }
+
+    .feature-card {
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--motion-base) var(--ease-standard),
+                  box-shadow var(--motion-base) var(--ease-standard),
+                  border-color var(--motion-base) var(--ease-standard);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--elev-raised);
+      border-color: var(--border-soft);
+    }
+
+    .feature-card-large {
+      padding: var(--space-8);
+    }
+
+    .feature-number {
+      display: block;
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: var(--space-4);
+      opacity: 0.7;
+    }
+
+    .feature-card h3 {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-3);
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      margin-bottom: var(--space-5);
+      max-width: 48ch;
+    }
+
+    /* 跳转按钮始终贴底:不管卡片内容长短都能对齐 */
+    .feature-card .feature-link {
+      margin-top: auto;
+    }
+
+    .feature-card-large p {
+      font-size: var(--text-lg);
+    }
+
+    .feature-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--fg-2);
+      text-decoration: none;
+      transition: color var(--motion-fast) var(--ease-standard),
+                  gap var(--motion-fast) var(--ease-standard);
+    }
+
+    .feature-link::after {
+      content: '→';
+      transition: transform var(--motion-fast) var(--ease-standard);
+    }
+
+    .feature-link:hover {
+      color: var(--accent);
+      text-decoration: none;
+      gap: var(--space-3);
+    }
+
+    .feature-link:hover::after {
+      transform: translateX(3px);
+    }
+
+    @media (max-width: 768px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+      .feature-card-large {
+        padding: var(--space-6);
+      }
+    }
+
+    /* Workflow */
+    .workflow-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: var(--space-12);
+      align-items: center;
+    }
+
+    .workflow-content h2 {
+      margin-bottom: var(--space-4);
+    }
+
+    .workflow-content .lead {
+      margin-bottom: var(--space-8);
+    }
+
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-5);
+      list-style: none;
+      margin-bottom: var(--space-8);
+    }
+
+    .workflow-steps li {
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+
+    .workflow-steps strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: var(--space-2);
+    }
+
+    .workflow-steps span {
+      display: block;
+      font-size: var(--text-sm);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .workflow-example {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+    }
+
+    .workflow-example-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--meta);
+      margin-bottom: var(--space-3);
+    }
+
+    .workflow-example p {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--fg-2);
+      line-height: 1.7;
+    }
+
+    .workflow-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--elev-raised);
+    }
+
+    .workflow-preview img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: translateX(32px);
+      transition: opacity 500ms ease, transform 500ms ease;
+    }
+
+    .workflow-preview img.active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .workflow-preview-dots {
+      position: absolute;
+      bottom: var(--space-3);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      background: rgba(20, 20, 19, 0.4);
+      border-radius: var(--radius-pill);
+      z-index: 2;
+    }
+
+    .workflow-preview-dots button {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      transition: background var(--motion-fast) var(--ease-standard),
+                  transform var(--motion-fast) var(--ease-standard);
+    }
+
+    .workflow-preview-dots button.active {
+      background: var(--surface);
+      transform: scale(1.25);
+    }
+
+    .workflow-preview-dots button:hover {
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .workflow-preview img { transition: none; }
+    }
+
+    /* 左右切换箭头 */
+    .workflow-preview-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(20, 20, 19, 0.45);
+      color: var(--surface);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity var(--motion-fast) var(--ease-standard),
+                  background var(--motion-fast) var(--ease-standard),
+                  transform var(--motion-fast) var(--ease-standard);
+    }
+    .workflow-preview:hover .workflow-preview-arrow,
+    .workflow-preview-arrow:focus-visible {
+      opacity: 1;
+    }
+    .workflow-preview-arrow:hover {
+      background: rgba(20, 20, 19, 0.78);
+      transform: translateY(-50%) scale(1.08);
+    }
+    .workflow-preview-arrow.prev { left: var(--space-2); }
+    .workflow-preview-arrow.next { right: var(--space-2); }
+
+    @media (max-width: 991px) {
+      .workflow-layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-8);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .workflow-steps {
+        grid-template-columns: 1fr;
+      }
+      .workflow-preview {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* CTA */
+    .cta-section {
+      padding-top: var(--space-8);
+      padding-bottom: var(--section-y-desktop);
+      border-top: 1px solid var(--border);
+    }
+
+    .cta-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+    }
+
+    .cta-inner h2 {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-1);
+    }
+
+    .cta-inner .lead {
+      margin: 0;
+      font-size: var(--text-base);
+    }
+
+    @media (max-width: 768px) {
+      .cta-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    /* Footer */
+    .footer {
+      padding: var(--space-8) 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--space-5);
+    }
+
+    .footer-links a {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--fg);
+    }
+
+    @media (max-width: 768px) {
+      .nav-actions .btn:not(.lang-toggle) {
+        display: none;
+      }
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .feature-card,
+      .feature-link,
+      .feature-link::after {
+        transition: none;
+      }
+      .feature-card:hover {
+        transform: none;
+      }
+      .feature-link:hover {
+        gap: var(--space-2);
+      }
+      .feature-link:hover::after {
+        transform: none;
+      }
+      .hero-canvas {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="landing.html" class="nav-logo" data-i18n="brandName">混沌艺术</a>
+      <nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu">
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
+        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
+        <a href="generate.html" class="btn btn-primary" data-i18n="navStart">开始创作</a>
+        <div class="user-menu" id="user-menu"></div>
+      </div>
+      <button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" data-od-id="path-2-0">
+      <script>
+        (function () {
+          document.body.classList.add('landing-hero-active');
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('from') === 'login' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.body.classList.add('is-entering');
+            window.addEventListener('load', function () {
+              setTimeout(function () {
+                document.body.classList.remove('is-entering');
+              }, 80);
+            });
+          }
+        })();
+      </script>
+      <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+      <div class="container">
+        <div class="hero-content-card">
+          <div class="hero-content">
+            <div class="eyebrow hero-eyebrow" data-i18n="landingEyebrow">AI 图像生成 · 为创意而生</div>
+            <h1 data-i18n="brandName">混沌艺术</h1>
+            <p class="hero-slogan" data-i18n="brandSlogan">名为制造混乱，实则制造艺术。</p>
+            <p class="lead" data-i18n="landingLead">输入 brief，选择生成方式，几秒内拿到可用素材。</p>
+            <div class="hero-actions">
+<a href="generate.html" class="btn btn-primary" data-i18n="landingStartFree">免费开始创作</a>
+              <a href="#features" class="btn btn-secondary" data-i18n="landingLearnMore">查看生成方式</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (function () {
+          var hero = document.querySelector('[data-od-id="path-2-0"]');
+          if (!hero) return;
+          hero.addEventListener('click', function (e) {
+            var target = e.target;
+            if (target.closest('a, button, input, textarea, select, [role="button"], label')) return;
+            e.preventDefault();
+            document.body.classList.remove('landing-hero-active');
+            var next = document.getElementById('features');
+            if (next) {
+              next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        })();
+      </script>
+    </section>
+
+    <section class="section features-section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <h2 data-i18n="landingFeaturesTitle">四种生成方式</h2>
+          <p class="lead" data-i18n="landingFeaturesLead">从纯文字到多图融合，匹配不同创作起点。</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card feature-card-large">
+            <span class="feature-number">01</span>
+            <h3 data-i18n="landingFeatureTextToImage">文生图</h3>
+            <p data-i18n="landingFeatureTextToImageDesc">只有文字 brief 时，直接描述画面，让 AI 给出多个构图方向。</p>
+            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartText">开始文生图</a>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">02</span>
+            <h3 data-i18n="landingFeatureImageToImage">图生图</h3>
+            <p data-i18n="landingFeatureImageToImageDesc">已有参考图时，保留主体，替换背景与风格。</p>
+            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartImage">开始图生图</a>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">03</span>
+            <h3 data-i18n="landingFeatureMultiImage">多图生图</h3>
+            <p data-i18n="landingFeatureMultiImageDesc">融合多张参考图的构图、角色或配色，输出统一方案。</p>
+            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartMulti">开始多图生图</a>
+          </article>
+
+          <article class="feature-card feature-card-large">
+            <span class="feature-number">04</span>
+            <h3 data-i18n="landingFeaturePresetStyles">预设风格</h3>
+            <p data-i18n="landingFeaturePresetStylesDesc">海报、插画、产品主图等场景模板，一键套用并继续编辑。</p>
+            <a href="preset-styles.html" class="feature-link" data-i18n="landingFeatureBrowsePresets">浏览预设风格</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workflow-section">
+      <div class="container">
+        <div class="workflow-layout">
+          <div class="workflow-content">
+            <h2 data-i18n="landingWorkflowTitle">从 brief 到素材</h2>
+            <p class="lead" data-i18n="landingWorkflowLead">上传参考或粘贴描述，选择生成方式，微调后直接下载高清原图。</p>
+            <ol class="workflow-steps">
+              <li>
+                <strong data-i18n="landingWorkflowStep1">输入需求</strong>
+                <span data-i18n="landingWorkflowStep1Desc">粘贴创作 brief 或上传参考图。</span>
+              </li>
+              <li>
+                <strong data-i18n="landingWorkflowStep2">选择生成方式</strong>
+                <span data-i18n="landingWorkflowStep2Desc">按是否有参考图选择文生图、图生图或多图融合。</span>
+              </li>
+              <li>
+                <strong data-i18n="landingWorkflowStep3">迭代输出</strong>
+                <span data-i18n="landingWorkflowStep3Desc">调整风格、尺寸、数量，批量生成候选。</span>
+              </li>
+              <li>
+                <strong data-i18n="landingWorkflowStep4">下载交付</strong>
+                <span data-i18n="landingWorkflowStep4Desc">导出高清原图，用于展示、发布与分享。</span>
+              </li>
+            </ol>
+            <div class="workflow-example">
+              <div class="workflow-example-label" data-i18n="landingWorkflowExampleLabel">示例输入</div>
+              <p data-i18n="landingWorkflowExamplePrompt">"夏季冰咖啡海报，复古色调，海边露台，午后阳光"</p>
+            </div>
+          </div>
+          <div class="workflow-preview" id="workflow-preview" aria-label="示例生成结果">
+            <button type="button" class="workflow-preview-arrow prev" id="workflow-preview-prev" aria-label="上一张">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="workflow-preview-arrow next" id="workflow-preview-next" aria-label="下一张">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div class="workflow-preview-dots" id="workflow-preview-dots" role="tablist" aria-label="carousel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-section">
+      <div class="container cta-inner">
+        <div>
+          <h2 data-i18n="landingCtaTitle">开始创作</h2>
+          <p class="lead" data-i18n="landingCtaLead">无需设计排期，随时自主产出视觉素材。</p>
+        </div>
+        <a href="generate.html" class="btn btn-primary" data-i18n="landingStartFree">免费开始创作</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
+      <nav class="footer-links" aria-label="页脚导航">
+        <a href="landing.html" data-i18n="navHome">首页</a>
+        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+        <a href="copy.html" data-i18n="navCopy">文案生成</a>
+        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
+        <a href="settings.html" data-i18n="navSettings">设置</a>
+      </nav>
+      <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
+    </div>
+  </footer>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    (function () {
+      const btn = document.getElementById('lang-toggle');
+      const titleEl = document.querySelector('title');
+
+      function updateTitle() {
+        const brand = I18N.t('brandName');
+        const page = I18N.t('landingTitle');
+        titleEl.textContent = brand + ' · ' + page;
+      }
+
+      function updateToggleLabel() {
+        const next = I18N.locale() === 'zh-CN' ? 'en' : 'zh-CN';
+        btn.textContent = next === 'zh-CN' ? I18N.t('langZh') : I18N.t('langEn');
+      }
+
+      btn.addEventListener('click', function () {
+        I18N.toggle();
+      });
+
+      document.addEventListener('i18n:changed', function () {
+        updateTitle();
+        updateToggleLabel();
+      });
+
+      Auth.requireAuth();
+      Auth.renderUserMenu('#user-menu');
+      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
+
+      // workflow-preview 轮播:内置 5 张 + 用户预设混排,每次启动随机选 5 张
+      (function initWorkflowCarousel() {
+        var preview = document.getElementById('workflow-preview');
+        if (!preview) return;
+        var dotsBox = document.getElementById('workflow-preview-dots');
+        var INTERVAL = 1500;
+
+        // 内置预设图
+        var BUILTIN_IMAGES = [
+    { src: '../assets/presets/01_香水_9x16_超写实CG.png', alt: '香水 9:16 超写实 CG' },
+    { src: '../assets/presets/02_咖啡_1x1_复古插画.png', alt: '咖啡 1:1 复古插画' },
+    { src: '../assets/presets/03_运动鞋_21x9_街头摄影.png', alt: '运动鞋 21:9 街头摄影' },
+    { src: '../assets/presets/04_科技AI_16x9_极简未来.png', alt: '科技 AI 16:9 极简未来' },
+    { src: '../assets/presets/05_中式糕点_4x5_水墨国风.png', alt: '中式糕点 4:5 水墨国风' },
+        ];
+
+        function shuffleArray(arr) {
+          for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+          }
+          return arr;
+        }
+
+        function pickRandom(arr, n) {
+          return shuffleArray(arr.slice()).slice(0, n);
+        }
+
+        // 从服务器拉用户预设(只取有 cover_url 的)
+        function loadUserPresetImages(cb) {
+          if (!window.ChaosAPI || !window.ChaosAPI.fetchServerPresets) return cb([]);
+          var token = window.ChaosAPI.getAuthToken ? window.ChaosAPI.getAuthToken() : null;
+          if (!token) return cb([]);
+          window.ChaosAPI.fetchServerPresets().then(function (data) {
+            var items = (data && data.items) || [];
+            var imgs = items
+              .filter(function (p) { return p && p.cover_url; })
+              .map(function (p) { return { src: p.cover_url, alt: p.name || '预设风格' }; });
+            cb(imgs);
+          }).catch(function () { cb([]); });
+        }
+
+        function renderPicked(picked) {
+          // 清掉旧的 img,保留 arrow + dots
+          preview.querySelectorAll('img').forEach(function (el) { el.remove(); });
+          if (dotsBox) dotsBox.innerHTML = '';
+          if (!picked.length) return [];
+
+          picked.forEach(function (item, i) {
+            var img = document.createElement('img');
+            img.src = item.src;
+            img.alt = item.alt;
+            img.loading = i === 0 ? 'eager' : 'lazy';
+            if (i === 0) img.className = 'active';
+            preview.appendChild(img);
+            if (dotsBox) {
+              var b = document.createElement('button');
+              b.type = 'button';
+              b.setAttribute('role', 'tab');
+              b.setAttribute('aria-label', 'slide ' + (i + 1));
+              if (i === 0) b.className = 'active';
+              b.addEventListener('click', function () { goTo(i); reset(); });
+              dotsBox.appendChild(b);
+            }
+          });
+          return preview.querySelectorAll('img');
+        }
+
+        var imgs = [];
+        var idx = 0;
+        var timer = null;
+
+        function goTo(i) {
+          if (!imgs.length) return;
+          imgs[idx].classList.remove('active');
+          if (dotsBox && dotsBox.children[idx]) dotsBox.children[idx].classList.remove('active');
+          idx = (i + imgs.length) % imgs.length;
+          imgs[idx].classList.add('active');
+          if (dotsBox && dotsBox.children[idx]) dotsBox.children[idx].classList.add('active');
+        }
+
+        function start() {
+          stop();
+          if (!imgs.length || imgs.length < 2) return;
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          timer = setInterval(function () { goTo(idx + 1); }, INTERVAL);
+        }
+        function stop() { if (timer) { clearInterval(timer); timer = null; } }
+        function reset() { stop(); start(); }
+
+        // 事件:鼠标进入/离开、可见性、箭头、键盘
+        preview.addEventListener('mouseenter', stop);
+        preview.addEventListener('mouseleave', start);
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) stop(); else start();
+        });
+        var prevBtn = document.getElementById('workflow-preview-prev');
+        var nextBtn = document.getElementById('workflow-preview-next');
+        if (prevBtn) prevBtn.addEventListener('click', function (e) { e.stopPropagation(); goTo(idx - 1); reset(); });
+        if (nextBtn) nextBtn.addEventListener('click', function (e) { e.stopPropagation(); goTo(idx + 1); reset(); });
+        preview.setAttribute('tabindex', '0');
+        preview.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowLeft')  { goTo(idx - 1); reset(); }
+          else if (e.key === 'ArrowRight') { goTo(idx + 1); reset(); }
+        });
+
+        // 初始化:先用内置 5 张保证首屏,然后拉用户预设合并后重新抽
+        imgs = renderPicked(pickRandom(BUILTIN_IMAGES, 5));
+        start();
+
+        loadUserPresetImages(function (userImgs) {
+          if (!userImgs.length) return;  // 未登录或无预设,不重建
+          var all = BUILTIN_IMAGES.concat(userImgs);
+          imgs = renderPicked(pickRandom(all, 5));
+          idx = 0;
+          reset();
+        });
+      })();
+
+      updateTitle();
+      updateToggleLabel();
+      if (window.I18N) I18N.apply();
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      const canvas = document.getElementById('hero-canvas');
+      if (!canvas) return;
+      const hero = canvas.parentElement;
+      const ctx = canvas.getContext('2d');
+      const maskCanvas = document.createElement('canvas');
+      const mctx = maskCanvas.getContext('2d');
+
+      const img = new Image();
+      img.src = '../assets/baroque_relief_complex.png';
+      let loaded = false;
+      img.onload = function () { loaded = true; };
+
+      let w = 0, h = 0, dpr = 1;
+      let spots = [];
+      let cursor = { x: -1000, y: -1000, has: false };
+
+      function resize() {
+        const rect = hero.getBoundingClientRect();
+        w = Math.round(rect.width);
+        h = Math.round(rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        maskCanvas.width = canvas.width;
+        maskCanvas.height = canvas.height;
+        mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function addSpot(x, y) {
+        spots.push({
+          x: x,
+          y: y,
+          born: performance.now(),
+          life: 600,
+          maxR: 220
+        });
+      }
+
+      function updateMask() {
+        const now = performance.now();
+        spots = spots.filter(function (s) { return now - s.born < s.life; });
+
+        mctx.clearRect(0, 0, w, h);
+        spots.forEach(function (s) {
+          const age = now - s.born;
+          const p = age / s.life;
+          const alpha = 1 - p;
+          const r = 28 + (s.maxR - 28) * p;
+
+          const g = mctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
+          g.addColorStop(0, 'rgba(255,255,255,' + alpha + ')');
+          g.addColorStop(0.55, 'rgba(255,255,255,' + (alpha * 0.35) + ')');
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+
+          mctx.fillStyle = g;
+          mctx.fillRect(s.x - r, s.y - r, r * 2, r * 2);
+        });
+      }
+
+      function draw() {
+        if (!loaded || !w || !h) return;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+        const dw = img.naturalWidth * scale;
+        const dh = img.naturalHeight * scale;
+        const dx = (w - dw) / 2;
+        const dy = (h - dh) / 2;
+        ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, dw, dh);
+
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(maskCanvas, 0, 0, w, h);
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      function loop() {
+        updateMask();
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function localPoint(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function onPointer(clientX, clientY) {
+        const p = localPoint(clientX, clientY);
+        if (p.x < 0 || p.y < 0 || p.x > w || p.y > h) {
+          cursor.has = false;
+          return;
+        }
+
+        if (!cursor.has) {
+          cursor.x = p.x;
+          cursor.y = p.y;
+          cursor.has = true;
+          addSpot(p.x, p.y);
+          return;
+        }
+
+        const dx = p.x - cursor.x;
+        const dy = p.y - cursor.y;
+        const dist = Math.hypot(dx, dy);
+        const step = 8;
+
+        if (dist > step) {
+          const steps = Math.max(1, Math.floor(dist / step));
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            addSpot(cursor.x + dx * t, cursor.y + dy * t);
+          }
+          cursor.x = p.x;
+          cursor.y = p.y;
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', function (e) { onPointer(e.clientX, e.clientY); });
+      window.addEventListener('touchmove', function (e) {
+        const t = e.touches[0];
+        if (t) onPointer(t.clientX, t.clientY);
+      }, { passive: true });
+      window.addEventListener('touchstart', function (e) {
+        const t = e.touches[0];
+        if (t) onPointer(t.clientX, t.clientY);
+      }, { passive: true });
+
+      resize();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
