@@ -416,7 +416,7 @@
           nameKey: 'presetPerfume',
           industryKey: 'presetPerfumeIndustry',
           styleKey: 'presetPerfumeStyle',
-          image: '../assets/presets/01_香水_9x16_超写实CG.png',
+          image: '../assets/presets/perfume.png',
           aspect: '9:16',
           dimensions: '720 × 1280',
           size: '1024x1536',
@@ -427,7 +427,7 @@
           nameKey: 'presetCoffee',
           industryKey: 'presetCoffeeIndustry',
           styleKey: 'presetCoffeeStyle',
-          image: '../assets/presets/02_咖啡_1x1_复古插画.png',
+          image: '../assets/presets/coffee.png',
           aspect: '1:1',
           dimensions: '1024 × 1024',
           size: '1024x1024',
@@ -438,7 +438,7 @@
           nameKey: 'presetSneaker',
           industryKey: 'presetSneakerIndustry',
           styleKey: 'presetSneakerStyle',
-          image: '../assets/presets/03_运动鞋_21x9_街头摄影.png',
+          image: '../assets/presets/sneaker.png',
           aspect: '21:9',
           dimensions: '1344 × 576',
           size: '1536x1024',
@@ -449,7 +449,7 @@
           nameKey: 'presetTechAi',
           industryKey: 'presetTechAiIndustry',
           styleKey: 'presetTechAiStyle',
-          image: '../assets/presets/04_科技AI_16x9_极简未来.png',
+          image: '../assets/presets/techai.png',
           aspect: '16:9',
           dimensions: '1280 × 720',
           size: '1536x1024',
@@ -460,31 +460,48 @@
           nameKey: 'presetMooncake',
           industryKey: 'presetMooncakeIndustry',
           styleKey: 'presetMooncakeStyle',
-          image: '../assets/presets/05_中式糕点_4x5_水墨国风.png',
+          image: '../assets/presets/mooncake.png',
           aspect: '4:5',
           dimensions: '768 × 960',
           size: '1024x1024',
           prompt: `A traditional Chinese mooncake poster advertisement in classical Chinese ink wash painting style, hand brushed with rice paper texture, soft sepia and charcoal tones with subtle vermillion red accents, a single round mooncake on an antique celadon porcelain plate, misty mountains in the distant background, bamboo branch silhouette on the side, calligraphic brushstrokes, traditional Chinese painting aesthetic, elegant and timeless, low saturation muted palette`,
         },
-        {
-          id: 'baroque',
-          nameKey: 'presetBaroque',
-          industryKey: 'presetBaroqueIndustry',
-          styleKey: 'presetBaroqueStyle',
-          image: '../assets/baroque_relief_complex.png',
-          aspect: '4:3',
-          dimensions: '1024 × 768',
-          size: '1024x1024',
-          prompt: `A dramatic baroque relief sculpture rendered in monochrome plaster, intricate ornamental scrollwork and floral motifs, deep chiaroscuro lighting carving out shadows, museum-quality classical art, highly detailed stone texture, black and white fine art photography, elegant luxury aesthetic, dramatic side light, high contrast, timeless sculptural composition`,
-        },
       ];
 
       const USER_PRESETS_KEY = 'chaos_builder_user_presets';
+      const IMAGE_CUSTOM_KEY = 'chaos_builder_image_custom_presets';
+
+      // IndexedDB — 读取用户上传的预设封面图
+      var ImgDB = {
+        DB_NAME: 'ChaosBuilderPresetImages', VER: 1, STORE: 'images',
+        open: function() {
+          return new Promise(function(res, rej) {
+            var r = indexedDB.open(ImgDB.DB_NAME, ImgDB.VER);
+            r.onupgradeneeded = function(e) { e.target.result.createObjectStore(ImgDB.STORE, { keyPath:'id' }); };
+            r.onsuccess = function(e) { res(e.target.result); };
+            r.onerror = function(e) { rej(e.target.error); };
+          });
+        },
+        loadAll: function() {
+          return ImgDB.open().then(function(db) {
+            return new Promise(function(res, rej) {
+              var tx = db.transaction(ImgDB.STORE, 'readonly');
+              var r = tx.objectStore(ImgDB.STORE).getAll();
+              r.onsuccess = function() { res(r.result || []); };
+              r.onerror = function(e) { rej(e.target.error); };
+            });
+          });
+        },
+      };
+      var imgDataCache = {};
 
       function getUserPresets() {
         try {
-          const raw = localStorage.getItem(USER_PRESETS_KEY);
-          return raw ? JSON.parse(raw) : [];
+          var raw = JSON.parse(localStorage.getItem(IMAGE_CUSTOM_KEY)) || JSON.parse(localStorage.getItem(USER_PRESETS_KEY)) || [];
+          return raw.map(function(p) {
+            if (imgDataCache[p.id]) { var c = {}; for(var k in p) c[k]=p[k]; c.imgData = imgDataCache[p.id]; return c; }
+            return p;
+          });
         } catch (_) {
           return [];
         }
@@ -534,7 +551,7 @@
         const name = isUserPreset ? preset.name : I18N.t(preset.nameKey);
         const industry = isUserPreset ? (preset.tags.join(', ') || I18N.t('presetUserStyle')) : I18N.t(preset.industryKey);
         const style = isUserPreset ? I18N.t('presetUserStyle') : I18N.t(preset.styleKey);
-        const image = isUserPreset ? preset.src : preset.image;
+        const image = isUserPreset ? (preset.imgData || preset.src || '') : preset.image;
         const size = isUserPreset ? userPresetToApiSize(preset) : preset.size;
 
         pageTitle.textContent = name;
@@ -676,6 +693,10 @@
       Auth.renderUserMenu('#user-menu');
       if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
       render();
+      ImgDB.loadAll().then(function(entries) {
+        entries.forEach(function(e) { imgDataCache[e.id] = e.data; });
+        render();
+      }).catch(function() {});
       renderHistory();
 
       // 实时显示当前供应商 + 模型(settings 页面切换后会同步更新)
