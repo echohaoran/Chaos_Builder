@@ -1458,18 +1458,29 @@
     updateToggleLabel();
     if (window.I18N) I18N.apply();
 
-    function renderProviderInfo() {
-      if (!ChaosAPI || !ChaosAPI.getCurrentProviderInfo) return;
+    function renderProviderInfo(retries) {
+      if (retries === undefined) retries = 0;
+      if (retries > 5) { providerIndicator.textContent = '配置完成'; return; }
+      if (!ChaosAPI || !ChaosAPI.getCurrentProviderInfo || !ChaosAPI.getConfig) {
+        setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
+        return;
+      }
       try {
+        var cfg = ChaosAPI.getConfig();
+        if (!cfg || !cfg.provider) { setTimeout(function() { renderProviderInfo(retries + 1); }, 500); return; }
         var info = ChaosAPI.getCurrentProviderInfo();
         if (info && info.label && info.model) {
           providerIndicator.textContent = info.label + ' · ' + info.model;
           providerIndicator.dataset.loaded = 'true';
-        } else if (!providerIndicator.dataset.loaded) {
-          setTimeout(renderProviderInfo, 500);
+        } else if (info && info.label) {
+          // provider found but no specific model
+          providerIndicator.textContent = info.label;
+          providerIndicator.dataset.loaded = 'true';
+        } else {
+          setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
         }
       } catch(e) {
-        setTimeout(renderProviderInfo, 500);
+        setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
       }
     }
     renderProviderInfo();
