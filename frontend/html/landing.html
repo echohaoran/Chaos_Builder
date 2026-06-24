@@ -529,6 +529,237 @@
         display: none;
       }
     }
+
+    /* Product Showcase */
+    .showcase-section {
+      background: var(--fg);
+    }
+
+    .showcase-section .section-header {
+      text-align: center;
+    }
+
+    .showcase-section .lead {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    .showcase-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      padding: var(--space-8);
+      border-radius: var(--radius-lg);
+      color: inherit;
+      text-decoration: none;
+      background:
+        linear-gradient(135deg, color-mix(in oklab, var(--accent), transparent 60%), color-mix(in oklab, var(--surface), transparent 85%)) border-box,
+        color-mix(in oklab, var(--surface), transparent 92%) padding-box;
+      border: 1px solid transparent;
+      transition: transform var(--motion-base) var(--ease-standard),
+                  box-shadow var(--motion-base) var(--ease-standard);
+    }
+
+    .showcase-card:hover {
+      text-decoration: none;
+      transform: translateY(-4px);
+      box-shadow:
+        0 0 0 1px color-mix(in oklab, var(--accent), transparent 50%),
+        0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .showcase-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius-md);
+      background: color-mix(in oklab, var(--accent), transparent 88%);
+      color: var(--accent);
+    }
+
+    .showcase-card h3 {
+      margin-bottom: var(--space-2);
+    }
+
+    .showcase-card p {
+      color: var(--meta);
+      margin-bottom: var(--space-5);
+    }
+
+    .showcase-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: auto;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--accent);
+      transition: color var(--motion-fast) var(--ease-standard),
+                  gap var(--motion-fast) var(--ease-standard);
+    }
+
+    .showcase-link::after {
+      content: '→';
+      transition: transform var(--motion-fast) var(--ease-standard);
+    }
+
+    .showcase-card:hover .showcase-link {
+      color: var(--surface);
+    }
+
+    .showcase-card:hover .showcase-link::after {
+      transform: translateX(3px);
+    }
+
+    @media (max-width: 991px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+      .showcase-card {
+        padding: var(--space-6);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .showcase-card,
+      .showcase-link::after {
+        transition: none;
+      }
+      .showcase-card:hover {
+        transform: none;
+      }
+      .showcase-card:hover .showcase-link::after {
+        transform: none;
+      }
+    }
+
+    /* How It Works */
+    .steps-section {
+      background: var(--bg);
+    }
+
+    .steps-section .section-header {
+      text-align: center;
+      margin-bottom: var(--space-12);
+    }
+
+    .steps-row {
+      display: flex;
+      align-items: stretch;
+      gap: var(--space-4);
+    }
+
+    .step-card {
+      position: relative;
+      flex: 1;
+      text-align: center;
+      padding: var(--space-8) var(--space-6);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--elev-raised);
+    }
+
+    .step-number {
+      position: absolute;
+      top: var(--space-4);
+      left: var(--space-5);
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      font-weight: 500;
+      line-height: 1;
+      color: color-mix(in oklab, var(--accent), transparent 80%);
+    }
+
+    .step-icon {
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto var(--space-5);
+      border-radius: var(--radius-pill);
+      background: color-mix(in oklab, var(--accent), transparent 90%);
+      color: var(--accent);
+    }
+
+    .step-card h3 {
+      margin-bottom: var(--space-3);
+    }
+
+    .step-card p {
+      color: var(--muted);
+      font-size: var(--text-base);
+      line-height: var(--leading-body);
+    }
+
+    .step-arrow {
+      display: grid;
+      place-items: center;
+      align-self: center;
+      color: var(--accent);
+      font-size: var(--text-2xl);
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .steps-row {
+        flex-direction: column;
+      }
+      .step-arrow {
+        display: none;
+      }
+      .step-card {
+        padding: var(--space-6);
+      }
+    }
+
+    /* CTA new */
+    .cta-new-section {
+      background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent), black 16%));
+      color: var(--accent-on);
+      text-align: center;
+    }
+
+    .cta-new-section h2 {
+      color: var(--accent-on);
+      margin-bottom: var(--space-4);
+    }
+
+    .cta-new-section .lead {
+      color: var(--accent-on);
+      opacity: 0.85;
+      margin: 0 auto var(--space-8);
+    }
+
+    .cta-btn {
+      padding: var(--space-4) var(--space-8);
+      font-size: var(--text-lg);
+      border-radius: var(--radius-md);
+      background: var(--accent-on);
+      color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .cta-btn:hover {
+      background: var(--surface);
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .cta-stats {
+      margin-top: var(--space-4);
+      font-size: var(--text-sm);
+      color: var(--accent-on);
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -601,94 +832,91 @@
       </script>
     </section>
 
-    <section class="section features-section" id="features">
+    <section class="section section-dark showcase-section" id="features">
       <div class="container">
         <div class="section-header">
-          <h2 data-i18n="landingFeaturesTitle">四种生成方式</h2>
-          <p class="lead" data-i18n="landingFeaturesLead">从纯文字到多图融合，匹配不同创作起点。</p>
+          <h2 data-i18n="landingShowcaseTitle">AI 驱动的创意工具</h2>
+          <p class="lead" data-i18n="landingShowcaseLead">从文字到画面，只需几秒钟</p>
         </div>
 
-        <div class="feature-grid">
-          <article class="feature-card feature-card-large">
-            <span class="feature-number">01</span>
-            <h3 data-i18n="landingFeatureTextToImage">文生图</h3>
-            <p data-i18n="landingFeatureTextToImageDesc">只有文字 brief 时，直接描述画面，让 AI 给出多个构图方向。</p>
-            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartText">开始文生图</a>
-          </article>
-
-          <article class="feature-card">
-            <span class="feature-number">02</span>
-            <h3 data-i18n="landingFeatureImageToImage">图生图</h3>
-            <p data-i18n="landingFeatureImageToImageDesc">已有参考图时，保留主体，替换背景与风格。</p>
-            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartImage">开始图生图</a>
-          </article>
-
-          <article class="feature-card">
-            <span class="feature-number">03</span>
-            <h3 data-i18n="landingFeatureMultiImage">多图生图</h3>
-            <p data-i18n="landingFeatureMultiImageDesc">融合多张参考图的构图、角色或配色，输出统一方案。</p>
-            <a href="generate.html" class="feature-link" data-i18n="landingFeatureStartMulti">开始多图生图</a>
-          </article>
-
-          <article class="feature-card feature-card-large">
-            <span class="feature-number">04</span>
-            <h3 data-i18n="landingFeaturePresetStyles">预设风格</h3>
-            <p data-i18n="landingFeaturePresetStylesDesc">海报、插画、产品主图等场景模板，一键套用并继续编辑。</p>
-            <a href="preset-styles.html" class="feature-link" data-i18n="landingFeatureBrowsePresets">浏览预设风格</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section workflow-section">
-      <div class="container">
-        <div class="workflow-layout">
-          <div class="workflow-content">
-            <h2 data-i18n="landingWorkflowTitle">从 brief 到素材</h2>
-            <p class="lead" data-i18n="landingWorkflowLead">上传参考或粘贴描述，选择生成方式，微调后直接下载高清原图。</p>
-            <ol class="workflow-steps">
-              <li>
-                <strong data-i18n="landingWorkflowStep1">输入需求</strong>
-                <span data-i18n="landingWorkflowStep1Desc">粘贴创作 brief 或上传参考图。</span>
-              </li>
-              <li>
-                <strong data-i18n="landingWorkflowStep2">选择生成方式</strong>
-                <span data-i18n="landingWorkflowStep2Desc">按是否有参考图选择文生图、图生图或多图融合。</span>
-              </li>
-              <li>
-                <strong data-i18n="landingWorkflowStep3">迭代输出</strong>
-                <span data-i18n="landingWorkflowStep3Desc">调整风格、尺寸、数量，批量生成候选。</span>
-              </li>
-              <li>
-                <strong data-i18n="landingWorkflowStep4">下载交付</strong>
-                <span data-i18n="landingWorkflowStep4Desc">导出高清原图，用于展示、发布与分享。</span>
-              </li>
-            </ol>
-            <div class="workflow-example">
-              <div class="workflow-example-label" data-i18n="landingWorkflowExampleLabel">示例输入</div>
-              <p data-i18n="landingWorkflowExamplePrompt">"夏季冰咖啡海报，复古色调，海边露台，午后阳光"</p>
+        <div class="showcase-grid">
+          <a href="generate.html" class="showcase-card">
+            <div class="showcase-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 16 5-5 4 4 6-6 3 3"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
             </div>
-          </div>
-          <div class="workflow-preview" id="workflow-preview" aria-label="示例生成结果" data-i18n-attr="aria-label" data-i18n-aria-label="ariaPreviewResults">
-            <button type="button" class="workflow-preview-arrow prev" id="workflow-preview-prev" aria-label="上一张" data-i18n-attr="aria-label" data-i18n-aria-label="ariaPrevSlide">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" class="workflow-preview-arrow next" id="workflow-preview-next" aria-label="下一张" data-i18n-attr="aria-label" data-i18n-aria-label="ariaNextSlide">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <div class="workflow-preview-dots" id="workflow-preview-dots" role="tablist" aria-label="carousel"></div>
-          </div>
+            <h3 data-i18n="landingShowcaseTextToImage">文生图</h3>
+            <p data-i18n="landingShowcaseTextToImageDesc">输入描述，AI 生成高质量图片</p>
+            <span class="showcase-link" data-i18n="landingShowcaseTextToImageLink">开始创作</span>
+          </a>
+
+          <a href="generate.html" class="showcase-card">
+            <div class="showcase-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 16 4-4 4 4 5-5 5 5"/><path d="M16 3h5v5"/><path d="M21 3 15 9"/></svg>
+            </div>
+            <h3 data-i18n="landingShowcaseImageToImage">图生图</h3>
+            <p data-i18n="landingShowcaseImageToImageDesc">上传参考图，AI 重构风格与场景</p>
+            <span class="showcase-link" data-i18n="landingShowcaseImageToImageLink">上传参考</span>
+          </a>
+
+          <a href="generate.html" class="showcase-card">
+            <div class="showcase-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/><path d="M5 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 19l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>
+            </div>
+            <h3 data-i18n="landingShowcasePresets">预设风格</h3>
+            <p data-i18n="landingShowcasePresetsDesc">一键套用专业设计模板</p>
+            <span class="showcase-link" data-i18n="landingShowcasePresetsLink">浏览风格</span>
+          </a>
         </div>
       </div>
     </section>
 
-    <section class="section cta-section">
-      <div class="container cta-inner">
-        <div>
-          <h2 data-i18n="landingCtaTitle">开始创作</h2>
-          <p class="lead" data-i18n="landingCtaLead">无需设计排期，随时自主产出视觉素材。</p>
+    <section class="section steps-section" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2 data-i18n="landingHowItWorksTitle">三步开始创作</h2>
         </div>
-        <a href="generate.html" class="btn btn-primary" data-i18n="landingStartFree">免费开始创作</a>
+
+        <div class="steps-row">
+          <article class="step-card">
+            <span class="step-number" aria-hidden="true">01</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h7"/></svg>
+            </div>
+            <h3 data-i18n="landingStep1Title">输入描述</h3>
+            <p data-i18n="landingStep1Desc">用文字描述你想要的画面</p>
+          </article>
+
+          <div class="step-arrow" aria-hidden="true">→</div>
+
+          <article class="step-card">
+            <span class="step-number" aria-hidden="true">02</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/><path d="M5 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 19l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>
+            </div>
+            <h3 data-i18n="landingStep2Title">AI 生成</h3>
+            <p data-i18n="landingStep2Desc">AI 理解你的需求并生成图片</p>
+          </article>
+
+          <div class="step-arrow" aria-hidden="true">→</div>
+
+          <article class="step-card">
+            <span class="step-number" aria-hidden="true">03</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            </div>
+            <h3 data-i18n="landingStep3Title">下载使用</h3>
+            <p data-i18n="landingStep3Desc">下载高清原图用于任何场景</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-new-section" id="cta">
+      <div class="container">
+        <h2 data-i18n="landingCtaNewTitle">开始你的创作之旅</h2>
+        <p class="lead" data-i18n="landingCtaNewLead">无需设计经验，AI 帮你实现创意</p>
+        <a href="generate.html" class="btn cta-btn" data-i18n="landingStartFree">免费开始创作</a>
+        <p class="cta-stats" data-i18n="landingCtaStats">已有 10,000+ 位创作者在使用</p>
       </div>
     </section>
   </main>

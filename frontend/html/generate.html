@@ -1,4 +1,32 @@
 <!doctype html>
+<style>
+  /* 全局 3px 圆角覆盖 —— 仅影响子页面矩形元素 */
+  *,
+  *::before,
+  *::after {
+    border-radius: 5px !important;
+  }
+  /* 保留圆形元素 */
+  .preview-item .remove-btn,
+  .progress-monitor .step .dot,
+  .spinner,
+  [class*="rounded-full"],
+  [class*="circle"],
+  button[class*="round"] {
+    border-radius: 50% !important;
+  }
+  /* 保留丸形按钮 */
+  .btn {
+    border-radius: 5px !important;
+  }
+  .mode-tabs {
+    border-radius: 5px !important;
+  }
+  .mode-tab {
+    border-radius: 5px !important;
+  }
+</style>
+
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
