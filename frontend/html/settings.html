@@ -678,10 +678,10 @@
 
     <section class="settings-card update-section" style="margin-top: var(--space-6);">
       <h2 data-i18n="settingsUpdateSection">应用更新</h2>
-      <p class="settings-hint" data-i18n="settingsUpdateHint">当前版本 <strong id="current-version">v1.0.0</strong> · 从 GitHub 仓库检查更新</p>
+      <p class="settings-hint" data-i18n="settingsUpdateHint">当前版本 <strong id="current-version">v1.0.0</strong> · 从 Gitea 仓库检查更新</p>
       <div class="field" style="display:flex; gap: var(--space-3); align-items: center;">
         <button type="button" class="btn btn-primary" id="check-update-btn" data-i18n="settingsCheckUpdate">检查更新</button>
-        <a class="btn btn-ghost" href="https://github.com/echohaoran/Chaos_Builder" target="_blank" rel="noopener noreferrer" data-i18n="settingsViewRepo">在 GitHub 查看</a>
+        <a class="btn btn-ghost" href="http://192.168.1.211:3000/echowang/ChaosBuilder" target="_blank" rel="noopener noreferrer" data-i18n="settingsViewRepo">在 Gitea 查看</a>
       </div>
       <div class="update-result" id="update-result" hidden>
         <div class="update-status"></div>
@@ -936,8 +936,8 @@
         var actionsEl = resultEl && resultEl.querySelector('.update-actions');
         if (!btn || !resultEl) return;
 
-        var REPO_API = 'https://api.github.com/repos/echohaoran/Chaos_Builder';
-        var REPO_URL = 'https://github.com/echohaoran/Chaos_Builder';
+        var REPO_API = 'http://192.168.1.211:3000/api/v1/repos/echowang/ChaosBuilder';
+        var REPO_URL = 'http://192.168.1.211:3000/echowang/ChaosBuilder';
 
         function parseSemver(tag) {
           if (!tag) return null;
@@ -1067,10 +1067,10 @@
         btn.addEventListener('click', function () {
           setBusy(true);
           resultEl.hidden = true;
-          fetch(REPO_API + '/releases/latest', { headers: { 'Accept': 'application/vnd.github+json' } })
+          fetch(REPO_API + '/releases/latest', { headers: { 'Accept': 'application/json' } })
             .then(function (r) {
               if (r.status === 404) {
-                return fetch(REPO_API + '/commits/main', { headers: { 'Accept': 'application/vnd.github+json' } })
+                return fetch(REPO_API + '/commits/main', { headers: { 'Accept': 'application/json' } })
                   .then(function (r2) {
                     if (!r2.ok) throw new Error('HTTP ' + r2.status);
                     return r2.json().then(function (c) { return { kind: 'commit', data: c }; });

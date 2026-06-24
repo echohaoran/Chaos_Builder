@@ -234,9 +234,9 @@ const DICTIONARY = {
 
     // 应用更新
     settingsUpdateSection: '应用更新',
-    settingsUpdateHint: '当前版本 {version} · 从 GitHub 仓库检查更新',
+    settingsUpdateHint: '当前版本 {version} · 从 Gitea 仓库检查更新',
     settingsCheckUpdate: '检查更新',
-    settingsViewRepo: '在 GitHub 查看',
+    settingsViewRepo: '在 Gitea 查看',
     settingsChecking: '检查中…',
     settingsUpdateNew: '有新版本可用',
     settingsUpdateLatest: '已是最新版本',
@@ -605,9 +605,9 @@ const DICTIONARY = {
 
     // App update
     settingsUpdateSection: 'Updates',
-    settingsUpdateHint: 'Current version {version} · Check for updates from the GitHub repository',
+    settingsUpdateHint: 'Current version {version} · Check for updates from the Gitea repository',
     settingsCheckUpdate: 'Check for updates',
-    settingsViewRepo: 'View on GitHub',
+    settingsViewRepo: 'View on Gitea',
     settingsChecking: 'Checking…',
     settingsUpdateNew: 'A new version is available',
     settingsUpdateLatest: 'You are on the latest version',
