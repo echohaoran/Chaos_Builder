@@ -452,16 +452,17 @@
       position: relative;
       border-radius: var(--radius-lg);
       overflow: hidden;
-      background: var(--bg);
+      background: var(--surface-warm);
       border: 1px solid var(--border);
       transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 0;
     }
     .history-item:hover { border-color: var(--accent); box-shadow: var(--elev-raised); }
     .history-item img {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      display: block;
+      vertical-align: bottom;
       cursor: pointer;
     }
     .history-item .delete-btn {
