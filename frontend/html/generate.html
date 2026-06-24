@@ -1235,10 +1235,10 @@
             renderHistory();
           }
         });
-        // 点击图片查看大图
+        // 点击图片内部大图预览
         card.querySelector('img').addEventListener('click', function() {
           if (!isSelectMode) {
-            window.open(entry.url, '_blank');
+            openLightbox(entry.url);
           }
         });
         // 复选框点击
