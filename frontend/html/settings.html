@@ -935,21 +935,8 @@
                     </div>
                 </section>
 
-                <!-- Admin User Management (admin only) -->
-                <section class="settings-card" id="admin-user-section">
-                    <h2 data-i18n="settingsUserManagement">用户管理</h2>
-                    <p class="settings-hint" data-i18n="settingsUserHint">
-                        管理系统用户及权限。
-                    </p>
-                    <div id="user-list" class="user-list"></div>
-                </section>
-
-                <!-- 输出默认选项（最后面，独占一行） -->
-                <section
-                    class="settings-card"
-                    id="output-defaults"
-                    style="grid-column: 1 / -1"
-                >
+                <!-- 输出默认选项（第1列） -->
+                <section class="settings-card" id="output-defaults">
                     <h2 data-i18n="settingsOutputSection">输出默认选项</h2>
 
                     <div class="field size-field">
@@ -1034,6 +1021,15 @@
                             恢复默认
                         </button>
                     </div>
+                </section>
+
+                <!-- Admin User Management（第2列，admin only） -->
+                <section class="settings-card" id="admin-user-section">
+                    <h2 data-i18n="settingsUserManagement">用户管理</h2>
+                    <p class="settings-hint" data-i18n="settingsUserHint">
+                        管理系统用户及权限。
+                    </p>
+                    <div id="user-list" class="user-list"></div>
                 </section>
             </form>
 

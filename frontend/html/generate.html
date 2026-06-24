@@ -180,8 +180,7 @@
        making them appear to lack visible label text.
        We add an explicit label for every control that is missing one,
        so that "尺寸", "方向", "画质", "数量" are always visible. */
-    .mode-section[data-mode="image"] .field > select:first-child,
-    .mode-section[data-mode="multi"] .field > select:first-child {
+    .mode-section[data-mode="image"] .field > select:first-child {
       /* Ensure the select itself doesn't obscure a label that should be there;
          the real fix is to insert proper <label> elements in the HTML below. */
     }
@@ -317,6 +316,68 @@
     }
     .result-item:hover .result-actions { opacity: 1; }
     .result-actions .btn { flex: 1; font-size: var(--text-sm); }
+
+    /* Carousel result */
+    .result-carousel {
+      position: relative;
+      width: 100%;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border-radius: var(--border-radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .result-carousel img {
+      max-width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+    }
+    .result-carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .result-carousel-arrow:hover { background: rgba(0,0,0,0.8); }
+    .result-carousel-arrow.prev { left: 16px; }
+    .result-carousel-arrow.next { right: 16px; }
+    .result-carousel-counter {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: var(--text-sm);
+      z-index: 2;
+    }
+    .result-carousel-actions {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: var(--space-2);
+      z-index: 2;
+    }
+    .result-carousel-actions .btn { font-size: var(--text-sm); }
 
     /* Status */
     .status {
@@ -503,7 +564,6 @@
     <div class="mode-tabs" role="tablist">
       <button type="button" class="mode-tab active" data-mode="text" role="tab" aria-selected="true" data-i18n="navTextToImage">文生图</button>
       <button type="button" class="mode-tab" data-mode="image" role="tab" aria-selected="false" data-i18n="navImageToImage">图生图</button>
-      <button type="button" class="mode-tab" data-mode="multi" role="tab" aria-selected="false" data-i18n="navMultiImage">多图生图</button>
       <button type="button" class="mode-tab" data-mode="preset" role="tab" aria-selected="false" data-i18n="navPresetStyles">预设风格</button>
     </div>
 
@@ -554,7 +614,9 @@
             <select id="text-count" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="1">1</option>
               <option value="2">2</option>
+              <option value="3">3</option>
               <option value="4">4</option>
+              <option value="5">5</option>
             </select>
           </div>
         </div>
@@ -608,54 +670,7 @@
         </div>
 
         <!-- Multi mode -->
-        <div class="mode-section" data-mode="multi">
-          <div class="field">
-            <label data-i18n="multiUploadLabel">上传参考图（2~4 张）</label>
-            <div class="upload-zone" id="multi-upload-zone" tabindex="0" role="button">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <div class="label" data-i18n="multiUploadHint">上传多张参考图片</div>
-              <div class="hint" data-i18n="multiUploadDesc">最多 4 张，支持拖拽排序</div>
-              <input type="file" id="multi-file-input" accept="image/*" multiple />
-            </div>
-            <div class="preview-list" id="multi-preview-list"></div>
-          </div>
-          <div class="field">
-            <label for="multi-prompt" data-i18n="labelPrompt">提示词</label>
-            <textarea id="multi-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何融合这些参考图…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderMultiPrompt"></textarea>
-          </div>
-          <div class="field">
-            <label for="multi-size" data-i18n="labelSize">尺寸</label>
-            <select id="multi-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
-              <option value="1024x1024">1024 × 1024</option>
-              <option value="1024x1536">1024 × 1536</option>
-              <option value="1536x1024">1536 × 1024</option>
-              <option value="2048x2048">2048 × 2048</option>
-            </select>
-          </div>
-          <div class="field">
-            <label data-i18n="labelOrientation">方向</label>
-            <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
-              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
-                <input type="radio" name="multi-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
-              </label>
-              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
-                <input type="radio" name="multi-orientation" value="portrait" /> <span data-i18n="orientationPortrait">竖图</span>
-              </label>
-              <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
-                <input type="radio" name="multi-orientation" value="square" /> <span data-i18n="orientationSquare">方图</span>
-              </label>
-            </div>
-          </div>
-          <div class="field">
-            <label for="multi-quality" data-i18n="labelQuality">画质</label>
-            <select id="multi-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
-              <option value="hd" data-i18n="qualityHd">高清</option>
-              <option value="standard" data-i18n="qualityStandard">标准</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Preset mode -->
+<!-- Preset mode -->
         <div class="mode-section" data-mode="preset">
           <div class="preset-scroll">
             <div class="preset-grid" id="preset-grid">
@@ -751,7 +766,7 @@
     'use strict';
 
     // ─── State ──────────────────────────────────────────────
-    var currentMode = 'text'; // 'text' | 'image' | 'multi' | 'preset'
+    var currentMode = 'text'; // 'text' | 'image' | 'preset'
     var selectedPreset = null;
     var imageFile = null;
     var multiFiles = [];
@@ -793,6 +808,8 @@
     });
 
     function switchMode(mode) {
+      // 保存当前状态
+      saveResultState();
       currentMode = mode;
       modeTabs.forEach(function(t) { t.classList.toggle('active', t.dataset.mode === mode); });
       modeSections.forEach(function(s) { s.classList.toggle('active', s.dataset.mode === mode); });
@@ -806,6 +823,8 @@
         resultGrid.hidden = true;
       }
       statusError.hidden = true;
+      // 恢复状态
+      restoreResultState();
     }
 
     // ─── File upload handlers ──────────────────────────────
@@ -1001,39 +1020,110 @@
       });
     });
 
+    // ─── Result state preservation ──────────────────────
+    var RESULT_STATE_KEY = 'chaos_builder_last_results';
+    var resultImages = [];
+    var resultIndex = 0;
+
+    function saveResultState() {
+      try {
+        sessionStorage.setItem(RESULT_STATE_KEY, JSON.stringify({
+          images: resultImages,
+          index: resultIndex,
+          mode: currentMode,
+          prompt: getCurrentPrompt(),
+          size: getCurrentSize(),
+          quality: getCurrentQuality()
+        }));
+      } catch(e) {}
+    }
+
+    function restoreResultState() {
+      try {
+        var raw = sessionStorage.getItem(RESULT_STATE_KEY);
+        if (!raw) return;
+        var state = JSON.parse(raw);
+        if (state.images && state.images.length > 0) {
+          resultImages = state.images;
+          resultIndex = state.index || 0;
+          renderCarousel();
+        }
+      } catch(e) {}
+    }
+
     function renderResults(data) {
       resultGrid.hidden = false;
       resultGrid.innerHTML = '';
+      resultImages = [];
+      resultIndex = 0;
       if (!data || !data.data) return;
 
       data.data.forEach(function(item) {
         var url = ChaosAPI.resultToImageUrl(item);
-        if (!url) return;
+        if (url) resultImages.push(url);
+      });
 
-        var div = document.createElement('div');
-        div.className = 'result-item';
-        div.innerHTML = '<img src="' + url + '" alt="" loading="lazy" />' +
-          '<div class="result-actions">' +
-            '<a href="' + url + '" class="btn btn-primary btn-sm" download target="_blank">' + I18N.t('actionDownload', '下载') + '</a>' +
-            '<button type="button" class="btn btn-secondary btn-sm" data-copy="' + url + '">' + I18N.t('actionCopy', '复制链接') + '</button>' +
-          '</div>';
-        div.querySelector('[data-copy]').addEventListener('click', function() {
-          if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(url);
-          }
-        });
-        // Lightbox click
-        div.addEventListener('click', function(e) {
-          if (e.target.closest('.result-actions')) return;
-          openLightbox(url);
-        });
-        resultGrid.appendChild(div);
+      if (resultImages.length === 0) return;
+      renderCarousel();
 
-        // Save to history
-        var historyType = currentMode === 'text' ? 'text' : (currentMode === 'image' ? 'image' : 'multi');
+      // Save to history
+      resultImages.forEach(function(url, i) {
+        var historyType = currentMode === 'text' ? 'text' : 'image';
         var meta = { prompt: getCurrentPrompt(), size: getCurrentSize(), quality: getCurrentQuality() };
         if (ChaosAPI.syncSaveHistory) ChaosAPI.syncSaveHistory(historyType, url, meta);
       });
+    }
+
+    function renderCarousel() {
+      resultGrid.hidden = false;
+      resultGrid.innerHTML = '';
+      if (resultImages.length === 0) return;
+
+      var url = resultImages[resultIndex];
+      var total = resultImages.length;
+      var container = document.createElement('div');
+      container.className = 'result-carousel';
+
+      var img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', function() { openLightbox(url); });
+      container.appendChild(img);
+
+      var actions = document.createElement('div');
+      actions.className = 'result-carousel-actions';
+      actions.innerHTML =
+        '<a href="' + url + '" class="btn btn-primary btn-sm" download target="_blank">' + I18N.t('actionDownload', '下载') + '</a>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-copy="' + url + '">' + I18N.t('actionCopy', '复制链接') + '</button>';
+      actions.querySelector('[data-copy]').addEventListener('click', function() {
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url);
+      });
+      container.appendChild(actions);
+
+      // Counter
+      var counter = document.createElement('div');
+      counter.className = 'result-carousel-counter';
+      counter.textContent = (resultIndex + 1) + ' / ' + total;
+      container.appendChild(counter);
+
+      // Prev/Next arrows
+      if (total > 1) {
+        var prev = document.createElement('button');
+        prev.className = 'result-carousel-arrow prev';
+        prev.innerHTML = '‹';
+        prev.addEventListener('click', function(e) { e.stopPropagation(); resultIndex = (resultIndex - 1 + total) % total; renderCarousel(); });
+        container.appendChild(prev);
+
+        var next = document.createElement('button');
+        next.className = 'result-carousel-arrow next';
+        next.innerHTML = '›';
+        next.addEventListener('click', function(e) { e.stopPropagation(); resultIndex = (resultIndex + 1) % total; renderCarousel(); });
+        container.appendChild(next);
+      }
+
+      resultGrid.appendChild(container);
+      saveResultState();
     }
 
     function openLightbox(url) {
@@ -1087,7 +1177,7 @@
 
     function cleanOldHistory() {
       var now = Date.now();
-      var types = ['text', 'image', 'multi', 'text-to-image', 'preset'];
+      var types = ['text', 'image', 'text-to-image', 'preset'];
       types.forEach(function(type) {
         try {
           var key = getHistoryKey(type);
@@ -1111,7 +1201,7 @@
       // 合并所有模式的历史记录
       var all = [];
       try {
-        var types = ['text', 'image', 'multi', 'text-to-image', 'preset'];
+        var types = ['text', 'image', 'text-to-image', 'preset'];
         types.forEach(function(type) {
           var list = ChaosAPI.getHistory(type);
           if (list && list.length) all = all.concat(list);
@@ -1209,9 +1299,10 @@
     clearHistoryBtn.addEventListener('click', function() {
       ChaosAPI.clearHistory('text');
       ChaosAPI.clearHistory('image');
-      ChaosAPI.clearHistory('multi');
       ChaosAPI.clearHistory('text-to-image');
       ChaosAPI.clearHistory('preset');
+      sessionStorage.removeItem(RESULT_STATE_KEY);
+      resultImages = [];
       renderHistory();
     });
 
@@ -1366,6 +1457,7 @@
     Auth.requireAuth();
     Auth.renderUserMenu('#user-menu');
     renderPresets(); initImgCache();
+    restoreResultState();
     renderHistory();
     updateTitle();
     updateToggleLabel();
