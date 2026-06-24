@@ -963,8 +963,23 @@
 
     // ─── History ────────────────────────────────────────────
     function getHistory() {
-      var key = 'chaos_builder_generate_history';
-      try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; }
+      // 合并所有模式的历史记录
+      var all = [];
+      try {
+        var types = ['text', 'image', 'multi', 'text-to-image', 'preset'];
+        types.forEach(function(type) {
+          var list = ChaosAPI.getHistory(type);
+          if (list && list.length) all = all.concat(list);
+        });
+      } catch(e) {}
+      // 按时间排序，去重
+      all.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+      var seen = {};
+      return all.filter(function(item) {
+        if (seen[item.url]) return false;
+        seen[item.url] = true;
+        return true;
+      }).slice(0, 50);
     }
 
     function renderHistory() {
@@ -982,7 +997,11 @@
     }
 
     clearHistoryBtn.addEventListener('click', function() {
-      localStorage.removeItem('chaos_builder_generate_history');
+      ChaosAPI.clearHistory('text');
+      ChaosAPI.clearHistory('image');
+      ChaosAPI.clearHistory('multi');
+      ChaosAPI.clearHistory('text-to-image');
+      ChaosAPI.clearHistory('preset');
       renderHistory();
     });
 
