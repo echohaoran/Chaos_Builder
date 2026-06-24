@@ -396,18 +396,18 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Preset cards */
-    .preset-card { border:1px solid var(--border);border-radius:var(--border-radius-lg);overflow:hidden;cursor:pointer;background:var(--bg);transition:border-color .2s,box-shadow .2s; }
+    .preset-card { border:1px solid var(--border);border-radius:var(--border-radius-lg);overflow:hidden;cursor:pointer;background:var(--bg);transition:border-color .2s,box-shadow .2s;display:flex;flex-direction:column; }
     .preset-card:hover { border-color:var(--accent);box-shadow:var(--elev-raised); }
     .preset-card-img { width:100%;height:180px;object-fit:cover;display:block;background:var(--surface-warm); }
-    .preset-card-body { padding:var(--space-3); }
+    .preset-card-body { padding:var(--space-3);flex:1;display:flex;flex-direction:column; }
     .preset-card-name { font-weight:600;font-size:var(--text-sm);margin-bottom:var(--space-1);color:var(--fg); }
     .preset-card-meta { font-size:var(--text-xs);color:var(--muted);margin-bottom:var(--space-2); }
-    .preset-card-prompt { font-size:var(--text-xs);color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+    .preset-card-prompt { font-size:var(--text-xs);color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1; }
     /* Preset preview panel */
-    .preset-preview { flex:1;display:flex;flex-direction:column; }
+    .preset-preview { width:100%;display:flex;flex-direction:column; }
     .preset-preview[hidden] { display:none; }
-    .preset-preview-img { display:grid;place-items:center;min-height:200px;max-height:500px;background:var(--bg);border-radius:var(--border-radius-lg);border:1px solid var(--border);margin-bottom:var(--space-4);overflow:hidden; }
-    .preset-preview-img img { max-width:100%;max-height:500px;object-fit:contain;display:block;margin:0 auto; }
+    .preset-preview-img { height:400px;display:grid;place-items:center;background:var(--bg);border-radius:var(--border-radius-lg);border:1px solid var(--border);margin-bottom:var(--space-4);overflow:hidden; }
+    .preset-preview-img img { max-width:100%;max-height:100%;object-fit:contain;display:block; }
     .preset-preview-placeholder { color:var(--muted);font-size:var(--text-sm); }
     .preset-preview-info { padding:var(--space-2) 0; }
     .preset-preview-name { font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-1); }
@@ -508,7 +508,7 @@
 
     /* Preset grid: show up to 6 (3 rows × 2 cols), scroll beyond */
     .preset-scroll {
-      max-height: 372px; /* 3 rows × (80px img + padding + margin + gap) */
+      max-height: 954px; /* 3 rows × 310px + 2 × gap(12px) */
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
@@ -602,17 +602,7 @@
               <option value="standard" data-i18n="qualityStandard">标准</option>
             </select>
           </div>
-          <div class="field">
-            <label for="text-count" data-i18n="labelCount">生成数量</label>
-            <select id="text-count" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
           </div>
-        </div>
 
         <!-- Image mode -->
         <div class="mode-section" data-mode="image">
@@ -762,7 +752,6 @@
     var currentMode = 'text'; // 'text' | 'image' | 'preset'
     var selectedPreset = null;
     var imageFiles = [];
-    var multiFiles = [];
     var MAX_FILES = 5;
     var progressTimer = null;
     var progressStart = 0;
@@ -813,6 +802,7 @@
         document.getElementById('preset-preview').hidden = true;
         resultEmpty.hidden = false;
         resultGrid.hidden = true;
+        generateBtn.textContent = '生成';
       }
       // 切换时清空预览图，不恢复旧状态
       resultImages = [];
@@ -865,9 +855,6 @@
           if (container.id === 'image-preview-list') {
             imageFiles.splice(idx, 1);
             renderPreview(container, imageFiles);
-          } else {
-            multiFiles.splice(idx, 1);
-            renderPreview(container, multiFiles);
           }
         });
         container.appendChild(item);
@@ -922,33 +909,11 @@
 
       var prompt, size, quality;
 
-      // Preset mode: use selected preset's prompt directly to generate
+      // Preset mode: fill prompt and switch to text mode
       if (currentMode === 'preset') {
         if (!selectedPreset) { showError(I18N.t('errorNoPreset', '请先选择一个预设风格')); return; }
-        prompt = selectedPreset.prompt;
-        size = document.getElementById('text-size').value;
-        quality = document.getElementById('text-quality').value;
-        generateBtn.disabled = true;
-        statusInfo.hidden = false;
-        resultEmpty.hidden = true;
-        resultGrid.hidden = true;
-        startProgress();
-        setStep(1);
-        var presetCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: parseInt(document.getElementById('text-count').value) || 1 });
-        setStep(2);
-        presetCall.then(function(data) {
-          setStep(3);
-          finishProgress(true);
-          statusInfo.hidden = true;
-          generateBtn.disabled = false;
-          renderResults(data);
-          ChaosAPI.saveHistory({ prompt: prompt, model: ChaosAPI.getConfig().model || '', size: size, quality: quality, n: 1, image_urls: data.data && data.data.map(function(i){return i.url;}) || [], mode: 'text-to-image' }).catch(function(){});
-        }).catch(function(err) {
-          finishProgress(false);
-          statusInfo.hidden = true;
-          generateBtn.disabled = false;
-          showError(err.message || I18N.t('errorGenerate', '生成失败'));
-        });
+        document.getElementById('text-prompt').value = selectedPreset.prompt;
+        switchMode('text');
         return;
       }
 
@@ -963,12 +928,6 @@
         quality = document.getElementById('image-quality').value;
         if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
         if (!imageFiles.length) { showError(I18N.t('errorNoImage', '请上传参考图')); return; }
-      } else {
-        prompt = document.getElementById('multi-prompt').value.trim();
-        size = document.getElementById('multi-size').value;
-        quality = document.getElementById('multi-quality').value;
-        if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
-        if (multiFiles.length < 2) { showError(I18N.t('errorNeedTwoImages', '请至少上传 2 张参考图')); return; }
       }
 
       generateBtn.disabled = true;
@@ -980,7 +939,7 @@
       var apiCall;
       if (currentMode === 'text') {
         setStep(1);
-        apiCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: parseInt(document.getElementById('text-count').value) || 1 });
+        apiCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality });
       } else if (currentMode === 'image') {
         setStep(1);
         apiCall = ChaosAPI.multiImageEdit(imageFiles, prompt, { size: size, quality: quality });
@@ -1127,18 +1086,15 @@
     // ─── Helpers ────────────────────────────────────────────
     function getCurrentPrompt() {
       if (currentMode === 'text') return document.getElementById('text-prompt').value;
-      if (currentMode === 'image') return document.getElementById('image-prompt').value;
-      return document.getElementById('multi-prompt').value;
+      return document.getElementById('image-prompt').value;
     }
     function getCurrentSize() {
       if (currentMode === 'text') return document.getElementById('text-size').value;
-      if (currentMode === 'image') return document.getElementById('image-size').value;
-      return document.getElementById('multi-size').value;
+      return document.getElementById('image-size').value;
     }
     function getCurrentQuality() {
       if (currentMode === 'text') return document.getElementById('text-quality').value;
-      if (currentMode === 'image') return document.getElementById('image-quality').value;
-      return document.getElementById('multi-quality').value;
+      return document.getElementById('image-quality').value;
     }
 
     function showError(msg) {
@@ -1400,6 +1356,7 @@
       document.getElementById('preset-preview-desc').textContent = (preset.label||'') + (preset.aspect ? ' · ' + preset.aspect : '');
       document.getElementById('preset-preview-prompt').textContent = preset.prompt || '';
       document.getElementById('preset-preview-info').hidden = false;
+      generateBtn.textContent = '前往生成';
     }
 
     // ─── Orientation → Size filter ──────────────────────────

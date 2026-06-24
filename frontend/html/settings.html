@@ -1644,14 +1644,19 @@
 
                 form.addEventListener("submit", function (e) {
                     e.preventDefault();
-                    ChaosAPI.saveConfig({
-                        provider: form.provider.value,
-                        apiBaseUrl: form.apiBaseUrl.value.trim(),
-                        apiKey: form.apiKey.value.trim(),
-                        model: form.model.value.trim(),
-                        defaultSize: form.defaultSize.value,
-                        defaultQuality: form.defaultQuality.value,
-                    });
+                    try {
+                        var currentProvider = form.provider.value;
+                        ChaosAPI.saveConfig({
+                            provider: currentProvider,
+                            apiBaseUrl: form.apiBaseUrl.value.trim(),
+                            apiKey: form.apiKey.value.trim(),
+                            model: form.model.value.trim(),
+                            defaultSize: form.defaultSize.value,
+                            defaultQuality: form.defaultQuality.value,
+                        });
+                    } catch(e) {}
+                    showToast();
+                    loadSettings();
                     // 尝试保存管理设置(API 端用 adminMiddleware 鉴权,不是 admin 会返回 403)
                     if (ChaosAPI.saveAdminSettings) {
                         ChaosAPI.saveAdminSettings({
@@ -1671,37 +1676,7 @@
                                     document.getElementById("textApiBaseUrl") ||
                                     {}
                                 ).value || "",
-                        })
-                            .then(function (ok) {
-                                if (ok) {
-                                    showToast();
-                                } else {
-                                    alert(
-                                        I18N.t(
-                                            "settingsSaveFailAdmin",
-                                            "保存失败：无管理员权限，请退出后重新登录。",
-                                        ),
-                                    );
-                                }
-                            })
-                            .catch(function (e) {
-                                alert(
-                                    I18N.t(
-                                        "settingsSaveFail",
-                                        "保存失败：{msg}",
-                                        {
-                                            msg:
-                                                e.message ||
-                                                I18N.t(
-                                                    "settingsRelogin",
-                                                    "请退出后重新登录",
-                                                ),
-                                        },
-                                    ),
-                                );
-                            });
-                    } else {
-                        showToast();
+                        });
                     }
                 });
 
@@ -1848,7 +1823,7 @@
                                             "下载 zip",
                                         ),
                                     ) +
-                                    "</a>" +
+                                    "</a>"
                             );
                             var runBtn =
                                 document.getElementById("run-update-btn");

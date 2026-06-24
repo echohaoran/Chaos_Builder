@@ -1,11 +1,20 @@
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'chaosbuilder-dev-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === 'chaosbuilder-dev-secret-change-in-production') {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('ERROR: JWT_SECRET environment variable must be set in production.');
+    console.error('Generate a strong secret: openssl rand -base64 48');
+    process.exit(1);
+  }
+  console.warn('WARNING: Using default JWT_SECRET. Set JWT_SECRET environment variable for production.');
+}
+const FINAL_SECRET = JWT_SECRET || 'chaosbuilder-dev-secret-change-in-production';
 const JWT_EXPIRES_IN = '7d';
 
 function signToken(user) {
-  return jwt.sign({ userId: user.id, username: user.username, role: user.role || 'user' }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ userId: user.id, username: user.username, role: user.role || 'user' }, FINAL_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 function authMiddleware(req, res, next) {
@@ -15,7 +24,7 @@ function authMiddleware(req, res, next) {
   }
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, FINAL_SECRET);
     // 检查用户是否被禁用
     const db = require('./db');
     const user = db.findUserById(payload.userId);
@@ -42,4 +51,4 @@ const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
-module.exports = { signToken, authMiddleware, adminMiddleware, JWT_SECRET, apiLimiter };
+module.exports = { signToken, authMiddleware, adminMiddleware, JWT_SECRET: FINAL_SECRET, apiLimiter };
