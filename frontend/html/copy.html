@@ -32,13 +32,8 @@
                 border-radius: 50% !important;
             }
             .lang-toggle {
-                position: fixed;
-                top: var(--space-4);
-                right: var(--space-4);
-                z-index: 200;
             }
             .page-header {
-                padding-top: 120px;
                 padding-bottom: var(--space-8);
                 text-align: center;
             }
@@ -65,7 +60,6 @@
             /* Left panel */
             .copy-panel {
                 position: sticky;
-                top: 88px;
                 background: var(--surface);
                 box-shadow: var(--elev-raised);
                 padding: var(--space-6);
@@ -74,7 +68,6 @@
                 gap: var(--space-5);
             }
             .copy-panel .field + .field {
-                margin-top: 0;
             }
             .copy-panel .btn-primary {
                 width: 100%;
@@ -102,9 +95,7 @@
 
             /* Style modal */
             .style-modal {
-                position: fixed;
                 inset: 0;
-                z-index: 1000;
                 background: rgba(0, 0, 0, 0.4);
                 display: none;
                 align-items: center;
@@ -158,7 +149,6 @@
                 display: flex;
                 gap: var(--space-3);
                 padding: var(--space-4) var(--space-6);
-                border-top: 1px solid var(--border);
             }
             .style-modal .modal-footer .btn {
                 flex: 1;
@@ -221,7 +211,6 @@
             /* Style edit form (inline in modal) */
             .style-edit-area {
                 display: none;
-                margin-top: var(--space-3);
                 padding: var(--space-4);
                 border: 1px solid var(--accent);
                 background: color-mix(in srgb, var(--accent) 4%, transparent);
@@ -325,14 +314,12 @@
             .result-actions-bar {
                 display: flex;
                 gap: var(--space-3);
-                margin-top: var(--space-4);
                 justify-content: flex-end;
             }
             .result-actions-bar .btn {
                 min-width: 100px;
             }
             .copy-success-toast {
-                position: fixed;
                 bottom: 24px;
                 left: 50%;
                 transform: translateX(-50%);
@@ -343,7 +330,6 @@
                 opacity: 0;
                 transition: opacity 0.3s;
                 pointer-events: none;
-                z-index: 999;
             }
             .copy-success-toast.show {
                 opacity: 1;
@@ -351,9 +337,7 @@
 
             /* History modal */
             .history-modal-overlay {
-                position: fixed;
                 inset: 0;
-                z-index: 1001;
                 background: rgba(0, 0, 0, 0.4);
                 display: none;
                 align-items: center;
@@ -417,7 +401,6 @@
                 display: flex;
                 gap: var(--space-3);
                 padding: var(--space-4) var(--space-6);
-                border-top: 1px solid var(--border);
             }
             .history-modal-card .modal-footer .btn {
                 flex: 1;
@@ -520,7 +503,6 @@
             /* Footer */
             .footer {
                 padding: var(--section-y-desktop) 0 var(--space-8);
-                border-top: 1px solid var(--border);
             }
             .footer-inner {
                 display: flex;
@@ -1413,7 +1395,6 @@
                         resultTime.textContent = entry.time || "";
                         lastResult = entry;
                         closeHistoryModal();
-                        window.scrollTo({ top: 0, behavior: "smooth" });
                     });
                 document
                     .getElementById("hm-delete-btn")
