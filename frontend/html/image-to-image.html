@@ -424,7 +424,7 @@
             <input type="file" id="image" name="image" accept="image/*" multiple />
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span class="label" data-i18n="actionUpload">上传图片</span>
-            <span class="hint" data-i18n="hintDragDrop">支持拖拽上传</span>
+            <span class="hint" data-i18n="hintMultipleFiles">支持拖拽上传，最多 5 张</span>
           </div>
           <div class="preview-list" id="preview-list"></div>
         </div>
@@ -558,6 +558,7 @@
       const HISTORY_TYPE = 'image';
 
       let currentFiles = [];
+      const MAX_FILES = 5;
 
       function updateTitle() {
         const brand = I18N.t('brandName');
@@ -590,6 +591,10 @@
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
           if (!file || !file.type.startsWith('image/')) continue;
+          if (currentFiles.length >= MAX_FILES) {
+            showError(I18N.t('errorMaxFiles', '最多上传 ' + MAX_FILES + ' 张图片'));
+            break;
+          }
           currentFiles.push(file);
         }
         renderPreviews();
