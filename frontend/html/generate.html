@@ -994,8 +994,9 @@
         setStep(1);
         apiCall = ChaosAPI.multiImageEdit(imageFiles, prompt, { size: size, quality: quality });
       } else {
+        // fallback — text mode
         setStep(1);
-        apiCall = ChaosAPI.multiImageEdit(multiFiles, prompt, { size: size, quality: quality });
+        apiCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: 1 });
       }
 
       setStep(2);
