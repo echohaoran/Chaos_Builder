@@ -370,6 +370,14 @@
       margin-bottom: var(--space-6);
     }
     .history-header h2 { margin: 0; }
+    .history-retention {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      background: var(--surface-warm);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      margin-left: var(--space-2);
+    }
     .history-actions { display: flex; gap: var(--space-2); }
     .history-empty { text-align: center; padding: var(--space-8); color: var(--muted); }
     .history-grid {
@@ -707,6 +715,7 @@
     <!-- History -->
     <div class="history-header">
       <h2 data-i18n="historyTitle">生成历史</h2>
+      <span class="history-retention" data-i18n="historyRetention">仅保留 72 小时</span>
       <div class="history-actions">
         <button type="button" class="btn btn-ghost btn-sm" id="select-mode-btn" data-i18n="actionSelectMode">多选</button>
         <button type="button" class="btn btn-ghost btn-sm" id="select-all-btn" data-i18n="actionSelectAll" hidden>全选</button>
@@ -1069,7 +1078,36 @@
     }
 
     // ─── History ────────────────────────────────────────────
+    var HISTORY_RETENTION_MS = 72 * 60 * 60 * 1000; // 72 hours
+
+    function getHistoryKey(type) {
+      var prefix = window.Auth ? window.Auth.userKey('history:') : 'chaos_builder_history:';
+      return prefix + type;
+    }
+
+    function cleanOldHistory() {
+      var now = Date.now();
+      var types = ['text', 'image', 'multi', 'text-to-image', 'preset'];
+      types.forEach(function(type) {
+        try {
+          var key = getHistoryKey(type);
+          var raw = localStorage.getItem(key);
+          if (!raw) return;
+          var list = JSON.parse(raw);
+          if (!list || !list.length) return;
+          var filtered = list.filter(function(item) {
+            return item.createdAt && (now - item.createdAt) < HISTORY_RETENTION_MS;
+          });
+          if (filtered.length !== list.length) {
+            localStorage.setItem(key, JSON.stringify(filtered));
+          }
+        } catch(e) {}
+      });
+    }
+
     function getHistory() {
+      // 清理超过 72 小时的记录
+      cleanOldHistory();
       // 合并所有模式的历史记录
       var all = [];
       try {

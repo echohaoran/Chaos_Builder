@@ -305,6 +305,7 @@ const DICTIONARY = {
     progressFailed: '失败',
     emptyResult: '生成的图片将显示在这里',
     historyTitle: '生成历史',
+    historyRetention: '仅保留 72 小时',
     historyEmpty: '暂无历史记录',
     historyItemHint: '点击查看大图',
 
@@ -801,6 +802,7 @@ const DICTIONARY = {
     progressFailed: 'Failed',
     emptyResult: 'Generated images will appear here',
     historyTitle: 'Generation history',
+    historyRetention: 'Kept for 72 hours',
     historyEmpty: 'No history yet',
     historyItemHint: 'Click to view large',
 
