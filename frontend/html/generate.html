@@ -1451,7 +1451,7 @@
     Auth.requireAuth();
     Auth.renderUserMenu('#user-menu');
     renderPresets(); initImgCache();
-    restoreResultState();
+    sessionStorage.removeItem(RESULT_STATE_KEY);
     renderHistory();
     updateTitle();
     updateToggleLabel();
