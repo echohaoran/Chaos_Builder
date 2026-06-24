@@ -800,7 +800,7 @@ function loadTextConfig() {
         });
         item.querySelector('.delete-btn').addEventListener('click', function(e) {
           e.stopPropagation();
-          if (!confirm('确定删除风格「' + s.name + '」？')) return;
+          if (!confirm(I18N.t('copyErrorDeleteConfirm', '确定删除该风格？') + '\n' + s.name)) return;
           var custom = loadCustomStyles();
           custom = custom.filter(function(c) { return c.id !== s.id; });
           saveCustomStyles(custom);
@@ -817,8 +817,8 @@ function loadTextConfig() {
       if (id === null) {
         editName.value = '';
         editPrompt.value = '';
-        editName.placeholder = '例如：知乎专栏';
-        editPrompt.placeholder = '描述该风格的写作特点…';
+        editName.placeholder = I18N.t('presetStylesCopyNamePlaceholder', '例如：知乎专栏');
+        editPrompt.placeholder = I18N.t('presetStylesCopyDescPlaceholder', '描述该风格的写作特点…');
         editName.disabled = false;
         return;
       }
@@ -831,8 +831,8 @@ function loadTextConfig() {
     function saveEdit() {
       var name = editName.value.trim();
       var prompt = editPrompt.value.trim();
-      if (!name) { alert('请输入风格名称'); return; }
-      if (!prompt) { alert('请输入风格描述'); return; }
+      if (!name) { alert(I18N.t('copyErrorNameRequired', '请输入风格名称')); return; }
+      if (!prompt) { alert(I18N.t('copyErrorDescRequired', '请输入风格描述')); return; }
 
       var custom = loadCustomStyles();
       if (editingId === null) {
@@ -978,7 +978,7 @@ function loadTextConfig() {
     document.getElementById('hm-delete-btn').addEventListener('click', function() {
       var history = getHistory();
       if (hmIdx >= 0 && hmIdx < history.length) {
-        if (!confirm('确定删除这条记录？')) return;
+        if (!confirm(I18N.t('copyHistoryDeleteConfirm', '确定删除这条记录？'))) return;
         history.splice(hmIdx, 1);
         localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         closeHistoryModal();

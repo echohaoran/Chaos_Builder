@@ -421,10 +421,10 @@
         <div class="field">
           <label data-i18n="labelUploadImage">上传参考图</label>
           <div class="upload-zone" id="upload-zone" role="button" tabindex="0">
-            <input type="file" id="image" name="image" accept="image/*" />
+            <input type="file" id="image" name="image" accept="image/*" multiple />
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span class="label" data-i18n="actionUpload">上传图片</span>
-            <span class="hint" data-i18n="hintDragDrop">支持拖拽上传</span>
+            <span class="hint" data-i18n="hintMultipleFiles">支持拖拽上传，最多 5 张</span>
           </div>
           <div class="preview-list" id="preview-list"></div>
         </div>
@@ -446,7 +446,7 @@
 
         <div class="field">
           <span class="field-label" data-i18n="labelOrientation">方向</span>
-          <div class="orientation-toggle" role="radiogroup" aria-label="方向">
+          <div class="orientation-toggle" role="radiogroup" aria-label="方向" data-i18n-attr="aria-label" data-i18n-aria-label="ariaDirection">
             <label class="orientation-option">
               <input type="radio" name="orientation" value="landscape" checked />
               <span data-i18n="orientationLandscape">横屏</span>
@@ -557,7 +557,8 @@
       const progressMonitor = document.getElementById('progress-monitor');
       const HISTORY_TYPE = 'image';
 
-      let currentFile = null;
+      let currentFiles = [];
+      const MAX_FILES = 5;
 
       function updateTitle() {
         const brand = I18N.t('brandName');
@@ -570,23 +571,33 @@
         btn.textContent = next === 'zh-CN' ? I18N.t('langZh') : I18N.t('langEn');
       }
 
-      function renderPreview(file) {
-        currentFile = file;
-        const url = URL.createObjectURL(file);
-        previewList.innerHTML = '<div class="preview-item">' +
-          '<img src="' + url + '" alt="" />' +
-          '<button type="button" aria-label="remove">×</button>' +
-        '</div>';
-        previewList.querySelector('button').addEventListener('click', function () {
-          currentFile = null;
-          previewList.innerHTML = '';
-          fileInput.value = '';
+      function renderPreviews() {
+        previewList.innerHTML = '';
+        currentFiles.forEach(function(file, index) {
+          const url = URL.createObjectURL(file);
+          const item = document.createElement('div');
+          item.className = 'preview-item';
+          item.innerHTML = '<img src="' + url + '" alt="" />' +
+            '<button type="button" aria-label="remove" data-index="' + index + '">×</button>';
+          item.querySelector('button').addEventListener('click', function () {
+            currentFiles.splice(index, 1);
+            renderPreviews();
+          });
+          previewList.appendChild(item);
         });
       }
 
-      function handleFile(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        renderPreview(file);
+      function handleFiles(files) {
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          if (!file || !file.type.startsWith('image/')) continue;
+          if (currentFiles.length >= MAX_FILES) {
+            showError(I18N.t('errorMaxFiles', '最多上传 ' + MAX_FILES + ' 张图片'));
+            break;
+          }
+          currentFiles.push(file);
+        }
+        renderPreviews();
       }
 
       function openFilePicker() {
@@ -612,11 +623,12 @@
       uploadZone.addEventListener('drop', function (e) {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
       });
 
       fileInput.addEventListener('change', function () {
-        if (fileInput.files.length) handleFile(fileInput.files[0]);
+        if (fileInput.files.length) handleFiles(fileInput.files);
+        fileInput.value = '';
       });
 
       function setLoading(loading) {
@@ -693,7 +705,7 @@
           showError(I18N.t('errorNoPrompt'));
           return;
         }
-        if (!currentFile) {
+        if (currentFiles.length === 0) {
           showError(I18N.t('errorNoImage'));
           return;
         }
@@ -705,7 +717,7 @@
         await new Promise(function (r) { setTimeout(r, 0); });
 
         try {
-          const promise = ChaosAPI.editImage(currentFile, prompt, {
+          const promise = ChaosAPI.multiImageEdit(currentFiles, prompt, {
             size: form.size.value,
             quality: form.quality.value,
           });

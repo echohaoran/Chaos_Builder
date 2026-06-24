@@ -67,7 +67,7 @@
         <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
         <div class="user-menu" id="user-menu"></div>
       </div>
-      <button class="btn btn-ghost btn-icon nav-mobile-toggle" aria-label="打开菜单"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button class="btn btn-ghost btn-icon nav-mobile-toggle" aria-label="打开菜单" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
   </header>
   <main class="container">
@@ -77,30 +77,30 @@
       <p class="lead" data-i18n="pagePresetStylesSubtitle">统一管理图片风格与文案风格预设。</p>
     </header>
     <div class="mode-tabs" role="tablist">
-      <button type="button" class="mode-tab active" data-type="image" role="tab">图片风格</button>
-      <button type="button" class="mode-tab" data-type="copy" role="tab">文案风格</button>
+      <button type="button" class="mode-tab active" data-type="image" role="tab" data-i18n="presetStylesTabImage">图片风格</button>
+      <button type="button" class="mode-tab" data-type="copy" role="tab" data-i18n="presetStylesTabCopy">文案风格</button>
     </div>
 
     <!-- Image Presets -->
     <section class="preset-section active" data-type="image">
       <div class="section-header">
-        <h2>图片风格预设</h2>
-        <button type="button" class="btn btn-primary btn-sm" id="add-image-preset-btn">新增图片风格</button>
+        <h2 data-i18n="presetStylesImageTitle">图片风格预设</h2>
+        <button type="button" class="btn btn-primary btn-sm" id="add-image-preset-btn" data-i18n="presetStylesImageAdd">新增图片风格</button>
       </div>
       <div class="edit-area" id="image-edit-area">
-        <div class="field"><label>名称</label><input type="text" id="image-edit-name" placeholder="例如：高端香水" /></div>
-        <div class="field"><label>标签</label><input type="text" id="image-edit-label" placeholder="例如：超写实 CG 渲染" /></div>
-        <div class="field"><label>比例</label><select id="image-edit-aspect"><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="21:9">21:9</option><option value="16:9">16:9</option><option value="4:5">4:5</option><option value="4:3">4:3</option></select></div>
-        <div class="field"><label>提示词模板</label><textarea id="image-edit-prompt" rows="4"></textarea></div>
-        <div class="field"><label>样板图片</label>
+        <div class="field"><label data-i18n="presetStylesLabelName">名称</label><input type="text" id="image-edit-name" placeholder="例如：高端香水" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesNamePlaceholder" /></div>
+        <div class="field"><label data-i18n="presetStylesLabelTag">标签</label><input type="text" id="image-edit-label" placeholder="例如：超写实 CG 渲染" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesTagPlaceholder" /></div>
+        <div class="field"><label data-i18n="presetStylesLabelAspect">比例</label><select id="image-edit-aspect"><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="21:9">21:9</option><option value="16:9">16:9</option><option value="4:5">4:5</option><option value="4:3">4:3</option></select></div>
+        <div class="field"><label data-i18n="presetStylesLabelPrompt">提示词模板</label><textarea id="image-edit-prompt" rows="4"></textarea></div>
+        <div class="field"><label data-i18n="presetStylesLabelCover">样板图片</label>
           <div id="image-edit-preview" style="width:100px;height:100px;border:2px dashed var(--border);border-radius:var(--border-radius);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--bg);">
-            <span style="font-size:var(--text-xs);color:var(--muted);">点击上传</span>
+            <span style="font-size:var(--text-xs);color:var(--muted);" data-i18n="presetStylesUploadHint">点击上传</span>
           </div>
           <input type="file" id="image-edit-upload" accept="image/*" style="display:none;" />
         </div>
         <div class="edit-actions">
-          <button type="button" class="btn btn-primary" id="image-edit-save">保存</button>
-          <button type="button" class="btn btn-ghost" id="image-edit-cancel">取消</button>
+          <button type="button" class="btn btn-primary" id="image-edit-save" data-i18n="presetStylesSave">保存</button>
+          <button type="button" class="btn btn-ghost" id="image-edit-cancel" data-i18n="presetStylesCancel">取消</button>
         </div>
       </div>
       <div class="preset-grid" id="image-preset-grid"></div>
@@ -109,15 +109,15 @@
     <!-- Copy Presets -->
     <section class="preset-section" data-type="copy">
       <div class="section-header">
-        <h2>文案风格预设</h2>
-        <button type="button" class="btn btn-primary btn-sm" id="add-copy-preset-btn">新增文案风格</button>
+        <h2 data-i18n="presetStylesCopyTitle">文案风格预设</h2>
+        <button type="button" class="btn btn-primary btn-sm" id="add-copy-preset-btn" data-i18n="presetStylesCopyAdd">新增文案风格</button>
       </div>
       <div class="edit-area" id="copy-edit-area">
-        <div class="field"><label>名称</label><input type="text" id="copy-edit-name" placeholder="例如：知乎专栏" /></div>
-        <div class="field"><label>风格描述</label><textarea id="copy-edit-prompt" rows="3" placeholder="描述该风格的写作特点…"></textarea></div>
+        <div class="field"><label data-i18n="presetStylesLabelName">名称</label><input type="text" id="copy-edit-name" placeholder="例如：知乎专栏" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyNamePlaceholder" /></div>
+        <div class="field"><label data-i18n="presetStylesLabelDesc">风格描述</label><textarea id="copy-edit-prompt" rows="3" placeholder="描述该风格的写作特点…" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyDescPlaceholder"></textarea></div>
         <div class="edit-actions">
-          <button type="button" class="btn btn-primary" id="copy-edit-save">保存</button>
-          <button type="button" class="btn btn-ghost" id="copy-edit-cancel">取消</button>
+          <button type="button" class="btn btn-primary" id="copy-edit-save" data-i18n="presetStylesSave">保存</button>
+          <button type="button" class="btn btn-ghost" id="copy-edit-cancel" data-i18n="presetStylesCancel">取消</button>
         </div>
       </div>
       <div class="copy-grid" id="copy-style-list"></div>
@@ -232,7 +232,7 @@ function initImgCache() {
       var textOnly = l.map(function(p) {
         var c = {}; for(var k in p) if(k!=='imgData') c[k]=p[k]; return c;
       });
-      try { localStorage.setItem(IMAGE_CUSTOM_KEY, JSON.stringify(textOnly)); } catch(e) { alert('保存失败：存储空间不足'); return; }
+      try { localStorage.setItem(IMAGE_CUSTOM_KEY, JSON.stringify(textOnly)); } catch(e) { alert(I18N.t('presetStylesErrorStorage', '保存失败：存储空间不足')); return; }
       // 图片存入 IndexedDB（~数百 MB 限额）
       l.forEach(function(p) {
         if (p.imgData && p.imgData !== imgDataCache[p.id]) {
@@ -253,7 +253,7 @@ function initImgCache() {
         var c = document.createElement('div'); c.className = 'preset-card';
         c.innerHTML = '<div class="card-content"><div class="card-name">'+esc(p.name)+'</div><div class="card-meta">'+esc(p.label||'')+' · '+(p.aspect||'')+'</div><div class="card-prompt">'+esc(p.prompt)+'</div><div class="card-actions"><button type="button" class="btn btn-secondary btn-sm" data-action="edit" data-id="'+p.id+'">编辑</button><button type="button" class="btn btn-ghost btn-sm" data-action="delete" data-id="'+p.id+'">删除</button></div></div>' + (imgSrc ? '<div class="card-preview"><img src="'+imgSrc+'" alt="'+esc(p.name)+'" data-lightbox /></div>' : '');
         c.querySelector('[data-action="edit"]').onclick = function() { startEditImg(p.id); };
-        c.querySelector('[data-action="delete"]').onclick = function() { if (confirm('确定删除「'+p.name+'」？')) { delete imgDataCache[p.id]; ImgDB.remove(p.id).catch(function(){}); saveImgCustom(getImgCustom().filter(function(x){return x.id!==p.id;})); renderImg(); } };
+        c.querySelector('[data-action="delete"]').onclick = function() { if (confirm(I18N.t('presetStylesDeleteConfirm', '确定删除') + '「' + p.name + '」？')) { delete imgDataCache[p.id]; ImgDB.remove(p.id).catch(function(){}); saveImgCustom(getImgCustom().filter(function(x){return x.id!==p.id;})); renderImg(); } };
         var previewImg = c.querySelector('[data-lightbox]');
         if (previewImg) previewImg.onclick = function(e) { e.stopPropagation(); openLightbox(imgSrc); };
         grid.appendChild(c);
@@ -267,7 +267,7 @@ function initImgCache() {
       document.getElementById('image-edit-upload').value = '';
       var preview = document.getElementById('image-edit-preview');
       var imgMap = { perfume:'perfume.png', coffee:'coffee.png', sneaker:'sneaker.png', techAi:'techai.png', mooncake:'mooncake.png' };
-      if (id==='NEW') { ['name','label','prompt'].forEach(function(f){document.getElementById('image-edit-'+f).value='';}); document.getElementById('image-edit-aspect').value='1:1'; preview.innerHTML = '<span style="font-size:var(--text-xs);color:var(--muted);">点击上传</span>'; return; }
+      if (id==='NEW') { ['name','label','prompt'].forEach(function(f){document.getElementById('image-edit-'+f).value='';}); document.getElementById('image-edit-aspect').value='1:1'; preview.innerHTML = '<span style="font-size:var(--text-xs);color:var(--muted);">' + I18N.t('presetStylesUploadHint', '点击上传') + '</span>'; return; }
       var all=getImgCustom();
       for(var i=0;i<all.length;i++) if(all[i].id===id) {
         document.getElementById('image-edit-name').value=all[i].name;
@@ -276,7 +276,7 @@ function initImgCache() {
         document.getElementById('image-edit-prompt').value=all[i].prompt;
         var imgSrc = (imgMap[id] ? '../assets/presets/' + imgMap[id] : null) || all[i].imgData || null;
         if (imgSrc) { CURRENT_IMG_DATA = imgSrc; preview.innerHTML = '<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;" />'; }
-        else { preview.innerHTML = '<span style="font-size:var(--text-xs);color:var(--muted);">点击上传</span>'; }
+        else { preview.innerHTML = '<span style="font-size:var(--text-xs);color:var(--muted);">' + I18N.t('presetStylesUploadHint', '点击上传') + '</span>'; }
         return;
       }
     }
@@ -296,7 +296,7 @@ function initImgCache() {
     document.getElementById('add-image-preset-btn').onclick = function() { startEditImg('NEW'); };
     document.getElementById('image-edit-save').onclick = function() {
       var n=document.getElementById('image-edit-name').value.trim(), l=document.getElementById('image-edit-label').value.trim(), a=document.getElementById('image-edit-aspect').value, p=document.getElementById('image-edit-prompt').value.trim();
-      if(!n||!p){alert('名称和提示词不能为空');return;} var list=getImgCustom();
+      if(!n||!p){alert(I18N.t('presetStylesErrorRequired', '名称和提示词不能为空'));return;} var list=getImgCustom();
       var obj = {id:editImgId==='NEW'?'img_'+Date.now():editImgId, name:n, label:l, aspect:a, prompt:p};
       if (CURRENT_IMG_DATA) obj.imgData = CURRENT_IMG_DATA;
       if(editImgId==='NEW') { list.push(obj); }
@@ -318,12 +318,12 @@ function initImgCache() {
     var editCopyId = null;
     function renderCopy() {
       var list = document.getElementById('copy-style-list'); var all = getCopy(); list.innerHTML = '';
-      if (all.length===0) { list.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--muted);">暂无文案风格，点击上方按钮新增。</div>'; return; }
+      if (all.length===0) { list.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--muted);">' + I18N.t('presetStylesCopyEmpty', '暂无文案风格，点击上方按钮新增。') + '</div>'; return; }
       all.forEach(function(p) {
         var card = document.createElement('div'); card.className = 'copy-card';
         card.innerHTML = '<div class="card-name">'+esc(p.name)+'</div><div class="card-prompt">'+esc(p.prompt)+'</div><div class="card-actions"><button type="button" class="btn btn-secondary btn-sm" data-action="edit" data-id="'+p.id+'">编辑</button><button type="button" class="btn btn-ghost btn-sm btn-danger" data-action="delete" data-id="'+p.id+'">删除</button></div>';
         card.querySelector('[data-action="edit"]').onclick=function(){startEditCopy(p.id);};
-        card.querySelector('[data-action="delete"]').onclick=function(){if(confirm('确定删除「'+p.name+'」？')){saveCopy(getCopy().filter(function(x){return x.id!==p.id;}));renderCopy();}};
+        card.querySelector('[data-action="delete"]').onclick=function(){if(confirm(I18N.t('presetStylesDeleteConfirm', '确定删除') + '「' + p.name + '」？')){saveCopy(getCopy().filter(function(x){return x.id!==p.id;}));renderCopy();}};
         list.appendChild(card);
       });
     }
@@ -335,7 +335,7 @@ function initImgCache() {
     document.getElementById('add-copy-preset-btn').onclick=function(){startEditCopy('NEW');};
     document.getElementById('copy-edit-save').onclick=function(){
       var n=document.getElementById('copy-edit-name').value.trim(), p=document.getElementById('copy-edit-prompt').value.trim();
-      if(!n||!p){alert('名称和描述不能为空');return;} var list=getCopy();
+      if(!n||!p){alert(I18N.t('presetStylesErrorCopyRequired', '名称和描述不能为空'));return;} var list=getCopy();
       if(editCopyId==='NEW') list.push({id:'copy_'+Date.now(),name:n,prompt:p});
       else for(var i=0;i<list.length;i++) if(list[i].id===editCopyId){list[i]={id:editCopyId,name:n,prompt:p};break;}
       saveCopy(list); document.getElementById('copy-edit-area').classList.remove('open'); editCopyId=null; renderCopy();
