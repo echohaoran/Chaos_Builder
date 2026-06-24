@@ -822,9 +822,12 @@
         resultEmpty.hidden = false;
         resultGrid.hidden = true;
       }
+      // 切换时清空预览图，不恢复旧状态
+      resultImages = [];
+      resultIndex = 0;
+      resultGrid.hidden = true;
+      sessionStorage.removeItem(RESULT_STATE_KEY);
       statusError.hidden = true;
-      // 非 preset 模式才恢复结果状态
-      if (mode !== 'preset') restoreResultState();
     }
 
     // ─── File upload handlers ──────────────────────────────
