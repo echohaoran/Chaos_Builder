@@ -55,15 +55,51 @@
 
             .settings-card {
                 --card-accent: var(--accent);
+                position: relative;
                 background: var(--surface);
                 border: 1px solid var(--border);
-                border-left: 4px solid var(--card-accent);
                 border-radius: var(--radius-lg);
                 padding: var(--space-6);
+                padding-top: calc(var(--space-6) + 4px);
                 box-shadow: var(--elev-raised);
                 transition:
                     transform var(--motion-base) var(--ease-standard),
                     box-shadow var(--motion-base) var(--ease-standard);
+            }
+
+            /* Top accent bar */
+            .settings-card::before {
+                content: "";
+                position: absolute;
+                top: -1px;
+                left: -1px;
+                right: -1px;
+                height: 4px;
+                background: var(--card-accent);
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            }
+
+            /* Subtle gradient wash emanating from accent bar */
+            .settings-card::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 72px;
+                background: linear-gradient(
+                    to bottom,
+                    color-mix(in oklab, var(--card-accent), transparent 90%),
+                    transparent
+                );
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+                pointer-events: none;
+            }
+
+            /* Bring all card content above the gradient wash */
+            .settings-card > * {
+                position: relative;
+                z-index: 1;
             }
 
             .settings-card:hover {
@@ -102,6 +138,8 @@
                 height: 8px;
                 border-radius: 50%;
                 background: var(--card-accent);
+                box-shadow: 0 0 0 3px color-mix(in oklab, var(--card-accent), transparent 75%);
+                flex-shrink: 0;
             }
 
             .settings-card .field + .field {
@@ -112,6 +150,30 @@
                 font-size: var(--text-sm);
                 color: var(--muted);
                 margin-bottom: var(--space-5);
+                line-height: var(--leading-body);
+            }
+
+            /* ── Enhanced form fields within settings ── */
+            .settings-card .field input,
+            .settings-card .field select {
+                border-width: 1.5px;
+                background: var(--bg);
+                transition:
+                    border-color var(--motion-fast) var(--ease-standard),
+                    box-shadow var(--motion-fast) var(--ease-standard),
+                    background var(--motion-fast) var(--ease-standard);
+            }
+
+            .settings-card .field input:focus,
+            .settings-card .field select:focus {
+                outline: none;
+                border-color: var(--card-accent);
+                background: var(--surface);
+                box-shadow: 0 0 0 3px color-mix(in oklab, var(--card-accent), transparent 75%);
+            }
+
+            .settings-card .field-help {
+                margin-top: var(--space-1);
                 line-height: var(--leading-body);
             }
 
@@ -126,30 +188,44 @@
             .provider-badge {
                 display: inline-flex;
                 align-items: center;
-                gap: var(--space-1);
-                font-size: var(--text-xs);
-                font-weight: 600;
-                letter-spacing: 0.04em;
+                gap: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.05em;
                 text-transform: uppercase;
-                padding: var(--space-1) var(--space-2);
+                padding: 3px 10px;
                 border-radius: var(--radius-pill);
                 background: color-mix(
                     in oklab,
-                    var(--provider-color, var(--fg-2)) 12%,
+                    var(--provider-color, var(--fg-2)) 18%,
                     transparent
                 );
                 color: var(--provider-color, var(--fg-2));
+                border: 1px solid color-mix(
+                    in oklab,
+                    var(--provider-color, var(--fg-2)) 25%,
+                    transparent
+                );
                 transition:
-                    background-color var(--motion-fast) var(--ease-standard),
-                    color var(--motion-fast) var(--ease-standard);
+                    background-color var(--motion-base) var(--ease-standard),
+                    color var(--motion-base) var(--ease-standard),
+                    border-color var(--motion-base) var(--ease-standard),
+                    transform var(--motion-fast) var(--ease-standard);
             }
 
             .provider-badge::before {
                 content: "";
-                width: 6px;
-                height: 6px;
+                width: 7px;
+                height: 7px;
                 border-radius: 50%;
                 background: currentColor;
+                flex-shrink: 0;
+                animation: badge-pulse 2s ease-in-out infinite;
+            }
+
+            @keyframes badge-pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
             }
 
             section:has(#provider option:checked[value="ppio"]),
@@ -337,19 +413,32 @@
                 opacity: 0.7;
             }
 
+            .user-row:nth-child(even) {
+                background: var(--surface);
+            }
+
+            .user-row:hover {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            }
+
             .user-avatar {
-                width: 40px;
-                height: 40px;
+                width: 44px;
+                height: 44px;
                 display: grid;
                 place-items: center;
                 flex-shrink: 0;
-                font-size: var(--text-sm);
-                font-weight: 600;
+                font-size: var(--text-base);
+                font-weight: 700;
                 letter-spacing: 0.02em;
                 text-transform: uppercase;
                 color: var(--surface);
-                background: var(--card-accent);
+                background: linear-gradient(
+                    135deg,
+                    var(--card-accent),
+                    color-mix(in oklab, var(--card-accent), white 20%)
+                );
                 border-radius: 50%;
+                box-shadow: 0 2px 6px color-mix(in oklab, var(--card-accent), transparent 70%);
             }
 
             .user-info {
@@ -423,25 +512,29 @@
                 transition:
                     color var(--motion-fast) var(--ease-standard),
                     border-color var(--motion-fast) var(--ease-standard),
-                    background var(--motion-fast) var(--ease-standard);
+                    background var(--motion-fast) var(--ease-standard),
+                    transform var(--motion-fast) var(--ease-standard);
             }
 
             .user-actions .btn-icon-sm:hover {
                 border-color: var(--accent);
                 color: var(--fg);
                 background: var(--surface);
+                transform: scale(1.08);
             }
 
             .user-actions .btn-icon-sm.danger:hover {
                 border-color: var(--danger);
                 color: var(--danger);
                 background: rgba(220, 38, 38, 0.06);
+                transform: scale(1.08);
             }
 
             .user-actions .btn-icon-sm.warning:hover {
                 border-color: var(--provider-anthropic);
                 color: var(--provider-anthropic);
                 background: rgba(245, 158, 11, 0.06);
+                transform: scale(1.08);
             }
 
             /* Non-admin notice */
@@ -455,15 +548,29 @@
                 gap: var(--space-4);
             }
 
+            /* Remove gradient wash overlay for this card */
+            .non-admin-notice::after {
+                display: none;
+            }
+
             .non-admin-icon {
-                width: 64px;
-                height: 64px;
+                width: 72px;
+                height: 72px;
                 display: grid;
                 place-items: center;
-                background: var(--bg);
+                background: linear-gradient(135deg, var(--bg), var(--surface-warm));
                 border: 1px solid var(--border);
                 border-radius: 50%;
                 color: var(--meta);
+                position: relative;
+            }
+
+            .non-admin-icon::after {
+                content: "";
+                position: absolute;
+                inset: -3px;
+                border-radius: 50%;
+                border: 1.5px dashed var(--border-soft);
             }
 
             .non-admin-icon svg {
@@ -625,6 +732,18 @@
                 }
                 .nav-actions .btn:not(.lang-toggle) {
                     display: none;
+                }
+                .settings-card {
+                    padding: var(--space-5);
+                    padding-top: calc(var(--space-5) + 4px);
+                }
+                .non-admin-notice {
+                    padding: var(--space-8) var(--space-5);
+                }
+                .user-avatar {
+                    width: 38px;
+                    height: 38px;
+                    font-size: var(--text-sm);
                 }
             }
         </style>
