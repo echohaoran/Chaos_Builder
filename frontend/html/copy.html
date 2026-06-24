@@ -81,49 +81,6 @@
             }
 
             /* Upload zone */
-            .upload-zone {
-                border: 2px dashed var(--border);
-                padding: var(--space-4);
-                text-align: center;
-                cursor: pointer;
-                transition:
-                    border-color 0.2s,
-                    background 0.2s;
-            }
-            .upload-zone:hover,
-            .upload-zone.dragover {
-                border-color: var(--accent);
-                background: color-mix(in srgb, var(--accent) 6%, transparent);
-            }
-            .upload-zone input[type="file"] {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                opacity: 0;
-                overflow: hidden;
-                pointer-events: none;
-            }
-            .upload-zone svg {
-                display: block;
-                margin: 0 auto var(--space-2);
-                color: var(--accent);
-            }
-            .upload-zone .label {
-                font-weight: 500;
-                color: var(--text);
-                margin-bottom: var(--space-1);
-            }
-            .upload-zone .hint {
-                font-size: var(--text-sm);
-                color: var(--muted);
-            }
-            .file-name {
-                font-size: var(--text-sm);
-                color: var(--accent);
-                margin-top: var(--space-2);
-                word-break: break-all;
-            }
-
             /* Style row: dropdown + manage button */
             .style-row {
                 display: flex;
@@ -708,49 +665,6 @@
                         ></textarea>
                     </div>
 
-                    <!-- File upload -->
-                    <div class="field">
-                        <label data-i18n="copyUploadLabel"
-                            >上传参考素材（可选）</label
-                        >
-                        <div
-                            class="upload-zone"
-                            id="upload-zone"
-                            tabindex="0"
-                            role="button"
-                            aria-label="上传参考文件"
-                        >
-                            <svg
-                                width="28"
-                                height="28"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.6"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path
-                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-                                />
-                                <polyline points="17 8 12 3 7 8" />
-                                <line x1="12" y1="3" x2="12" y2="15" />
-                            </svg>
-                            <div class="label" data-i18n="copyUploadHint">
-                                拖拽或点击上传素材文件
-                            </div>
-                            <div class="hint" data-i18n="copyUploadFormats">
-                                支持 .txt, .docx, .md, .pdf
-                            </div>
-                            <div class="file-name" id="file-name"></div>
-                            <input
-                                type="file"
-                                id="file-input"
-                                accept=".txt,.docx,.md,.pdf,image/*"
-                            />
-                        </div>
-                    </div>
-
                     <!-- Style presets: dropdown + manage button -->
                     <div class="field">
                         <label data-i18n="copyStyleLabel">文案风格</label>
@@ -1108,9 +1022,6 @@
                 var styleSelect = document.getElementById("style-select");
                 var manageStylesBtn =
                     document.getElementById("manage-styles-btn");
-                var uploadZone = document.getElementById("upload-zone");
-                var fileInput = document.getElementById("file-input");
-                var fileName = document.getElementById("file-name");
                 var toneSelect = document.getElementById("tone");
                 var copyToast = document.getElementById("copy-toast");
                 var providerIndicator =
@@ -1125,7 +1036,6 @@
                 var addStyleBtn = document.getElementById("add-style-btn");
 
                 var HISTORY_KEY = "chaos_builder_copy_history";
-                var currentFile = null;
                 var lastResult = null;
                 var textConfig = null; // { provider, model, apiKey, apiBaseUrl }
 
@@ -1397,42 +1307,6 @@
                         btn.textContent = I18N.locale() === "en" ? "中" : "EN";
                 }
 
-                // ─── File upload ───────────────────────────────────────
-                uploadZone.addEventListener("click", function () {
-                    fileInput.click();
-                });
-                uploadZone.addEventListener("keydown", function (e) {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        fileInput.click();
-                    }
-                });
-                uploadZone.addEventListener("dragover", function (e) {
-                    e.preventDefault();
-                    uploadZone.classList.add("dragover");
-                });
-                uploadZone.addEventListener("dragleave", function () {
-                    uploadZone.classList.remove("dragover");
-                });
-                uploadZone.addEventListener("drop", function (e) {
-                    e.preventDefault();
-                    uploadZone.classList.remove("dragover");
-                    if (e.dataTransfer.files.length)
-                        handleFile(e.dataTransfer.files[0]);
-                });
-                fileInput.addEventListener("change", function () {
-                    if (fileInput.files.length) handleFile(fileInput.files[0]);
-                });
-
-                function handleFile(file) {
-                    currentFile = file;
-                    fileName.textContent =
-                        file.name +
-                        " (" +
-                        (file.size / 1024).toFixed(1) +
-                        " KB)";
-                }
-
                 // ─── History ────────────────────────────────────────────
                 function getHistory() {
                     try {
@@ -1683,11 +1557,7 @@
                                 { role: "system", content: systemPrompt },
                                 {
                                     role: "user",
-                                    content:
-                                        prompt +
-                                        (currentFile
-                                            ? "\n\n参考素材已上传，请结合素材内容生成文案。"
-                                            : ""),
+                                    content: prompt,
                                 },
                             ],
                             max_tokens: 2048,
