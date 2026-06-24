@@ -1,10 +1,11 @@
 <!doctype html>
+
 <style>
   /* 全局 3px 圆角覆盖 —— 仅影响子页面矩形元素 */
   *,
   *::before,
   *::after {
-    border-radius: 5px !important;
+    border-radius: 10px !important;
   }
   /* 保留圆形元素 */
   .preview-item .remove-btn,
@@ -17,13 +18,13 @@
   }
   /* 保留丸形按钮 */
   .btn {
-    border-radius: 5px !important;
+    border-radius: 10px !important;
   }
   .mode-tabs {
-    border-radius: 5px !important;
+    border-radius: 10px !important;
   }
   .mode-tab {
-    border-radius: 5px !important;
+    border-radius: 10px !important;
   }
 </style>
 
@@ -172,6 +173,18 @@
     /* Mode-specific sections */
     .mode-section { display: none; }
     .mode-section.active { display: block; }
+
+    /* --- Figure-to-image (图生图) mode field labels fix --- */
+    /* In the Image mode and Multi mode panels, some <select> elements
+       are placed directly inside .field divs without a preceding <label>,
+       making them appear to lack visible label text.
+       We add an explicit label for every control that is missing one,
+       so that "尺寸", "方向", "画质", "数量" are always visible. */
+    .mode-section[data-mode="image"] .field > select:first-child,
+    .mode-section[data-mode="multi"] .field > select:first-child {
+      /* Ensure the select itself doesn't obscure a label that should be there;
+         the real fix is to insert proper <label> elements in the HTML below. */
+    }
 
     /* Result panel */
     .generator-result {
@@ -357,6 +370,7 @@
       margin-bottom: var(--space-6);
     }
     .history-header h2 { margin: 0; }
+    .history-actions { display: flex; gap: var(--space-2); }
     .history-empty { text-align: center; padding: var(--space-8); color: var(--muted); }
     .history-grid {
       display: grid;
@@ -365,6 +379,54 @@
       margin-bottom: var(--section-y-desktop);
     }
     .history-grid[hidden] { display: none; }
+    .history-item {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .history-item:hover { border-color: var(--accent); box-shadow: var(--elev-raised); }
+    .history-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+    }
+    .history-item .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+    .history-item:hover .delete-btn { display: flex; }
+    .history-item .delete-btn:hover { background: var(--danger, #dc2626); }
+    .history-item .select-checkbox {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      display: none;
+    }
+    .history-grid.select-mode .history-item .select-checkbox { display: block; }
+    .history-grid.select-mode .history-item .delete-btn { display: none !important; }
+    .history-grid.select-mode .history-item.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 
     /* Footer */
     .footer {
@@ -506,6 +568,7 @@
             <textarea id="image-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何修改参考图…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderImagePrompt"></textarea>
           </div>
           <div class="field">
+            <label for="image-size" data-i18n="labelSize">尺寸</label>
             <select id="image-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="1024x1024">1024 × 1024</option>
               <option value="1024x1536">1024 × 1536</option>
@@ -514,6 +577,7 @@
             </select>
           </div>
           <div class="field">
+            <label data-i18n="labelOrientation">方向</label>
             <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
               <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
                 <input type="radio" name="image-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
@@ -527,6 +591,7 @@
             </div>
           </div>
           <div class="field">
+            <label for="image-quality" data-i18n="labelQuality">画质</label>
             <select id="image-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="hd" data-i18n="qualityHd">高清</option>
               <option value="standard" data-i18n="qualityStandard">标准</option>
@@ -551,6 +616,7 @@
             <textarea id="multi-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何融合这些参考图…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderMultiPrompt"></textarea>
           </div>
           <div class="field">
+            <label for="multi-size" data-i18n="labelSize">尺寸</label>
             <select id="multi-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="1024x1024">1024 × 1024</option>
               <option value="1024x1536">1024 × 1536</option>
@@ -559,6 +625,7 @@
             </select>
           </div>
           <div class="field">
+            <label data-i18n="labelOrientation">方向</label>
             <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
               <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
                 <input type="radio" name="multi-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
@@ -572,6 +639,7 @@
             </div>
           </div>
           <div class="field">
+            <label for="multi-quality" data-i18n="labelQuality">画质</label>
             <select id="multi-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="hd" data-i18n="qualityHd">高清</option>
               <option value="standard" data-i18n="qualityStandard">标准</option>
@@ -639,7 +707,13 @@
     <!-- History -->
     <div class="history-header">
       <h2 data-i18n="historyTitle">生成历史</h2>
-      <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="actionClearHistory">清空历史</button>
+      <div class="history-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="select-mode-btn" data-i18n="actionSelectMode">多选</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="select-all-btn" data-i18n="actionSelectAll" hidden>全选</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-danger" id="delete-selected-btn" data-i18n="actionDeleteSelected" hidden>删除选中</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="cancel-select-btn" data-i18n="actionCancelSelect" hidden>取消</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="actionClearHistory">清空历史</button>
+      </div>
     </div>
     <div class="history-empty" id="history-empty" data-i18n="historyEmpty">暂无历史记录</div>
     <div class="history-grid" id="history-grid" hidden></div>
@@ -689,6 +763,11 @@
     var historyGrid = document.getElementById('history-grid');
     var historyEmpty = document.getElementById('history-empty');
     var clearHistoryBtn = document.getElementById('clear-history-btn');
+    var selectModeBtn = document.getElementById('select-mode-btn');
+    var selectAllBtn = document.getElementById('select-all-btn');
+    var deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    var cancelSelectBtn = document.getElementById('cancel-select-btn');
+    var isSelectMode = false;
     var progressMonitor = document.getElementById('progress-monitor');
     var barFill = document.getElementById('bar-fill');
     var elapsedEl = document.getElementById('elapsed');
@@ -1017,12 +1096,77 @@
       historyGrid.innerHTML = '';
       history.forEach(function(entry) {
         var card = document.createElement('div');
-        card.className = 'result-item';
-        card.style.minHeight = '200px';
-        card.innerHTML = '<img src="' + entry.url + '" alt="" loading="lazy" style="max-height:300px" />';
+        card.className = 'history-item';
+        card.dataset.url = entry.url;
+        card.dataset.createdAt = entry.createdAt || '';
+        card.dataset.type = entry.type || 'text';
+        card.innerHTML =
+          '<input type="checkbox" class="select-checkbox" />' +
+          '<img src="' + entry.url + '" alt="" loading="lazy" />' +
+          '<button type="button" class="delete-btn" title="删除">×</button>';
+        // 单个删除
+        card.querySelector('.delete-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (confirm(I18N.t('confirmDeleteHistory', '确定删除这条历史记录？'))) {
+            ChaosAPI.deleteHistory(entry.type || 'text', entry);
+            renderHistory();
+          }
+        });
+        // 点击图片查看大图
+        card.querySelector('img').addEventListener('click', function() {
+          if (!isSelectMode) {
+            window.open(entry.url, '_blank');
+          }
+        });
+        // 复选框点击
+        card.querySelector('.select-checkbox').addEventListener('change', function() {
+          card.classList.toggle('selected', this.checked);
+        });
         historyGrid.appendChild(card);
       });
+      if (isSelectMode) historyGrid.classList.add('select-mode');
+      else historyGrid.classList.remove('select-mode');
     }
+
+    // 多选模式
+    function toggleSelectMode(enable) {
+      isSelectMode = enable;
+      historyGrid.classList.toggle('select-mode', enable);
+      selectModeBtn.hidden = enable;
+      selectAllBtn.hidden = !enable;
+      deleteSelectedBtn.hidden = !enable;
+      cancelSelectBtn.hidden = !enable;
+      clearHistoryBtn.hidden = enable;
+      if (!enable) {
+        // 取消所有选中
+        historyGrid.querySelectorAll('.select-checkbox').forEach(function(cb) {
+          cb.checked = false;
+          cb.closest('.history-item').classList.remove('selected');
+        });
+      }
+    }
+
+    selectModeBtn.addEventListener('click', function() { toggleSelectMode(true); });
+    cancelSelectBtn.addEventListener('click', function() { toggleSelectMode(false); });
+    selectAllBtn.addEventListener('click', function() {
+      var checkboxes = historyGrid.querySelectorAll('.select-checkbox');
+      var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+      checkboxes.forEach(function(cb) {
+        cb.checked = !allChecked;
+        cb.closest('.history-item').classList.toggle('selected', !allChecked);
+      });
+    });
+    deleteSelectedBtn.addEventListener('click', function() {
+      var selected = historyGrid.querySelectorAll('.history-item.selected');
+      if (selected.length === 0) return;
+      if (!confirm(I18N.t('confirmDeleteSelected', '确定删除选中的 {n} 条记录？').replace('{n}', selected.length))) return;
+      selected.forEach(function(card) {
+        var entry = { url: card.dataset.url, createdAt: parseInt(card.dataset.createdAt) || 0, type: card.dataset.type };
+        ChaosAPI.deleteHistory(entry.type, entry);
+      });
+      toggleSelectMode(false);
+      renderHistory();
+    });
 
     clearHistoryBtn.addEventListener('click', function() {
       ChaosAPI.clearHistory('text');

@@ -1,1137 +1,1778 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <link rel="icon" href="../assets/presets/logo透明.png" type="image/png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>混沌艺术 · 文案生成</title>
-  <link rel="stylesheet" href="../css/design-system.css" />
-  <style>
-    .lang-toggle {
-      position: fixed;
-      top: var(--space-4);
-      right: var(--space-4);
-      z-index: 200;
-    }
-    .page-header {
-      padding-top: 120px;
-      padding-bottom: var(--space-8);
-      text-align: center;
-    }
-    .page-header h1 { margin-bottom: var(--space-4); }
-    .page-header .lead { margin: 0 auto; }
+    <head>
+        <meta charset="utf-8" />
+        <link
+            rel="icon"
+            href="../assets/presets/logo透明.png"
+            type="image/png"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>混沌艺术 · 文案生成</title>
+        <link rel="stylesheet" href="../css/design-system.css" />
+        <style>
+            /* ───── 全局圆角矩形 ───── */
+            :root {
+                --card-radius: 10px;
+            }
+            *,
+            *::before,
+            *::after {
+                border-radius: 10px !important;
+            }
+            /* 以下元素用圆形（circle）覆盖掉圆角 */
+            .spinner,
+            .spinner::before,
+            .spinner::after,
+            .user-menu img,
+            .user-menu .avatar,
+            [class*="avatar"],
+            circle,
+            [class*="circle"] {
+                border-radius: 50% !important;
+            }
+            .lang-toggle {
+                position: fixed;
+                top: var(--space-4);
+                right: var(--space-4);
+                z-index: 200;
+            }
+            .page-header {
+                padding-top: 120px;
+                padding-bottom: var(--space-8);
+                text-align: center;
+            }
+            .page-header h1 {
+                margin-bottom: var(--space-4);
+            }
+            .page-header .lead {
+                margin: 0 auto;
+            }
 
-    /* Copy generator two-column grid */
-    .copy-generator {
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: var(--space-8);
-      align-items: stretch;
-      margin-bottom: var(--section-y-desktop);
-    }
-    .copy-panel,
-    .copy-result { min-height: 0; }
+            /* Copy generator two-column grid */
+            .copy-generator {
+                display: grid;
+                grid-template-columns: 420px 1fr;
+                gap: var(--space-8);
+                align-items: stretch;
+                margin-bottom: var(--section-y-desktop);
+            }
+            .copy-panel,
+            .copy-result {
+                min-height: 0;
+            }
 
-    /* Left panel */
-    .copy-panel {
-      position: sticky;
-      top: 88px;
-      background: var(--surface);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--elev-raised);
-      padding: var(--space-6);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-5);
-    }
-    .copy-panel .field + .field { margin-top: 0; }
-    .copy-panel .btn-primary { width: 100%; }
+            /* Left panel */
+            .copy-panel {
+                position: sticky;
+                top: 88px;
+                background: var(--surface);
+                box-shadow: var(--elev-raised);
+                padding: var(--space-6);
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-5);
+            }
+            .copy-panel .field + .field {
+                margin-top: 0;
+            }
+            .copy-panel .btn-primary {
+                width: 100%;
+            }
 
-    /* Upload zone */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--border-radius-lg);
-      padding: var(--space-4);
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      border-color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 6%, transparent);
-    }
-    .upload-zone input[type="file"] {
-      position: absolute;
-      width: 1px; height: 1px;
-      opacity: 0; overflow: hidden;
-      pointer-events: none;
-    }
-    .upload-zone svg { display: block; margin: 0 auto var(--space-2); color: var(--accent); }
-    .upload-zone .label { font-weight: 500; color: var(--text); margin-bottom: var(--space-1); }
-    .upload-zone .hint { font-size: var(--text-sm); color: var(--muted); }
-    .file-name { font-size: var(--text-sm); color: var(--accent); margin-top: var(--space-2); word-break: break-all; }
+            /* Upload zone */
+            .upload-zone {
+                border: 2px dashed var(--border);
+                padding: var(--space-4);
+                text-align: center;
+                cursor: pointer;
+                transition:
+                    border-color 0.2s,
+                    background 0.2s;
+            }
+            .upload-zone:hover,
+            .upload-zone.dragover {
+                border-color: var(--accent);
+                background: color-mix(in srgb, var(--accent) 6%, transparent);
+            }
+            .upload-zone input[type="file"] {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                opacity: 0;
+                overflow: hidden;
+                pointer-events: none;
+            }
+            .upload-zone svg {
+                display: block;
+                margin: 0 auto var(--space-2);
+                color: var(--accent);
+            }
+            .upload-zone .label {
+                font-weight: 500;
+                color: var(--text);
+                margin-bottom: var(--space-1);
+            }
+            .upload-zone .hint {
+                font-size: var(--text-sm);
+                color: var(--muted);
+            }
+            .file-name {
+                font-size: var(--text-sm);
+                color: var(--accent);
+                margin-top: var(--space-2);
+                word-break: break-all;
+            }
 
-    /* Style row: dropdown + manage button */
-    .style-row {
-      display: flex;
-      gap: var(--space-2);
-      align-items: center;
-    }
-    .style-row select {
-      flex: 1;
-      padding: var(--space-2) var(--space-3);
-      border: 1px solid var(--border);
-      border-radius: var(--border-radius-lg);
-      font-size: var(--text-sm);
-      background: var(--bg);
-      color: var(--text);
-    }
-    .style-row .btn {
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+            /* Style row: dropdown + manage button */
+            .style-row {
+                display: flex;
+                gap: var(--space-2);
+                align-items: center;
+            }
+            .style-row select {
+                flex: 1;
+                padding: var(--space-2) var(--space-3);
+                border: 1px solid var(--border);
+                font-size: var(--text-sm);
+                background: var(--bg);
+                color: var(--text);
+            }
+            .style-row .btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
 
-    /* Style modal */
-    .style-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-4);
-    }
-    .style-modal.open { display: flex; }
-    .style-modal .modal-card {
-      background: var(--surface);
-      border-radius: var(--border-radius-lg);
-      width: 100%;
-      max-width: 520px;
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .style-modal .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--space-5) var(--space-6);
-      border-bottom: 1px solid var(--border);
-    }
-    .style-modal .modal-header h2 { margin: 0; font-size: var(--text-lg); }
-    .style-modal .modal-close {
-      width: 32px; height: 32px;
-      border: none;
-      background: transparent;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--muted);
-      border-radius: var(--border-radius);
-      display: grid;
-      place-items: center;
-    }
-    .style-modal .modal-close:hover { background: var(--bg); color: var(--text); }
-    .style-modal .modal-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: var(--space-4) var(--space-6);
-    }
-    .style-modal .modal-footer {
-      display: flex;
-      gap: var(--space-3);
-      padding: var(--space-4) var(--space-6);
-      border-top: 1px solid var(--border);
-    }
-    .style-modal .modal-footer .btn { flex: 1; }
+            /* Style modal */
+            .style-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.4);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: var(--space-4);
+            }
+            .style-modal.open {
+                display: flex;
+            }
+            .style-modal .modal-card {
+                background: var(--surface);
+                width: 100%;
+                max-width: 520px;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+            .style-modal .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--space-5) var(--space-6);
+                border-bottom: 1px solid var(--border);
+            }
+            .style-modal .modal-header h2 {
+                margin: 0;
+                font-size: var(--text-lg);
+            }
+            .style-modal .modal-close {
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: transparent;
+                font-size: 20px;
+                cursor: pointer;
+                color: var(--muted);
+                display: grid;
+                place-items: center;
+            }
+            .style-modal .modal-close:hover {
+                background: var(--bg);
+                color: var(--text);
+            }
+            .style-modal .modal-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: var(--space-4) var(--space-6);
+            }
+            .style-modal .modal-footer {
+                display: flex;
+                gap: var(--space-3);
+                padding: var(--space-4) var(--space-6);
+                border-top: 1px solid var(--border);
+            }
+            .style-modal .modal-footer .btn {
+                flex: 1;
+            }
 
-    /* Style list items */
-    .style-list { display: flex; flex-direction: column; gap: var(--space-2); }
-    .style-list-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3);
-      border: 1px solid var(--border);
-      border-radius: var(--border-radius-lg);
-      background: var(--bg);
-    }
-    .style-list-item .item-info { flex: 1; min-width: 0; }
-    .style-list-item .item-name {
-      font-weight: 500;
-      font-size: var(--text-sm);
-      color: var(--text);
-    }
-    .style-list-item .item-preview {
-      font-size: var(--text-xs);
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .style-list-item .item-actions {
-      display: flex;
-      gap: var(--space-1);
-      flex-shrink: 0;
-    }
-    .style-list-item .item-actions button {
-      width: 28px; height: 28px;
-      border: none;
-      background: transparent;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      color: var(--muted);
-      display: grid;
-      place-items: center;
-      font-size: 14px;
-    }
-    .style-list-item .item-actions button:hover { background: var(--surface); color: var(--text); }
-    .style-list-item .item-actions .delete-btn:hover { color: #dc2626; }
+            /* Style list items */
+            .style-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-2);
+            }
+            .style-list-item {
+                display: flex;
+                align-items: center;
+                gap: var(--space-3);
+                padding: var(--space-3);
+                border: 1px solid var(--border);
+                background: var(--bg);
+            }
+            .style-list-item .item-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .style-list-item .item-name {
+                font-weight: 500;
+                font-size: var(--text-sm);
+                color: var(--text);
+            }
+            .style-list-item .item-preview {
+                font-size: var(--text-xs);
+                color: var(--muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .style-list-item .item-actions {
+                display: flex;
+                gap: var(--space-1);
+                flex-shrink: 0;
+            }
+            .style-list-item .item-actions button {
+                width: 28px;
+                height: 28px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                color: var(--muted);
+                display: grid;
+                place-items: center;
+                font-size: 14px;
+            }
+            .style-list-item .item-actions button:hover {
+                background: var(--surface);
+                color: var(--text);
+            }
+            .style-list-item .item-actions .delete-btn:hover {
+                color: #dc2626;
+            }
 
-    /* Style edit form (inline in modal) */
-    .style-edit-area {
-      display: none;
-      margin-top: var(--space-3);
-      padding: var(--space-4);
-      border: 1px solid var(--accent);
-      border-radius: var(--border-radius-lg);
-      background: color-mix(in srgb, var(--accent) 4%, transparent);
-    }
-    .style-edit-area.open { display: block; }
-    .style-edit-area label { font-size: var(--text-sm); font-weight: 500; display: block; margin-bottom: var(--space-1); }
-    .style-edit-area input,
-    .style-edit-area textarea {
-      width: 100%;
-      padding: var(--space-2) var(--space-3);
-      border: 1px solid var(--border);
-      border-radius: var(--border-radius);
-      font-size: var(--text-sm);
-      background: var(--bg);
-      color: var(--text);
-      font-family: inherit;
-      margin-bottom: var(--space-3);
-    }
-    .style-edit-area textarea { resize: vertical; }
-    .style-edit-area .edit-actions {
-      display: flex;
-      gap: var(--space-2);
-      justify-content: flex-end;
-    }
+            /* Style edit form (inline in modal) */
+            .style-edit-area {
+                display: none;
+                margin-top: var(--space-3);
+                padding: var(--space-4);
+                border: 1px solid var(--accent);
+                background: color-mix(in srgb, var(--accent) 4%, transparent);
+            }
+            .style-edit-area.open {
+                display: block;
+            }
+            .style-edit-area label {
+                font-size: var(--text-sm);
+                font-weight: 500;
+                display: block;
+                margin-bottom: var(--space-1);
+            }
+            .style-edit-area input,
+            .style-edit-area textarea {
+                width: 100%;
+                padding: var(--space-2) var(--space-3);
+                border: 1px solid var(--border);
+                font-size: var(--text-sm);
+                background: var(--bg);
+                color: var(--text);
+                font-family: inherit;
+                margin-bottom: var(--space-3);
+            }
+            .style-edit-area textarea {
+                resize: vertical;
+            }
+            .style-edit-area .edit-actions {
+                display: flex;
+                gap: var(--space-2);
+                justify-content: flex-end;
+            }
 
-    /* Right panel */
-    .copy-result {
-      background: var(--surface);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--elev-raised);
-      padding: var(--space-6);
-      min-height: 480px;
-      display: flex;
-      flex-direction: column;
-    }
-    .result-empty {
-      flex: 1;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      color: var(--muted);
-    }
-    .result-empty[hidden] { display: none; }
-    .result-empty svg { opacity: 0.3; margin-bottom: var(--space-4); }
-    .result-body {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-    }
-    .result-body.show { display: flex; }
-    .result-body .copy-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-4);
-      padding-bottom: var(--space-3);
-      border-bottom: 1px solid var(--border);
-    }
-    .result-body .copy-meta .style-tag {
-      font-size: var(--text-sm);
-      color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--border-radius-lg);
-    }
-    .result-body .copy-meta .copy-time {
-      font-size: var(--text-xs);
-      color: var(--muted);
-    }
-    .copy-content {
-      flex: 1;
-      padding: var(--space-4);
-      background: var(--bg);
-      border-radius: var(--border-radius);
-      border: 1px solid var(--border);
-      font-size: var(--text-base);
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-y: auto;
-      max-height: 500px;
-    }
-    .copy-content:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
-    }
-    .result-actions-bar {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-4);
-      justify-content: flex-end;
-    }
-    .result-actions-bar .btn { min-width: 100px; }
-    .copy-success-toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #16a34a;
-      color: #fff;
-      padding: var(--space-2) var(--space-5);
-      border-radius: var(--border-radius-lg);
-      font-size: var(--text-sm);
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-      z-index: 999;
-    }
-    .copy-success-toast.show { opacity: 1; }
+            /* Right panel */
+            .copy-result {
+                background: var(--surface);
+                box-shadow: var(--elev-raised);
+                padding: var(--space-6);
+                min-height: 480px;
+                display: flex;
+                flex-direction: column;
+            }
+            .result-empty {
+                flex: 1;
+                display: grid;
+                place-items: center;
+                text-align: center;
+                color: var(--muted);
+            }
+            .result-empty[hidden] {
+                display: none;
+            }
+            .result-empty svg {
+                opacity: 0.3;
+                margin-bottom: var(--space-4);
+            }
+            .result-body {
+                flex: 1;
+                display: none;
+                flex-direction: column;
+            }
+            .result-body.show {
+                display: flex;
+            }
+            .result-body .copy-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-4);
+                padding-bottom: var(--space-3);
+                border-bottom: 1px solid var(--border);
+            }
+            .result-body .copy-meta .style-tag {
+                font-size: var(--text-sm);
+                color: var(--accent);
+                background: color-mix(in srgb, var(--accent) 10%, transparent);
+                padding: var(--space-1) var(--space-3);
+            }
+            .result-body .copy-meta .copy-time {
+                font-size: var(--text-xs);
+                color: var(--muted);
+            }
+            .copy-content {
+                flex: 1;
+                padding: var(--space-4);
+                background: var(--bg);
+                border: 1px solid var(--border);
+                font-size: var(--text-base);
+                line-height: 1.7;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-y: auto;
+                max-height: 500px;
+            }
+            .copy-content:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px
+                    color-mix(in srgb, var(--accent) 20%, transparent);
+            }
+            .result-actions-bar {
+                display: flex;
+                gap: var(--space-3);
+                margin-top: var(--space-4);
+                justify-content: flex-end;
+            }
+            .result-actions-bar .btn {
+                min-width: 100px;
+            }
+            .copy-success-toast {
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #16a34a;
+                color: #fff;
+                padding: var(--space-2) var(--space-5);
+                font-size: var(--text-sm);
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+                z-index: 999;
+            }
+            .copy-success-toast.show {
+                opacity: 1;
+            }
 
-    /* History modal */
-    .history-modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1001;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-4);
-    }
-    .history-modal-overlay.open { display: flex; }
-    .history-modal-card {
-      background: var(--surface);
-      border-radius: var(--border-radius-lg);
-      width: 100%;
-      max-width: 600px;
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .history-modal-card .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--space-5) var(--space-6);
-      border-bottom: 1px solid var(--border);
-    }
-    .history-modal-card .modal-header .card-style {
-      font-size: var(--text-sm);
-      color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--border-radius-lg);
-    }
-    .history-modal-card .modal-header .card-time { font-size: var(--text-xs); color: var(--muted); }
-    .history-modal-card .modal-close {
-      width: 32px; height: 32px; border: none; background: transparent; font-size: 20px; cursor: pointer; color: var(--muted); border-radius: var(--border-radius); display: grid; place-items: center;
-    }
-    .history-modal-card .modal-close:hover { background: var(--bg); color: var(--text); }
-    .history-modal-card .modal-body {
-      flex: 1; overflow-y: auto; padding: var(--space-6);
-    }
-    .history-modal-card .modal-body .copy-content {
-      max-height: none;
-      min-height: 200px;
-    }
-    .history-modal-card .modal-footer {
-      display: flex; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: 1px solid var(--border);
-    }
-    .history-modal-card .modal-footer .btn { flex: 1; }
+            /* History modal */
+            .history-modal-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1001;
+                background: rgba(0, 0, 0, 0.4);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: var(--space-4);
+            }
+            .history-modal-overlay.open {
+                display: flex;
+            }
+            .history-modal-card {
+                background: var(--surface);
+                width: 100%;
+                max-width: 600px;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+            .history-modal-card .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--space-5) var(--space-6);
+                border-bottom: 1px solid var(--border);
+            }
+            .history-modal-card .modal-header .card-style {
+                font-size: var(--text-sm);
+                color: var(--accent);
+                background: color-mix(in srgb, var(--accent) 10%, transparent);
+                padding: var(--space-1) var(--space-3);
+            }
+            .history-modal-card .modal-header .card-time {
+                font-size: var(--text-xs);
+                color: var(--muted);
+            }
+            .history-modal-card .modal-close {
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: transparent;
+                font-size: 20px;
+                cursor: pointer;
+                color: var(--muted);
+                display: grid;
+                place-items: center;
+            }
+            .history-modal-card .modal-close:hover {
+                background: var(--bg);
+                color: var(--text);
+            }
+            .history-modal-card .modal-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: var(--space-6);
+            }
+            .history-modal-card .modal-body .copy-content {
+                max-height: none;
+                min-height: 200px;
+            }
+            .history-modal-card .modal-footer {
+                display: flex;
+                gap: var(--space-3);
+                padding: var(--space-4) var(--space-6);
+                border-top: 1px solid var(--border);
+            }
+            .history-modal-card .modal-footer .btn {
+                flex: 1;
+            }
 
-    /* Status */
-    .status {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--border-radius);
-      margin-bottom: var(--space-3);
-    }
-    .status.info { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-    .status.error { background: #fef2f2; color: #dc2626; }
-    .status[hidden] { display: none; }
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+            /* Status */
+            .status {
+                display: flex;
+                align-items: center;
+                gap: var(--space-3);
+                padding: var(--space-3) var(--space-4);
+                margin-bottom: var(--space-3);
+            }
+            .status.info {
+                background: color-mix(in srgb, var(--accent) 10%, transparent);
+            }
+            .status.error {
+                background: #fef2f2;
+                color: #dc2626;
+            }
+            .status[hidden] {
+                display: none;
+            }
+            .spinner {
+                width: 18px;
+                height: 18px;
+                border: 2px solid var(--border);
+                border-top-color: var(--accent);
+                border-radius: 50% !important;
+                animation: spin 0.6s linear infinite;
+                flex-shrink: 0;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
 
-    /* History section */
-    .history-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: var(--space-6);
-    }
-    .history-header h2 { margin: 0; }
-    .history-empty {
-      text-align: center;
-      padding: var(--space-8);
-      color: var(--muted);
-    }
-    .history-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--space-4);
-      margin-bottom: var(--section-y-desktop);
-    }
-    .history-grid[hidden] { display: none; }
-    .history-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--border-radius-lg);
-      padding: var(--space-4);
-      cursor: pointer;
-      transition: box-shadow 0.2s;
-    }
-    .history-card:hover {
-      box-shadow: var(--elev-raised);
-      border-color: var(--accent);
-    }
-    .history-card .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-2);
-    }
-    .history-card .card-style {
-      font-size: var(--text-xs);
-      color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
-      padding: 2px var(--space-2);
-      border-radius: var(--border-radius-lg);
-    }
-    .history-card .card-time {
-      font-size: var(--text-xs);
-      color: var(--muted);
-    }
-    .history-card .card-preview {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      font-size: var(--text-sm);
-      line-height: 1.6;
-      color: var(--text);
-    }
+            /* History section */
+            .history-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: var(--space-6);
+            }
+            .history-header h2 {
+                margin: 0;
+            }
+            .history-empty {
+                text-align: center;
+                padding: var(--space-8);
+                color: var(--muted);
+            }
+            .history-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: var(--space-4);
+                margin-bottom: var(--section-y-desktop);
+            }
+            .history-grid[hidden] {
+                display: none;
+            }
+            .history-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                padding: var(--space-4);
+                cursor: pointer;
+                transition: box-shadow 0.2s;
+            }
+            .history-card:hover {
+                box-shadow: var(--elev-raised);
+                border-color: var(--accent);
+            }
+            .history-card .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-2);
+            }
+            .history-card .card-style {
+                font-size: var(--text-xs);
+                color: var(--accent);
+                background: color-mix(in srgb, var(--accent) 10%, transparent);
+                padding: 2px var(--space-2);
+            }
+            .history-card .card-time {
+                font-size: var(--text-xs);
+                color: var(--muted);
+            }
+            .history-card .card-preview {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                font-size: var(--text-sm);
+                line-height: 1.6;
+                color: var(--text);
+            }
 
-    /* Footer */
-    .footer {
-      padding: var(--section-y-desktop) 0 var(--space-8);
-      border-top: 1px solid var(--border);
-    }
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .footer-logo {
-      font-family: var(--font-display, serif);
-      font-size: var(--text-xl);
-    }
-    .footer-links {
-      display: flex;
-      gap: var(--space-6);
-    }
-    .footer-links a {
-      font-size: var(--text-sm);
-      color: var(--muted);
-    }
-    .footer-links a:hover { color: var(--accent); }
+            /* Footer */
+            .footer {
+                padding: var(--section-y-desktop) 0 var(--space-8);
+                border-top: 1px solid var(--border);
+            }
+            .footer-inner {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .footer-logo {
+                font-family: var(--font-display, serif);
+                font-size: var(--text-xl);
+            }
+            .footer-links {
+                display: flex;
+                gap: var(--space-6);
+            }
+            .footer-links a {
+                font-size: var(--text-sm);
+                color: var(--muted);
+            }
+            .footer-links a:hover {
+                color: var(--accent);
+            }
 
-    /* Responsive */
-    @media (max-width: 991px) {
-      .copy-generator { grid-template-columns: 1fr; }
-      .copy-panel { position: static; }
-    }
-    @media (max-width: 768px) {
-      .nav-actions .btn:not(.lang-toggle) { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <header class="nav">
-    <div class="container nav-inner">
-      <a href="landing.html" class="nav-logo" data-i18n="brandName">混沌艺术</a>
-      <nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu">
-        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
-        <a href="copy.html" data-i18n="navCopy">文案生成</a>
-        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
-      </nav>
-      <div class="nav-actions">
-        <button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
-        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
-        <div class="user-menu" id="user-menu"></div>
-      </div>
-      <button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
-  </header>
+            /* Responsive */
+            @media (max-width: 991px) {
+                .copy-generator {
+                    grid-template-columns: 1fr;
+                }
+                .copy-panel {
+                    position: static;
+                }
+            }
+            @media (max-width: 768px) {
+                .nav-actions .btn:not(.lang-toggle) {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header class="nav">
+            <div class="container nav-inner">
+                <a href="landing.html" class="nav-logo" data-i18n="brandName"
+                    >混沌艺术</a
+                >
+                <nav
+                    class="nav-links"
+                    aria-label="主导航"
+                    data-i18n-attr="aria-label"
+                    data-i18n-aria-label="navMenu"
+                >
+                    <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+                    <a href="copy.html" data-i18n="navCopy">文案生成</a>
+                    <a href="preset-styles.html" data-i18n="navStyleManage"
+                        >风格管理</a
+                    >
+                </nav>
+                <div class="nav-actions">
+                    <button
+                        type="button"
+                        class="btn btn-ghost lang-toggle"
+                        id="lang-toggle"
+                        data-i18n-attr="aria-label"
+                        data-i18n-aria-label="langSwitch"
+                        data-i18n="langEn"
+                    >
+                        EN
+                    </button>
+                    <a
+                        href="settings.html"
+                        class="btn btn-ghost"
+                        data-i18n="navSettings"
+                        >设置</a
+                    >
+                    <div class="user-menu" id="user-menu"></div>
+                </div>
+                <button
+                    class="btn btn-ghost btn-icon nav-mobile-toggle"
+                    data-i18n-attr="aria-label"
+                    data-i18n-aria-label="navMenu"
+                    aria-label="打开菜单"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </header>
 
-  <main class="container">
-    <header class="page-header">
-      <div class="eyebrow" data-i18n="pageCopyTitle">文案生成</div>
-      <h1 data-i18n="pageCopyTitle">文案生成</h1>
-      <p class="lead" data-i18n="pageCopySubtitle">输入想法或上传素材，AI 帮你生成风格化文案。</p>
-    </header>
+        <main class="container">
+            <header class="page-header">
+                <div class="eyebrow" data-i18n="pageCopyTitle">文案生成</div>
+                <h1 data-i18n="pageCopyTitle">文案生成</h1>
+                <p class="lead" data-i18n="pageCopySubtitle">
+                    输入想法或上传素材，AI 帮你生成风格化文案。
+                </p>
+            </header>
 
-    <div class="copy-generator">
-      <!-- Left Panel -->
-      <div class="copy-panel">
-        <div class="provider-indicator" id="provider-indicator" data-i18n="loadingProvider">加载供应商…</div>
+            <div class="copy-generator">
+                <!-- Left Panel -->
+                <div class="copy-panel">
+                    <div
+                        class="provider-indicator"
+                        id="provider-indicator"
+                        data-i18n="loadingProvider"
+                    >
+                        加载供应商…
+                    </div>
 
-        <!-- Prompt input -->
-        <div class="field">
-          <label for="prompt" data-i18n="copyPromptLabel">输入文案需求</label>
-          <textarea id="prompt" name="prompt" rows="5" placeholder="例如：一款轻奢香水的情人节推广文案，面向25-35岁女性，突出浪漫与精致。" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" data-i18n-attr="placeholder" data-i18n-placeholder="copyPromptPlaceholder"></textarea>
+                    <!-- Prompt input -->
+                    <div class="field">
+                        <label for="prompt" data-i18n="copyPromptLabel"
+                            >输入文案需求</label
+                        >
+                        <textarea
+                            id="prompt"
+                            name="prompt"
+                            rows="5"
+                            placeholder="例如：一款轻奢香水的情人节推广文案，面向25-35岁女性，突出浪漫与精致。"
+                            style="
+                                width: 100%;
+                                padding: var(--space-3);
+                                border: 1px solid var(--border);
+                                font-size: var(--text-sm);
+                                resize: vertical;
+                                background: var(--bg);
+                                color: var(--text);
+                                font-family: inherit;
+                            "
+                            data-i18n-attr="placeholder"
+                            data-i18n-placeholder="copyPromptPlaceholder"
+                        ></textarea>
+                    </div>
+
+                    <!-- File upload -->
+                    <div class="field">
+                        <label data-i18n="copyUploadLabel"
+                            >上传参考素材（可选）</label
+                        >
+                        <div
+                            class="upload-zone"
+                            id="upload-zone"
+                            tabindex="0"
+                            role="button"
+                            aria-label="上传参考文件"
+                        >
+                            <svg
+                                width="28"
+                                height="28"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <div class="label" data-i18n="copyUploadHint">
+                                拖拽或点击上传素材文件
+                            </div>
+                            <div class="hint" data-i18n="copyUploadFormats">
+                                支持 .txt, .docx, .md, .pdf
+                            </div>
+                            <div class="file-name" id="file-name"></div>
+                            <input
+                                type="file"
+                                id="file-input"
+                                accept=".txt,.docx,.md,.pdf,image/*"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Style presets: dropdown + manage button -->
+                    <div class="field">
+                        <label data-i18n="copyStyleLabel">文案风格</label>
+                        <div class="style-row">
+                            <select id="style-select"></select>
+                            <button
+                                type="button"
+                                class="btn btn-ghost"
+                                id="manage-styles-btn"
+                                data-i18n="copyManageStyles"
+                            >
+                                管理风格
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Additional parameters -->
+                    <div class="field">
+                        <label for="tone" data-i18n="copyToneLabel">语气</label>
+                        <select
+                            id="tone"
+                            style="
+                                width: 100%;
+                                padding: var(--space-2) var(--space-3);
+                                border: 1px solid var(--border);
+                                font-size: var(--text-sm);
+                                background: var(--bg);
+                                color: var(--text);
+                            "
+                        >
+                            <option value="default" data-i18n="copyToneDefault">
+                                默认
+                            </option>
+                            <option value="formal" data-i18n="copyToneFormal">
+                                正式
+                            </option>
+                            <option value="casual" data-i18n="copyToneCasual">
+                                轻松
+                            </option>
+                            <option
+                                value="humorous"
+                                data-i18n="copyToneHumorous"
+                            >
+                                幽默
+                            </option>
+                            <option
+                                value="professional"
+                                data-i18n="copyToneProfessional"
+                            >
+                                专业
+                            </option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="generate-btn"
+                        data-i18n="copyGenerateBtn"
+                    >
+                        生成文案
+                    </button>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="copy-result">
+                    <div class="status info" id="status-info" hidden>
+                        <div class="spinner"></div>
+                        <span data-i18n="copyGenerating">正在生成文案…</span>
+                    </div>
+                    <div class="status error" id="status-error" hidden>
+                        <span id="error-message"></span>
+                    </div>
+
+                    <div class="result-empty" id="result-empty">
+                        <svg
+                            width="56"
+                            height="56"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path
+                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                            />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                        <p data-i18n="copyEmptyHint">生成的文案将显示在这里</p>
+                    </div>
+
+                    <div class="result-body" id="result-body">
+                        <div class="copy-meta">
+                            <span class="style-tag" id="result-style-tag"
+                                >微博</span
+                            >
+                            <span class="copy-time" id="result-time"></span>
+                        </div>
+                        <div
+                            class="copy-content"
+                            id="copy-content"
+                            contenteditable="true"
+                        ></div>
+                        <div class="result-actions-bar">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                id="copy-btn"
+                                data-i18n="copyCopyBtn"
+                            >
+                                一键复制
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                id="regenerate-btn"
+                                data-i18n="copyRegenerateBtn"
+                            >
+                                重新生成
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-header">
+                <h2 data-i18n="copyHistoryTitle">生成历史</h2>
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    id="clear-history-btn"
+                    data-i18n="clearHistory"
+                >
+                    清空历史
+                </button>
+            </div>
+            <div
+                class="history-empty"
+                id="history-empty"
+                data-i18n="copyHistoryEmpty"
+            >
+                暂无历史记录
+            </div>
+            <div class="history-grid" id="history-grid" hidden></div>
+        </main>
+
+        <!-- Style Management Modal -->
+        <div class="style-modal" id="style-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 data-i18n="copyStyleManageTitle">管理文案风格</h2>
+                    <button
+                        type="button"
+                        class="modal-close"
+                        id="modal-close-btn"
+                    >
+                        ×
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="style-edit-area" id="style-edit-area">
+                        <label data-i18n="copyStyleEditName">风格名称</label>
+                        <input
+                            type="text"
+                            id="edit-style-name"
+                            placeholder="例如：知乎专栏"
+                            data-i18n-attr="placeholder"
+                            data-i18n-placeholder="presetStylesCopyNamePlaceholder"
+                        />
+                        <label data-i18n="copyStyleEditPrompt">风格描述</label>
+                        <textarea
+                            id="edit-style-prompt"
+                            rows="3"
+                            placeholder="描述该风格的写作特点，例如：深度分析风格，逻辑严谨，数据支撑，适合干货类内容。"
+                            data-i18n-attr="placeholder"
+                            data-i18n-placeholder="presetStylesCopyDescPlaceholder"
+                        ></textarea>
+                        <div class="edit-actions">
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                id="edit-save-btn"
+                            >
+                                保存
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-ghost"
+                                id="edit-cancel-btn"
+                            >
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                    <div class="style-list" id="style-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="add-style-btn"
+                        data-i18n="copyStyleAdd"
+                    >
+                        新增风格
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-ghost"
+                        id="modal-close-btn2"
+                        data-i18n="copyStyleClose"
+                    >
+                        关闭
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- File upload -->
-        <div class="field">
-          <label data-i18n="copyUploadLabel">上传参考素材（可选）</label>
-          <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="上传参考文件">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <div class="label" data-i18n="copyUploadHint">拖拽或点击上传素材文件</div>
-            <div class="hint" data-i18n="copyUploadFormats">支持 .txt, .docx, .md, .pdf</div>
-            <div class="file-name" id="file-name"></div>
-            <input type="file" id="file-input" accept=".txt,.docx,.md,.pdf,image/*" />
-          </div>
+        <footer class="footer">
+            <div class="container footer-inner">
+                <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
+                <nav class="footer-links">
+                    <a href="landing.html" data-i18n="navHome">首页</a>
+                    <a href="generate.html" data-i18n="navGenerate">图片生成</a>
+                    <a href="copy.html" data-i18n="navCopy">文案生成</a>
+                    <a href="preset-styles.html" data-i18n="navStyleManage"
+                        >风格管理</a
+                    >
+                    <a href="settings.html" data-i18n="navSettings">设置</a>
+                </nav>
+                <span class="body-sm brand-copyright" data-i18n="brandCopyright"
+                    >Developed By ECHOHAORAN</span
+                >
+            </div>
+        </footer>
+
+        <!-- History Detail Modal -->
+        <div class="history-modal-overlay" id="history-modal">
+            <div class="history-modal-card">
+                <div class="modal-header">
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: var(--space-3);
+                            flex: 1;
+                        "
+                    >
+                        <span class="card-style" id="hm-style"></span>
+                        <span class="card-time" id="hm-time"></span>
+                    </div>
+                    <button type="button" class="modal-close" id="hm-close">
+                        ×
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div
+                        class="copy-content"
+                        id="hm-content"
+                        contenteditable="true"
+                    ></div>
+                </div>
+                <div class="modal-footer">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="hm-copy-btn"
+                        data-i18n="copyHistoryCopyBtn"
+                    >
+                        一键复制
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="hm-edit-btn"
+                        data-i18n="copyHistoryEditBtn"
+                    >
+                        编辑
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-ghost"
+                        id="hm-delete-btn"
+                        data-i18n="copyHistoryDeleteBtn"
+                    >
+                        删除
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-ghost"
+                        id="hm-close-btn2"
+                        data-i18n="copyHistoryCloseBtn"
+                    >
+                        关闭
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Style presets: dropdown + manage button -->
-        <div class="field">
-          <label data-i18n="copyStyleLabel">文案风格</label>
-          <div class="style-row">
-            <select id="style-select"></select>
-            <button type="button" class="btn btn-ghost" id="manage-styles-btn" data-i18n="copyManageStyles">管理风格</button>
-          </div>
+        <div class="copy-success-toast" id="copy-toast" data-i18n="copyCopied">
+            已复制到剪贴板
         </div>
 
-        <!-- Additional parameters -->
-        <div class="field">
-          <label for="tone" data-i18n="copyToneLabel">语气</label>
-          <select id="tone" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
-            <option value="default" data-i18n="copyToneDefault">默认</option>
-            <option value="formal" data-i18n="copyToneFormal">正式</option>
-            <option value="casual" data-i18n="copyToneCasual">轻松</option>
-            <option value="humorous" data-i18n="copyToneHumorous">幽默</option>
-            <option value="professional" data-i18n="copyToneProfessional">专业</option>
-          </select>
-        </div>
+        <script src="../js/i18n.js"></script>
+        <script src="../js/api.js"></script>
+        <script src="../js/auth.js"></script>
+        <script>
+            (function () {
+                "use strict";
 
-        <button type="button" class="btn btn-primary" id="generate-btn" data-i18n="copyGenerateBtn">生成文案</button>
-      </div>
+                // ─── Default styles (seeded on first load) ────────────
+                var DEFAULT_STYLES = [
+                    {
+                        id: "weibo",
+                        name: "微博",
+                        prompt: "微博风格，短小精悍，适合碎片化阅读，可带话题标签。",
+                    },
+                    {
+                        id: "wechat",
+                        name: "微信公众号",
+                        prompt: "微信公众号风格，长文结构，有标题、分段、引用，专业深度。",
+                    },
+                    {
+                        id: "xiaohongshu",
+                        name: "小红书",
+                        prompt: "小红书风格，亲切口语化，善用emoji和换行，个人分享感强。",
+                    },
+                ];
+                var STYLES_STORAGE_KEY = "chaos_builder_copy_styles";
+                var editingId = null; // null = adding new; string = editing existing
 
-      <!-- Right Panel -->
-      <div class="copy-result">
-        <div class="status info" id="status-info" hidden>
-          <div class="spinner"></div>
-          <span data-i18n="copyGenerating">正在生成文案…</span>
-        </div>
-        <div class="status error" id="status-error" hidden>
-          <span id="error-message"></span>
-        </div>
+                // ─── DOM refs ──────────────────────────────────────────
+                var promptEl = document.getElementById("prompt");
+                var generateBtn = document.getElementById("generate-btn");
+                var statusInfo = document.getElementById("status-info");
+                var statusError = document.getElementById("status-error");
+                var errorMsg = document.getElementById("error-message");
+                var resultEmpty = document.getElementById("result-empty");
+                var resultBody = document.getElementById("result-body");
+                var copyContent = document.getElementById("copy-content");
+                var copyBtn = document.getElementById("copy-btn");
+                var regenerateBtn = document.getElementById("regenerate-btn");
+                var resultStyleTag =
+                    document.getElementById("result-style-tag");
+                var resultTime = document.getElementById("result-time");
+                var historyGrid = document.getElementById("history-grid");
+                var historyEmpty = document.getElementById("history-empty");
+                var clearHistoryBtn =
+                    document.getElementById("clear-history-btn");
+                var styleSelect = document.getElementById("style-select");
+                var manageStylesBtn =
+                    document.getElementById("manage-styles-btn");
+                var uploadZone = document.getElementById("upload-zone");
+                var fileInput = document.getElementById("file-input");
+                var fileName = document.getElementById("file-name");
+                var toneSelect = document.getElementById("tone");
+                var copyToast = document.getElementById("copy-toast");
+                var providerIndicator =
+                    document.getElementById("provider-indicator");
+                var styleModal = document.getElementById("style-modal");
+                var styleList = document.getElementById("style-list");
+                var editArea = document.getElementById("style-edit-area");
+                var editName = document.getElementById("edit-style-name");
+                var editPrompt = document.getElementById("edit-style-prompt");
+                var editSaveBtn = document.getElementById("edit-save-btn");
+                var editCancelBtn = document.getElementById("edit-cancel-btn");
+                var addStyleBtn = document.getElementById("add-style-btn");
 
-        <div class="result-empty" id="result-empty">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <p data-i18n="copyEmptyHint">生成的文案将显示在这里</p>
-        </div>
+                var HISTORY_KEY = "chaos_builder_copy_history";
+                var currentFile = null;
+                var lastResult = null;
+                var textConfig = null; // { provider, model, apiKey, apiBaseUrl }
 
-        <div class="result-body" id="result-body">
-          <div class="copy-meta">
-            <span class="style-tag" id="result-style-tag">微博</span>
-            <span class="copy-time" id="result-time"></span>
-          </div>
-          <div class="copy-content" id="copy-content" contenteditable="true"></div>
-          <div class="result-actions-bar">
-            <button type="button" class="btn btn-secondary" id="copy-btn" data-i18n="copyCopyBtn">一键复制</button>
-            <button type="button" class="btn btn-primary" id="regenerate-btn" data-i18n="copyRegenerateBtn">重新生成</button>
-          </div>
-        </div>
-      </div>
-    </div>
+                // ─── Fetch admin text model config ──────────────────────
+                function loadTextConfig() {
+                    var fallback = function () {
+                        textConfig = {
+                            provider: "openai",
+                            model: "gpt-4o-mini",
+                            apiKey: "",
+                            apiBaseUrl: "https://api.openai.com/v1",
+                        };
+                        if (providerIndicator)
+                            providerIndicator.textContent =
+                                "OpenAI · gpt-4o-mini (默认)";
+                    };
+                    if (!window.ChaosAPI || !ChaosAPI.fetchAdminSettings) {
+                        fallback();
+                        return;
+                    }
+                    ChaosAPI.fetchAdminSettings()
+                        .then(function (settings) {
+                            if (settings && settings.textProvider) {
+                                textConfig = {
+                                    provider: settings.textProvider || "openai",
+                                    model: settings.textModel || "gpt-4o-mini",
+                                    apiKey: settings.textApiKey || "",
+                                    apiBaseUrl:
+                                        settings.textApiBaseUrl ||
+                                        "https://api.openai.com/v1",
+                                };
+                                if (providerIndicator)
+                                    providerIndicator.textContent =
+                                        settings.textProvider
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                        settings.textProvider.slice(1) +
+                                        " · " +
+                                        (settings.textModel || "gpt-4o-mini");
+                            } else {
+                                fallback();
+                            }
+                        })
+                        .catch(function () {
+                            fallback();
+                        });
+                }
 
-    <!-- History Section -->
-    <div class="history-header">
-      <h2 data-i18n="copyHistoryTitle">生成历史</h2>
-      <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="clearHistory">清空历史</button>
-    </div>
-    <div class="history-empty" id="history-empty" data-i18n="copyHistoryEmpty">暂无历史记录</div>
-    <div class="history-grid" id="history-grid" hidden></div>
-  </main>
+                // ─── Style persistence ─────────────────────────────────
+                function loadCustomStyles() {
+                    try {
+                        var raw = localStorage.getItem(STYLES_STORAGE_KEY);
+                        if (raw) return JSON.parse(raw) || [];
+                        // First load — seed defaults
+                        saveCustomStyles(DEFAULT_STYLES);
+                        return DEFAULT_STYLES;
+                    } catch (e) {
+                        return [];
+                    }
+                }
+                function saveCustomStyles(styles) {
+                    localStorage.setItem(
+                        STYLES_STORAGE_KEY,
+                        JSON.stringify(styles),
+                    );
+                }
+                function getStyleById(id) {
+                    var all = loadCustomStyles();
+                    for (var i = 0; i < all.length; i++) {
+                        if (all[i].id === id) return all[i];
+                    }
+                    return null;
+                }
 
-  <!-- Style Management Modal -->
-  <div class="style-modal" id="style-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 data-i18n="copyStyleManageTitle">管理文案风格</h2>
-        <button type="button" class="modal-close" id="modal-close-btn">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="style-edit-area" id="style-edit-area">
-          <label data-i18n="copyStyleEditName">风格名称</label>
-          <input type="text" id="edit-style-name" placeholder="例如：知乎专栏" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyNamePlaceholder" />
-          <label data-i18n="copyStyleEditPrompt">风格描述</label>
-          <textarea id="edit-style-prompt" rows="3" placeholder="描述该风格的写作特点，例如：深度分析风格，逻辑严谨，数据支撑，适合干货类内容。" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyDescPlaceholder"></textarea>
-          <div class="edit-actions">
-            <button type="button" class="btn btn-primary" id="edit-save-btn">保存</button>
-            <button type="button" class="btn btn-ghost" id="edit-cancel-btn">取消</button>
-          </div>
-        </div>
-        <div class="style-list" id="style-list"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="add-style-btn" data-i18n="copyStyleAdd">新增风格</button>
-        <button type="button" class="btn btn-ghost" id="modal-close-btn2" data-i18n="copyStyleClose">关闭</button>
-      </div>
-    </div>
-  </div>
+                // ─── Style dropdown ──────────────────────────────────
+                function renderStyleDropdown(selectedId) {
+                    var styles = loadCustomStyles();
+                    styleSelect.innerHTML = "";
+                    styles.forEach(function (s) {
+                        var opt = document.createElement("option");
+                        opt.value = s.id;
+                        opt.textContent = s.name;
+                        if (s.id === selectedId) opt.selected = true;
+                        styleSelect.appendChild(opt);
+                    });
+                }
 
-  <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-logo" data-i18n="brandName">混沌艺术</div>
-      <nav class="footer-links">
-        <a href="landing.html" data-i18n="navHome">首页</a>
-        <a href="generate.html" data-i18n="navGenerate">图片生成</a>
-        <a href="copy.html" data-i18n="navCopy">文案生成</a>
-        <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
-        <a href="settings.html" data-i18n="navSettings">设置</a>
-      </nav>
-      <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
-    </div>
-  </footer>
+                function getSelectedStyle() {
+                    return styleSelect.value;
+                }
+                function getSelectedStylePrompt() {
+                    var s = getStyleById(styleSelect.value);
+                    return s ? s.prompt : "";
+                }
 
-  <!-- History Detail Modal -->
-  <div class="history-modal-overlay" id="history-modal">
-    <div class="history-modal-card">
-      <div class="modal-header">
-        <div style="display:flex;align-items:center;gap:var(--space-3);flex:1;">
-          <span class="card-style" id="hm-style"></span>
-          <span class="card-time" id="hm-time"></span>
-        </div>
-        <button type="button" class="modal-close" id="hm-close">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="copy-content" id="hm-content" contenteditable="true"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="hm-copy-btn" data-i18n="copyHistoryCopyBtn">一键复制</button>
-        <button type="button" class="btn btn-primary" id="hm-edit-btn" data-i18n="copyHistoryEditBtn">编辑</button>
-        <button type="button" class="btn btn-ghost" id="hm-delete-btn" data-i18n="copyHistoryDeleteBtn">删除</button>
-        <button type="button" class="btn btn-ghost" id="hm-close-btn2" data-i18n="copyHistoryCloseBtn">关闭</button>
-      </div>
-    </div>
-  </div>
+                // ─── Style modal CRUD ─────────────────────────────────
+                function openStyleModal() {
+                    styleModal.classList.add("open");
+                    editArea.classList.remove("open");
+                    renderStyleList();
+                }
+                function closeStyleModal() {
+                    styleModal.classList.remove("open");
+                    editArea.classList.remove("open");
+                    editingId = null;
+                }
 
-  <div class="copy-success-toast" id="copy-toast" data-i18n="copyCopied">已复制到剪贴板</div>
+                function renderStyleList() {
+                    var styles = loadCustomStyles();
+                    styleList.innerHTML = "";
+                    styles.forEach(function (s) {
+                        var item = document.createElement("div");
+                        item.className = "style-list-item";
+                        item.innerHTML =
+                            '<div class="item-info">' +
+                            '<div class="item-name">' +
+                            escapeHtml(s.name) +
+                            "</div>" +
+                            '<div class="item-preview">' +
+                            escapeHtml(s.prompt) +
+                            "</div>" +
+                            "</div>" +
+                            '<div class="item-actions">' +
+                            '<button type="button" class="edit-btn" title="编辑" data-id="' +
+                            s.id +
+                            '">✎</button>' +
+                            '<button type="button" class="delete-btn" title="删除" data-id="' +
+                            s.id +
+                            '">✕</button>' +
+                            "</div>";
+                        item.querySelector(".edit-btn").addEventListener(
+                            "click",
+                            function (e) {
+                                e.stopPropagation();
+                                startEdit(s.id);
+                            },
+                        );
+                        item.querySelector(".delete-btn").addEventListener(
+                            "click",
+                            function (e) {
+                                e.stopPropagation();
+                                if (
+                                    !confirm(
+                                        I18N.t(
+                                            "copyErrorDeleteConfirm",
+                                            "确定删除该风格？",
+                                        ) +
+                                            "\n" +
+                                            s.name,
+                                    )
+                                )
+                                    return;
+                                var custom = loadCustomStyles();
+                                custom = custom.filter(function (c) {
+                                    return c.id !== s.id;
+                                });
+                                saveCustomStyles(custom);
+                                renderStyleList();
+                                renderStyleDropdown(styleSelect.value);
+                            },
+                        );
+                        styleList.appendChild(item);
+                    });
+                }
 
-<script src="../js/i18n.js"></script>
-<script src="../js/api.js"></script>
-<script src="../js/auth.js"></script>
-  <script>
-  (function() {
-    'use strict';
+                function startEdit(id) {
+                    editingId = id;
+                    editArea.classList.add("open");
+                    if (id === null) {
+                        editName.value = "";
+                        editPrompt.value = "";
+                        editName.placeholder = I18N.t(
+                            "presetStylesCopyNamePlaceholder",
+                            "例如：知乎专栏",
+                        );
+                        editPrompt.placeholder = I18N.t(
+                            "presetStylesCopyDescPlaceholder",
+                            "描述该风格的写作特点…",
+                        );
+                        editName.disabled = false;
+                        return;
+                    }
+                    var s = getStyleById(id);
+                    editName.value = s ? s.name : "";
+                    editPrompt.value = s ? s.prompt : "";
+                    editName.disabled = false;
+                }
 
-    // ─── Default styles (seeded on first load) ────────────
-    var DEFAULT_STYLES = [
-      { id:'weibo', name:'微博', prompt:'微博风格，短小精悍，适合碎片化阅读，可带话题标签。' },
-      { id:'wechat', name:'微信公众号', prompt:'微信公众号风格，长文结构，有标题、分段、引用，专业深度。' },
-      { id:'xiaohongshu', name:'小红书', prompt:'小红书风格，亲切口语化，善用emoji和换行，个人分享感强。' },
-    ];
-    var STYLES_STORAGE_KEY = 'chaos_builder_copy_styles';
-    var editingId = null; // null = adding new; string = editing existing
+                function saveEdit() {
+                    var name = editName.value.trim();
+                    var prompt = editPrompt.value.trim();
+                    if (!name) {
+                        alert(
+                            I18N.t("copyErrorNameRequired", "请输入风格名称"),
+                        );
+                        return;
+                    }
+                    if (!prompt) {
+                        alert(
+                            I18N.t("copyErrorDescRequired", "请输入风格描述"),
+                        );
+                        return;
+                    }
 
-    // ─── DOM refs ──────────────────────────────────────────
-    var promptEl = document.getElementById('prompt');
-    var generateBtn = document.getElementById('generate-btn');
-    var statusInfo = document.getElementById('status-info');
-    var statusError = document.getElementById('status-error');
-    var errorMsg = document.getElementById('error-message');
-    var resultEmpty = document.getElementById('result-empty');
-    var resultBody = document.getElementById('result-body');
-    var copyContent = document.getElementById('copy-content');
-    var copyBtn = document.getElementById('copy-btn');
-    var regenerateBtn = document.getElementById('regenerate-btn');
-    var resultStyleTag = document.getElementById('result-style-tag');
-    var resultTime = document.getElementById('result-time');
-    var historyGrid = document.getElementById('history-grid');
-    var historyEmpty = document.getElementById('history-empty');
-    var clearHistoryBtn = document.getElementById('clear-history-btn');
-    var styleSelect = document.getElementById('style-select');
-    var manageStylesBtn = document.getElementById('manage-styles-btn');
-    var uploadZone = document.getElementById('upload-zone');
-    var fileInput = document.getElementById('file-input');
-    var fileName = document.getElementById('file-name');
-    var toneSelect = document.getElementById('tone');
-    var copyToast = document.getElementById('copy-toast');
-    var providerIndicator = document.getElementById('provider-indicator');
-    var styleModal = document.getElementById('style-modal');
-    var styleList = document.getElementById('style-list');
-    var editArea = document.getElementById('style-edit-area');
-    var editName = document.getElementById('edit-style-name');
-    var editPrompt = document.getElementById('edit-style-prompt');
-    var editSaveBtn = document.getElementById('edit-save-btn');
-    var editCancelBtn = document.getElementById('edit-cancel-btn');
-    var addStyleBtn = document.getElementById('add-style-btn');
+                    var custom = loadCustomStyles();
+                    if (editingId === null) {
+                        custom.push({
+                            id: "custom_" + Date.now(),
+                            name: name,
+                            prompt: prompt,
+                        });
+                    } else {
+                        var found = false;
+                        for (var i = 0; i < custom.length; i++) {
+                            if (custom[i].id === editingId) {
+                                custom[i].name = name;
+                                custom[i].prompt = prompt;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            custom.push({
+                                id: "custom_" + Date.now(),
+                                name: name,
+                                prompt: prompt,
+                            });
+                        }
+                    }
+                    saveCustomStyles(custom);
+                    editArea.classList.remove("open");
+                    editingId = null;
+                    renderStyleList();
+                    renderStyleDropdown(styleSelect.value);
+                }
 
-var HISTORY_KEY = 'chaos_builder_copy_history';
-var currentFile = null;
-var lastResult = null;
-var textConfig = null; // { provider, model, apiKey, apiBaseUrl }
+                function cancelEdit() {
+                    editArea.classList.remove("open");
+                    editingId = null;
+                }
 
-// ─── Fetch admin text model config ──────────────────────
-function loadTextConfig() {
-  var fallback = function() {
-    textConfig = { provider:'openai', model:'gpt-4o-mini', apiKey:'', apiBaseUrl:'https://api.openai.com/v1' };
-    if (providerIndicator) providerIndicator.textContent = 'OpenAI · gpt-4o-mini (默认)';
-  };
-  if (!window.ChaosAPI || !ChaosAPI.fetchAdminSettings) { fallback(); return; }
-  ChaosAPI.fetchAdminSettings().then(function(settings) {
-    if (settings && settings.textProvider) {
-      textConfig = {
-        provider: settings.textProvider || 'openai',
-        model: settings.textModel || 'gpt-4o-mini',
-        apiKey: settings.textApiKey || '',
-        apiBaseUrl: settings.textApiBaseUrl || 'https://api.openai.com/v1',
-      };
-      if (providerIndicator) providerIndicator.textContent = (settings.textProvider.charAt(0).toUpperCase() + settings.textProvider.slice(1)) + ' · ' + (settings.textModel || 'gpt-4o-mini');
-    } else {
-      fallback();
-    }
-  }).catch(function() { fallback(); });
-}
+                // ─── Event: modal ────────────────────────────────────
+                manageStylesBtn.addEventListener("click", openStyleModal);
+                document
+                    .getElementById("modal-close-btn")
+                    .addEventListener("click", closeStyleModal);
+                document
+                    .getElementById("modal-close-btn2")
+                    .addEventListener("click", closeStyleModal);
+                styleModal.addEventListener("click", function (e) {
+                    if (e.target === styleModal) closeStyleModal();
+                });
+                addStyleBtn.addEventListener("click", function () {
+                    startEdit(null);
+                });
+                editSaveBtn.addEventListener("click", saveEdit);
+                editCancelBtn.addEventListener("click", cancelEdit);
 
-    // ─── Style persistence ─────────────────────────────────
-    function loadCustomStyles() {
-      try {
-        var raw = localStorage.getItem(STYLES_STORAGE_KEY);
-        if (raw) return JSON.parse(raw) || [];
-        // First load — seed defaults
-        saveCustomStyles(DEFAULT_STYLES);
-        return DEFAULT_STYLES;
-      } catch(e) { return []; }
-    }
-    function saveCustomStyles(styles) {
-      localStorage.setItem(STYLES_STORAGE_KEY, JSON.stringify(styles));
-    }
-    function getStyleById(id) {
-      var all = loadCustomStyles();
-      for (var i = 0; i < all.length; i++) { if (all[i].id === id) return all[i]; }
-      return null;
-    }
+                // ─── I18n update ──────────────────────────────────────
+                function updateTitle() {
+                    document.title =
+                        (I18N.t("brandNameFull", "混沌艺术") || "混沌艺术") +
+                        " · " +
+                        I18N.t("pageCopyTitle", "文案生成");
+                }
+                function updateToggleLabel() {
+                    var btn = document.getElementById("lang-toggle");
+                    if (btn)
+                        btn.textContent = I18N.locale() === "en" ? "中" : "EN";
+                }
 
-    // ─── Style dropdown ──────────────────────────────────
-    function renderStyleDropdown(selectedId) {
-      var styles = loadCustomStyles();
-      styleSelect.innerHTML = '';
-      styles.forEach(function(s) {
-        var opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        if (s.id === selectedId) opt.selected = true;
-        styleSelect.appendChild(opt);
-      });
-    }
+                // ─── File upload ───────────────────────────────────────
+                uploadZone.addEventListener("click", function () {
+                    fileInput.click();
+                });
+                uploadZone.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        fileInput.click();
+                    }
+                });
+                uploadZone.addEventListener("dragover", function (e) {
+                    e.preventDefault();
+                    uploadZone.classList.add("dragover");
+                });
+                uploadZone.addEventListener("dragleave", function () {
+                    uploadZone.classList.remove("dragover");
+                });
+                uploadZone.addEventListener("drop", function (e) {
+                    e.preventDefault();
+                    uploadZone.classList.remove("dragover");
+                    if (e.dataTransfer.files.length)
+                        handleFile(e.dataTransfer.files[0]);
+                });
+                fileInput.addEventListener("change", function () {
+                    if (fileInput.files.length) handleFile(fileInput.files[0]);
+                });
 
-    function getSelectedStyle() {
-      return styleSelect.value;
-    }
-    function getSelectedStylePrompt() {
-      var s = getStyleById(styleSelect.value);
-      return s ? s.prompt : '';
-    }
+                function handleFile(file) {
+                    currentFile = file;
+                    fileName.textContent =
+                        file.name +
+                        " (" +
+                        (file.size / 1024).toFixed(1) +
+                        " KB)";
+                }
 
-    // ─── Style modal CRUD ─────────────────────────────────
-    function openStyleModal() {
-      styleModal.classList.add('open');
-      editArea.classList.remove('open');
-      renderStyleList();
-    }
-    function closeStyleModal() {
-      styleModal.classList.remove('open');
-      editArea.classList.remove('open');
-      editingId = null;
-    }
+                // ─── History ────────────────────────────────────────────
+                function getHistory() {
+                    try {
+                        return (
+                            JSON.parse(localStorage.getItem(HISTORY_KEY)) || []
+                        );
+                    } catch (e) {
+                        return [];
+                    }
+                }
+                function saveHistory(entry) {
+                    var history = getHistory();
+                    history.unshift(entry);
+                    if (history.length > 100) history = history.slice(0, 100);
+                    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+                }
 
-    function renderStyleList() {
-      var styles = loadCustomStyles();
-      styleList.innerHTML = '';
-      styles.forEach(function(s) {
-        var item = document.createElement('div');
-        item.className = 'style-list-item';
-        item.innerHTML =
-          '<div class="item-info">' +
-            '<div class="item-name">' + escapeHtml(s.name) + '</div>' +
-            '<div class="item-preview">' + escapeHtml(s.prompt) + '</div>' +
-          '</div>' +
-          '<div class="item-actions">' +
-            '<button type="button" class="edit-btn" title="编辑" data-id="' + s.id + '">✎</button>' +
-            '<button type="button" class="delete-btn" title="删除" data-id="' + s.id + '">✕</button>' +
-          '</div>';
-        item.querySelector('.edit-btn').addEventListener('click', function(e) {
-          e.stopPropagation();
-          startEdit(s.id);
-        });
-        item.querySelector('.delete-btn').addEventListener('click', function(e) {
-          e.stopPropagation();
-          if (!confirm(I18N.t('copyErrorDeleteConfirm', '确定删除该风格？') + '\n' + s.name)) return;
-          var custom = loadCustomStyles();
-          custom = custom.filter(function(c) { return c.id !== s.id; });
-          saveCustomStyles(custom);
-          renderStyleList();
-          renderStyleDropdown(styleSelect.value);
-        });
-        styleList.appendChild(item);
-      });
-    }
+                function renderHistory() {
+                    var history = getHistory();
+                    if (history.length === 0) {
+                        historyEmpty.hidden = false;
+                        historyGrid.hidden = true;
+                        return;
+                    }
+                    historyEmpty.hidden = true;
+                    historyGrid.hidden = false;
+                    historyGrid.innerHTML = "";
 
-    function startEdit(id) {
-      editingId = id;
-      editArea.classList.add('open');
-      if (id === null) {
-        editName.value = '';
-        editPrompt.value = '';
-        editName.placeholder = I18N.t('presetStylesCopyNamePlaceholder', '例如：知乎专栏');
-        editPrompt.placeholder = I18N.t('presetStylesCopyDescPlaceholder', '描述该风格的写作特点…');
-        editName.disabled = false;
-        return;
-      }
-      var s = getStyleById(id);
-      editName.value = s ? s.name : '';
-      editPrompt.value = s ? s.prompt : '';
-      editName.disabled = false;
-    }
+                    history.forEach(function (entry, idx) {
+                        var card = document.createElement("div");
+                        card.className = "history-card";
+                        card.innerHTML =
+                            '<div class="card-header">' +
+                            '<span class="card-style">' +
+                            escapeHtml(entry.style || "") +
+                            "</span>" +
+                            '<span class="card-time">' +
+                            (entry.time || "") +
+                            "</span>" +
+                            "</div>" +
+                            '<div class="card-preview">' +
+                            escapeHtml(entry.content || "") +
+                            "</div>";
 
-    function saveEdit() {
-      var name = editName.value.trim();
-      var prompt = editPrompt.value.trim();
-      if (!name) { alert(I18N.t('copyErrorNameRequired', '请输入风格名称')); return; }
-      if (!prompt) { alert(I18N.t('copyErrorDescRequired', '请输入风格描述')); return; }
+                        card.addEventListener("click", function (e) {
+                            openHistoryModal(idx);
+                        });
+                        historyGrid.appendChild(card);
+                    });
+                }
 
-      var custom = loadCustomStyles();
-      if (editingId === null) {
-        custom.push({ id: 'custom_' + Date.now(), name: name, prompt: prompt });
-      } else {
-        var found = false;
-        for (var i = 0; i < custom.length; i++) {
-          if (custom[i].id === editingId) {
-            custom[i].name = name;
-            custom[i].prompt = prompt;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          custom.push({ id: 'custom_' + Date.now(), name: name, prompt: prompt });
-        }
-      }
-      saveCustomStyles(custom);
-      editArea.classList.remove('open');
-      editingId = null;
-      renderStyleList();
-      renderStyleDropdown(styleSelect.value);
-    }
+                var hmIdx = -1;
+                function openHistoryModal(idx) {
+                    var history = getHistory();
+                    var entry = history[idx];
+                    if (!entry) return;
+                    hmIdx = idx;
+                    document.getElementById("hm-style").textContent =
+                        entry.style || "";
+                    document.getElementById("hm-time").textContent =
+                        entry.time || "";
+                    document.getElementById("hm-content").textContent =
+                        entry.content || "";
+                    document
+                        .getElementById("history-modal")
+                        .classList.add("open");
+                }
+                function closeHistoryModal() {
+                    document
+                        .getElementById("history-modal")
+                        .classList.remove("open");
+                }
+                document
+                    .getElementById("hm-close")
+                    .addEventListener("click", closeHistoryModal);
+                document
+                    .getElementById("hm-close-btn2")
+                    .addEventListener("click", closeHistoryModal);
+                document
+                    .getElementById("history-modal")
+                    .addEventListener("click", function (e) {
+                        if (e.target === this) closeHistoryModal();
+                    });
+                document
+                    .getElementById("hm-copy-btn")
+                    .addEventListener("click", function () {
+                        var entry = getHistory()[hmIdx];
+                        if (entry)
+                            copyToClipboard(
+                                document.getElementById("hm-content")
+                                    .textContent,
+                            );
+                    });
+                document
+                    .getElementById("hm-edit-btn")
+                    .addEventListener("click", function () {
+                        var entry = getHistory()[hmIdx];
+                        if (!entry) return;
+                        promptEl.value = entry.prompt || "";
+                        copyContent.textContent = entry.content;
+                        resultEmpty.hidden = true;
+                        resultBody.classList.add("show");
+                        resultStyleTag.textContent = entry.style || "";
+                        resultTime.textContent = entry.time || "";
+                        lastResult = entry;
+                        closeHistoryModal();
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    });
+                document
+                    .getElementById("hm-delete-btn")
+                    .addEventListener("click", function () {
+                        var history = getHistory();
+                        if (hmIdx >= 0 && hmIdx < history.length) {
+                            if (
+                                !confirm(
+                                    I18N.t(
+                                        "copyHistoryDeleteConfirm",
+                                        "确定删除这条记录？",
+                                    ),
+                                )
+                            )
+                                return;
+                            history.splice(hmIdx, 1);
+                            localStorage.setItem(
+                                HISTORY_KEY,
+                                JSON.stringify(history),
+                            );
+                            closeHistoryModal();
+                            renderHistory();
+                        }
+                    });
 
-    function cancelEdit() {
-      editArea.classList.remove('open');
-      editingId = null;
-    }
+                // ─── Copy to clipboard ──────────────────────────────────
+                function copyToClipboard(text) {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(function () {
+                            showCopyToast();
+                        });
+                    } else {
+                        var ta = document.createElement("textarea");
+                        ta.value = text;
+                        ta.style.position = "fixed";
+                        ta.style.opacity = "0";
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try {
+                            document.execCommand("copy");
+                            showCopyToast();
+                        } catch (e) {}
+                        document.body.removeChild(ta);
+                    }
+                }
 
-    // ─── Event: modal ────────────────────────────────────
-    manageStylesBtn.addEventListener('click', openStyleModal);
-    document.getElementById('modal-close-btn').addEventListener('click', closeStyleModal);
-    document.getElementById('modal-close-btn2').addEventListener('click', closeStyleModal);
-    styleModal.addEventListener('click', function(e) { if (e.target === styleModal) closeStyleModal(); });
-    addStyleBtn.addEventListener('click', function() { startEdit(null); });
-    editSaveBtn.addEventListener('click', saveEdit);
-    editCancelBtn.addEventListener('click', cancelEdit);
+                function showCopyToast() {
+                    copyToast.classList.add("show");
+                    setTimeout(function () {
+                        copyToast.classList.remove("show");
+                    }, 2000);
+                }
 
-    // ─── I18n update ──────────────────────────────────────
-    function updateTitle() {
-      document.title = (I18N.t('brandNameFull', '混沌艺术') || '混沌艺术') + ' · ' + I18N.t('pageCopyTitle', '文案生成');
-    }
-    function updateToggleLabel() {
-      var btn = document.getElementById('lang-toggle');
-      if (btn) btn.textContent = I18N.locale() === 'en' ? '中' : 'EN';
-    }
+                // ─── Escape HTML ────────────────────────────────────────
+                function escapeHtml(str) {
+                    if (!str) return "";
+                    var div = document.createElement("div");
+                    div.textContent = str;
+                    return div.innerHTML;
+                }
 
-    // ─── File upload ───────────────────────────────────────
-    uploadZone.addEventListener('click', function() { fileInput.click(); });
-    uploadZone.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
-    });
-    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
-    uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
-    uploadZone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', function() {
-      if (fileInput.files.length) handleFile(fileInput.files[0]);
-    });
+                // ─── Generate ──────────────────────────────────────────
+                function stripMarkdown(text) {
+                    if (!text) return "";
+                    return text
+                        .replace(/^#{1,6}\s+/gm, "")
+                        .replace(/\*\*(.+?)\*\*/g, "$1")
+                        .replace(/\*(.+?)\*/g, "$1")
+                        .replace(/`{1,3}[^`]*`{1,3}/g, "")
+                        .replace(/^>\s+/gm, "")
+                        .replace(/^[-*+]\s+/gm, "")
+                        .replace(/^\d+\.\s+/gm, "")
+                        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+                        .replace(/^---+$/gm, "")
+                        .trim();
+                }
 
-    function handleFile(file) {
-      currentFile = file;
-      fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-    }
+                function setLoading(loading) {
+                    generateBtn.disabled = loading;
+                    statusInfo.hidden = !loading;
+                }
 
-    // ─── History ────────────────────────────────────────────
-    function getHistory() {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) { return []; }
-    }
-    function saveHistory(entry) {
-      var history = getHistory();
-      history.unshift(entry);
-      if (history.length > 100) history = history.slice(0, 100);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    }
+                function showError(msg) {
+                    errorMsg.textContent = msg;
+                    statusError.hidden = false;
+                }
 
-    function renderHistory() {
-      var history = getHistory();
-      if (history.length === 0) {
-        historyEmpty.hidden = false;
-        historyGrid.hidden = true;
-        return;
-      }
-      historyEmpty.hidden = true;
-      historyGrid.hidden = false;
-      historyGrid.innerHTML = '';
+                generateBtn.addEventListener("click", function () {
+                    var prompt = promptEl.value.trim();
+                    if (!prompt) {
+                        showError(I18N.t("errorNoPrompt", "请输入文案需求"));
+                        return;
+                    }
+                    statusError.hidden = true;
+                    setLoading(true);
+                    resultEmpty.hidden = true;
+                    resultBody.classList.remove("show");
 
-      history.forEach(function(entry, idx) {
-        var card = document.createElement('div');
-        card.className = 'history-card';
-        card.innerHTML =
-          '<div class="card-header">' +
-            '<span class="card-style">' + escapeHtml(entry.style || '') + '</span>' +
-            '<span class="card-time">' + (entry.time || '') + '</span>' +
-          '</div>' +
-          '<div class="card-preview">' + escapeHtml(entry.content || '') + '</div>';
+                    var styleId = styleSelect.value;
+                    var styleInfo = getStyleById(styleId);
+                    var styleLabel = styleInfo ? styleInfo.name : "通用";
+                    var stylePrompt = styleInfo ? styleInfo.prompt : "";
+                    var tone =
+                        toneSelect.options[
+                            toneSelect.selectedIndex
+                        ].textContent.trim();
+                    var now = new Date();
+                    var timeStr = now.toLocaleString("zh-CN", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
 
-        card.addEventListener('click', function(e) {
-          openHistoryModal(idx);
-        });
-        historyGrid.appendChild(card);
-      });
-    }
+                    var systemPrompt =
+                        "你是一个专业的文案写作助手。请根据用户的需求生成文案。";
+                    if (stylePrompt)
+                        systemPrompt += "\n写作风格要求：" + stylePrompt;
+                    if (tone) systemPrompt += "\n语气：" + tone;
 
-    var hmIdx = -1;
-    function openHistoryModal(idx) {
-      var history = getHistory();
-      var entry = history[idx];
-      if (!entry) return;
-      hmIdx = idx;
-      document.getElementById('hm-style').textContent = entry.style || '';
-      document.getElementById('hm-time').textContent = entry.time || '';
-      document.getElementById('hm-content').textContent = entry.content || '';
-      document.getElementById('history-modal').classList.add('open');
-    }
-    function closeHistoryModal() {
-      document.getElementById('history-modal').classList.remove('open');
-    }
-    document.getElementById('hm-close').addEventListener('click', closeHistoryModal);
-    document.getElementById('hm-close-btn2').addEventListener('click', closeHistoryModal);
-    document.getElementById('history-modal').addEventListener('click', function(e) { if (e.target === this) closeHistoryModal(); });
-    document.getElementById('hm-copy-btn').addEventListener('click', function() {
-      var entry = getHistory()[hmIdx];
-      if (entry) copyToClipboard(document.getElementById('hm-content').textContent);
-    });
-    document.getElementById('hm-edit-btn').addEventListener('click', function() {
-      var entry = getHistory()[hmIdx];
-      if (!entry) return;
-      promptEl.value = entry.prompt || '';
-      copyContent.textContent = entry.content;
-      resultEmpty.hidden = true;
-      resultBody.classList.add('show');
-      resultStyleTag.textContent = entry.style || '';
-      resultTime.textContent = entry.time || '';
-      lastResult = entry;
-      closeHistoryModal();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    document.getElementById('hm-delete-btn').addEventListener('click', function() {
-      var history = getHistory();
-      if (hmIdx >= 0 && hmIdx < history.length) {
-        if (!confirm(I18N.t('copyHistoryDeleteConfirm', '确定删除这条记录？'))) return;
-        history.splice(hmIdx, 1);
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-        closeHistoryModal();
-        renderHistory();
-      }
-    });
+                    // Real API call
+                    var cfg = textConfig || {
+                        provider: "openai",
+                        model: "gpt-4o-mini",
+                        apiBaseUrl: "https://api.openai.com/v1",
+                        apiKey: "",
+                    };
+                    var url =
+                        cfg.apiBaseUrl.replace(/\/$/, "") +
+                        "/v1/chat/completions";
+                    var headers = { "Content-Type": "application/json" };
+                    if (cfg.apiKey)
+                        headers["Authorization"] = "Bearer " + cfg.apiKey;
 
-    // ─── Copy to clipboard ──────────────────────────────────
-    function copyToClipboard(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(function() { showCopyToast(); });
-      } else {
-        var ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand('copy'); showCopyToast(); } catch(e) {}
-        document.body.removeChild(ta);
-      }
-    }
+                    fetch(url, {
+                        method: "POST",
+                        headers: headers,
+                        body: JSON.stringify({
+                            model: cfg.model,
+                            messages: [
+                                { role: "system", content: systemPrompt },
+                                {
+                                    role: "user",
+                                    content:
+                                        prompt +
+                                        (currentFile
+                                            ? "\n\n参考素材已上传，请结合素材内容生成文案。"
+                                            : ""),
+                                },
+                            ],
+                            max_tokens: 2048,
+                            temperature: 0.7,
+                        }),
+                    })
+                        .then(function (res) {
+                            if (!res.ok) {
+                                return res.json().then(function (d) {
+                                    throw new Error(
+                                        (d.error && d.error.message) ||
+                                            "API Error: " + res.status,
+                                    );
+                                });
+                            }
+                            return res.json();
+                        })
+                        .then(function (data) {
+                            setLoading(false);
+                            var generated =
+                                (data.choices &&
+                                    data.choices[0] &&
+                                    data.choices[0].message &&
+                                    data.choices[0].message.content) ||
+                                "生成失败，请重试。";
+                            generated = stripMarkdown(generated);
+                            copyContent.textContent = generated;
+                            resultBody.classList.add("show");
+                            resultStyleTag.textContent = styleLabel;
+                            resultTime.textContent = timeStr;
+                            lastResult = {
+                                content: generated,
+                                style: styleLabel,
+                                time: timeStr,
+                                prompt: prompt,
+                                tone: tone,
+                            };
+                            saveHistory(lastResult);
+                            renderHistory();
+                        })
+                        .catch(function (err) {
+                            setLoading(false);
+                            showError(
+                                err.message || "生成失败，请检查文本模型配置",
+                            );
+                        });
+                });
 
-    function showCopyToast() {
-      copyToast.classList.add('show');
-      setTimeout(function() { copyToast.classList.remove('show'); }, 2000);
-    }
+                // ─── Copy button ───────────────────────────────────────
+                copyBtn.addEventListener("click", function () {
+                    copyToClipboard(copyContent.textContent);
+                });
 
-    // ─── Escape HTML ────────────────────────────────────────
-    function escapeHtml(str) {
-      if (!str) return '';
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+                // ─── Regenerate ────────────────────────────────────────
+                regenerateBtn.addEventListener("click", function () {
+                    generateBtn.click();
+                });
 
-    // ─── Generate ──────────────────────────────────────────
-    function stripMarkdown(text) {
-      if (!text) return '';
-      return text
-        .replace(/^#{1,6}\s+/gm, '')
-        .replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/\*(.+?)\*/g, '$1')
-        .replace(/`{1,3}[^`]*`{1,3}/g, '')
-        .replace(/^>\s+/gm, '')
-        .replace(/^[-*+]\s+/gm, '')
-        .replace(/^\d+\.\s+/gm, '')
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-        .replace(/^---+$/gm, '')
-        .trim();
-    }
+                // ─── Clear history ─────────────────────────────────────
+                clearHistoryBtn.addEventListener("click", function () {
+                    localStorage.removeItem(HISTORY_KEY);
+                    renderHistory();
+                });
 
-    function setLoading(loading) {
-      generateBtn.disabled = loading;
-      statusInfo.hidden = !loading;
-    }
+                // ─── I18n listeners ────────────────────────────────────
+                document
+                    .getElementById("lang-toggle")
+                    .addEventListener("click", function () {
+                        I18N.toggle();
+                    });
+                document.addEventListener("i18n:changed", function () {
+                    updateTitle();
+                    updateToggleLabel();
+                });
 
-    function showError(msg) {
-      errorMsg.textContent = msg;
-      statusError.hidden = false;
-    }
-
-    generateBtn.addEventListener('click', function() {
-      var prompt = promptEl.value.trim();
-      if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入文案需求')); return; }
-      statusError.hidden = true;
-      setLoading(true);
-      resultEmpty.hidden = true;
-      resultBody.classList.remove('show');
-
-      var styleId = styleSelect.value;
-      var styleInfo = getStyleById(styleId);
-      var styleLabel = styleInfo ? styleInfo.name : '通用';
-      var stylePrompt = styleInfo ? styleInfo.prompt : '';
-      var tone = toneSelect.options[toneSelect.selectedIndex].textContent.trim();
-      var now = new Date();
-      var timeStr = now.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-
-      var systemPrompt = '你是一个专业的文案写作助手。请根据用户的需求生成文案。';
-      if (stylePrompt) systemPrompt += '\n写作风格要求：' + stylePrompt;
-      if (tone) systemPrompt += '\n语气：' + tone;
-
-      // Real API call
-      var cfg = textConfig || { provider:'openai', model:'gpt-4o-mini', apiBaseUrl:'https://api.openai.com/v1', apiKey:'' };
-      var url = cfg.apiBaseUrl.replace(/\/$/, '') + '/v1/chat/completions';
-      var headers = { 'Content-Type': 'application/json' };
-      if (cfg.apiKey) headers['Authorization'] = 'Bearer ' + cfg.apiKey;
-
-      fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-          model: cfg.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt + (currentFile ? '\n\n参考素材已上传，请结合素材内容生成文案。' : '') }
-          ],
-          max_tokens: 2048,
-          temperature: 0.7,
-        })
-      }).then(function(res) {
-        if (!res.ok) { return res.json().then(function(d) { throw new Error((d.error && d.error.message) || 'API Error: ' + res.status); }); }
-        return res.json();
-      }).then(function(data) {
-        setLoading(false);
-        var generated = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '生成失败，请重试。';
-        generated = stripMarkdown(generated);
-        copyContent.textContent = generated;
-        resultBody.classList.add('show');
-        resultStyleTag.textContent = styleLabel;
-        resultTime.textContent = timeStr;
-        lastResult = { content: generated, style: styleLabel, time: timeStr, prompt: prompt, tone: tone };
-        saveHistory(lastResult);
-        renderHistory();
-      }).catch(function(err) {
-        setLoading(false);
-        showError(err.message || '生成失败，请检查文本模型配置');
-      });
-    });
-
-    // ─── Copy button ───────────────────────────────────────
-    copyBtn.addEventListener('click', function() {
-      copyToClipboard(copyContent.textContent);
-    });
-
-    // ─── Regenerate ────────────────────────────────────────
-    regenerateBtn.addEventListener('click', function() {
-      generateBtn.click();
-    });
-
-    // ─── Clear history ─────────────────────────────────────
-    clearHistoryBtn.addEventListener('click', function() {
-      localStorage.removeItem(HISTORY_KEY);
-      renderHistory();
-    });
-
-    // ─── I18n listeners ────────────────────────────────────
-    document.getElementById('lang-toggle').addEventListener('click', function() { I18N.toggle(); });
-    document.addEventListener('i18n:changed', function() {
-      updateTitle();
-      updateToggleLabel();
-    });
-
-    // ─── Init ──────────────────────────────────────────────
-    Auth.requireAuth();
-    Auth.renderUserMenu('#user-menu');
-    renderStyleDropdown('weibo');
-    renderHistory();
-    updateTitle();
-    updateToggleLabel();
-    if (window.I18N) I18N.apply();
-    loadTextConfig();
-
-  })();
-  </script>
-</body>
+                // ─── Init ──────────────────────────────────────────────
+                Auth.requireAuth();
+                Auth.renderUserMenu("#user-menu");
+                renderStyleDropdown("weibo");
+                renderHistory();
+                updateTitle();
+                updateToggleLabel();
+                if (window.I18N) I18N.apply();
+                loadTextConfig();
+            })();
+        </script>
+    </body>
 </html>
