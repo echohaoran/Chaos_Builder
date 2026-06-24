@@ -1460,27 +1460,22 @@
 
     function renderProviderInfo(retries) {
       if (retries === undefined) retries = 0;
-      if (retries > 5) { providerIndicator.textContent = '配置完成'; return; }
-      if (!ChaosAPI || !ChaosAPI.getCurrentProviderInfo || !ChaosAPI.getConfig) {
+      if (retries > 5) { providerIndicator.textContent = ''; return; }
+      if (!ChaosAPI || !ChaosAPI.getConfig) {
         setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
         return;
       }
       try {
         var cfg = ChaosAPI.getConfig();
         if (!cfg || !cfg.provider) { setTimeout(function() { renderProviderInfo(retries + 1); }, 500); return; }
-        var info = ChaosAPI.getCurrentProviderInfo();
-        if (info && info.label && info.model) {
-          providerIndicator.textContent = info.label + ' · ' + info.model;
-          providerIndicator.dataset.loaded = 'true';
-        } else if (info && info.label) {
-          // provider found but no specific model
-          providerIndicator.textContent = info.label;
-          providerIndicator.dataset.loaded = 'true';
-        } else {
-          setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
-        }
+        var meta = (ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[cfg.provider]) || null;
+        var slot = cfg[cfg.provider] || {};
+        var label = (meta && meta.label) || cfg.provider;
+        var model = slot.model || cfg.model || (meta && meta.defaultModel) || '';
+        providerIndicator.textContent = label + (model ? ' · ' + model : '');
+        providerIndicator.dataset.loaded = 'true';
       } catch(e) {
-        setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
+        if (retries < 5) setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
       }
     }
     renderProviderInfo();
