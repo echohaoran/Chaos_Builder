@@ -629,7 +629,7 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <div class="label" data-i18n="imgUploadHint">上传参考图片</div>
               <div class="hint" data-i18n="imgUploadDesc">支持 JPG / PNG / WebP</div>
-              <input type="file" id="image-file-input" accept="image/*" />
+              <input type="file" id="image-file-input" accept="image/*" multiple />
             </div>
             <div class="preview-list" id="image-preview-list"></div>
           </div>
@@ -768,9 +768,9 @@
     // ─── State ──────────────────────────────────────────────
     var currentMode = 'text'; // 'text' | 'image' | 'preset'
     var selectedPreset = null;
-    var imageFile = null;
+    var imageFiles = [];
     var multiFiles = [];
-    var MAX_FILES = 4;
+    var MAX_FILES = 5;
     var progressTimer = null;
     var progressStart = 0;
     var currentStep = 0;
@@ -833,6 +833,22 @@
       var input = document.getElementById(inputId);
       var list = document.getElementById(listId);
 
+      function handleDrop(files) {
+        if (isMulti) {
+          Array.from(files).forEach(function(f) {
+            if (multiFiles.length >= MAX_FILES) return;
+            multiFiles.push(f);
+          });
+          renderPreview(list, multiFiles);
+        } else {
+          Array.from(files).forEach(function(f) {
+            if (imageFiles.length >= MAX_FILES) return;
+            imageFiles.push(f);
+          });
+          renderPreview(list, imageFiles);
+        }
+      }
+
       zone.addEventListener('click', function() { input.click(); });
       zone.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
@@ -842,27 +858,11 @@
       zone.addEventListener('drop', function(e) {
         e.preventDefault();
         zone.classList.remove('dragover');
-        if (isMulti) handleMultiFiles(e.dataTransfer.files);
-        else handleSingleFile(e.dataTransfer.files[0]);
+        handleDrop(e.dataTransfer.files);
       });
       input.addEventListener('change', function() {
-        if (isMulti) handleMultiFiles(input.files);
-        else if (input.files.length) handleSingleFile(input.files[0]);
+        handleDrop(input.files);
       });
-    }
-
-    function handleSingleFile(file) {
-      if (!file) return;
-      imageFile = file;
-      renderPreview(document.getElementById('image-preview-list'), [file]);
-    }
-
-    function handleMultiFiles(files) {
-      Array.from(files).forEach(function(f) {
-        if (multiFiles.length >= MAX_FILES) return;
-        multiFiles.push(f);
-      });
-      renderPreview(document.getElementById('multi-preview-list'), multiFiles);
     }
 
     function renderPreview(container, files) {
@@ -876,8 +876,8 @@
         item.querySelector('.remove-btn').addEventListener('click', function(e) {
           e.stopPropagation();
           if (container.id === 'image-preview-list') {
-            imageFile = null;
-            container.innerHTML = '';
+            imageFiles.splice(idx, 1);
+            renderPreview(container, imageFiles);
           } else {
             multiFiles.splice(idx, 1);
             renderPreview(container, multiFiles);
@@ -887,8 +887,7 @@
       });
     }
 
-    setupUpload('image-upload-zone', 'image-file-input', 'image-preview-list', false);
-    setupUpload('multi-upload-zone', 'multi-file-input', 'multi-preview-list', true);
+    setupUpload('image-upload-zone', 'image-file-input', 'image-preview-list', true);
 
     // ─── Progress monitor ──────────────────────────────────
     function startProgress() {
@@ -976,7 +975,7 @@
         size = document.getElementById('image-size').value;
         quality = document.getElementById('image-quality').value;
         if (!prompt) { showError(I18N.t('errorNoPrompt', '请输入提示词')); return; }
-        if (!imageFile) { showError(I18N.t('errorNoImage', '请上传参考图')); return; }
+        if (!imageFiles.length) { showError(I18N.t('errorNoImage', '请上传参考图')); return; }
       } else {
         prompt = document.getElementById('multi-prompt').value.trim();
         size = document.getElementById('multi-size').value;
@@ -997,7 +996,7 @@
         apiCall = ChaosAPI.generateImage(prompt, { size: size, quality: quality, n: parseInt(document.getElementById('text-count').value) || 1 });
       } else if (currentMode === 'image') {
         setStep(1);
-        apiCall = ChaosAPI.editImage(imageFile, prompt, { size: size, quality: quality });
+        apiCall = ChaosAPI.multiImageEdit(imageFiles, prompt, { size: size, quality: quality });
       } else {
         setStep(1);
         apiCall = ChaosAPI.multiImageEdit(multiFiles, prompt, { size: size, quality: quality });
@@ -1463,15 +1462,26 @@
     updateToggleLabel();
     if (window.I18N) I18N.apply();
 
-    if (ChaosAPI && ChaosAPI.getCurrentProviderInfo) {
-      var info = ChaosAPI.getCurrentProviderInfo();
-      if (info) providerIndicator.textContent = info.label + ' · ' + info.model;
-      if (ChaosAPI.onConfigChange) {
-        ChaosAPI.onConfigChange(function() {
-          var info2 = ChaosAPI.getCurrentProviderInfo();
-          if (info2) providerIndicator.textContent = info2.label + ' · ' + info2.model;
-        });
+    function renderProviderInfo() {
+      if (!ChaosAPI || !ChaosAPI.getCurrentProviderInfo) return;
+      try {
+        var info = ChaosAPI.getCurrentProviderInfo();
+        if (info && info.label && info.model) {
+          providerIndicator.textContent = info.label + ' · ' + info.model;
+          providerIndicator.dataset.loaded = 'true';
+        } else if (!providerIndicator.dataset.loaded) {
+          setTimeout(renderProviderInfo, 500);
+        }
+      } catch(e) {
+        setTimeout(renderProviderInfo, 500);
       }
+    }
+    renderProviderInfo();
+    if (ChaosAPI && ChaosAPI.onConfigChange) {
+      ChaosAPI.onConfigChange(function() {
+        providerIndicator.dataset.loaded = '';
+        renderProviderInfo();
+      });
     }
 
   })();
