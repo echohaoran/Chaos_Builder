@@ -572,7 +572,6 @@
     <div class="generator">
       <!-- Left Panel -->
       <div class="generator-panel">
-        <div class="provider-indicator" id="provider-indicator" data-i18n="loadingProvider">加载供应商…</div>
 
         <!-- Text mode -->
         <div class="mode-section active" data-mode="text">
@@ -797,7 +796,6 @@
     var barFill = document.getElementById('bar-fill');
     var elapsedEl = document.getElementById('elapsed');
     var progressText = document.getElementById('progress-text');
-    var providerIndicator = document.getElementById('provider-indicator');
 
     // ─── Mode switching ─────────────────────────────────────
     modeTabs.forEach(function(tab) {
@@ -1458,35 +1456,7 @@
     updateToggleLabel();
     if (window.I18N) I18N.apply();
 
-    function renderProviderInfo(retries) {
-      if (retries === undefined) retries = 0;
-      if (retries > 5) { providerIndicator.textContent = ''; return; }
-      if (!ChaosAPI || !ChaosAPI.getConfig) {
-        setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
-        return;
-      }
-      try {
-        var cfg = ChaosAPI.getConfig();
-        if (!cfg || !cfg.provider) { setTimeout(function() { renderProviderInfo(retries + 1); }, 500); return; }
-        var meta = (ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[cfg.provider]) || null;
-        var slot = cfg[cfg.provider] || {};
-        var label = (meta && meta.label) || cfg.provider;
-        var model = slot.model || cfg.model || (meta && meta.defaultModel) || '';
-        providerIndicator.textContent = label + (model ? ' · ' + model : '');
-        providerIndicator.dataset.loaded = 'true';
-      } catch(e) {
-        if (retries < 5) setTimeout(function() { renderProviderInfo(retries + 1); }, 500);
-      }
-    }
-    renderProviderInfo();
-    if (ChaosAPI && ChaosAPI.onConfigChange) {
-      ChaosAPI.onConfigChange(function() {
-        providerIndicator.dataset.loaded = '';
-        renderProviderInfo();
-      });
-    }
-
-  })();
+    })();
   </script>
 </body>
 </html>
