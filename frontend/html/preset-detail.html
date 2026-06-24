@@ -692,7 +692,6 @@
 
       Auth.requireAuth();
       Auth.renderUserMenu('#user-menu');
-      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
       render();
       ImgDB.loadAll().then(function(entries) {
         entries.forEach(function(e) { imgDataCache[e.id] = e.data; });

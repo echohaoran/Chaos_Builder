@@ -423,7 +423,6 @@
           welcomePanel.classList.add('active');
           grid.classList.add('active');
           welcomeText.textContent = I18N.t('authWelcome', '欢迎，{name}', { name: user.username || user.name });
-          if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
         } else {
           guestPanel.classList.add('active');
           welcomePanel.classList.remove('active');

@@ -778,7 +778,6 @@
 
       Auth.requireAuth();
       Auth.renderUserMenu('#user-menu');
-      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
       renderHistory();
 
       // 实时显示当前供应商 + 模型(settings 页面切换后会同步更新)

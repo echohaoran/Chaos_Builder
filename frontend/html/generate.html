@@ -418,11 +418,11 @@
         <!-- Text mode -->
         <div class="mode-section active" data-mode="text">
           <div class="field">
-            <label for="text-prompt" data-i18n="promptLabel">提示词</label>
-            <textarea id="text-prompt" rows="5" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="输入描述画面内容的提示词…"></textarea>
+            <label for="text-prompt" data-i18n="labelPrompt">提示词</label>
+            <textarea id="text-prompt" rows="5" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="输入描述画面内容的提示词…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderPrompt"></textarea>
           </div>
           <div class="field">
-            <label for="text-size" data-i18n="sizeLabel">尺寸</label>
+            <label for="text-size" data-i18n="labelSize">尺寸</label>
             <select id="text-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="1024x1024">1024 × 1024</option>
               <option value="1024x1536">1024 × 1536</option>
@@ -431,7 +431,7 @@
             </select>
           </div>
           <div class="field">
-            <label data-i18n="orientationLabel">方向</label>
+            <label data-i18n="labelOrientation">方向</label>
             <div class="orientation-toggle" style="display:flex;gap:var(--space-2);">
               <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2);border:1px solid var(--border);border-radius:var(--border-radius);cursor:pointer;font-size:var(--text-sm);">
                 <input type="radio" name="text-orientation" value="landscape" checked /> <span data-i18n="orientationLandscape">横图</span>
@@ -445,14 +445,14 @@
             </div>
           </div>
           <div class="field">
-            <label for="text-quality" data-i18n="qualityLabel">质量</label>
+            <label for="text-quality" data-i18n="labelQuality">质量</label>
             <select id="text-quality" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="hd" data-i18n="qualityHd">高清</option>
               <option value="standard" data-i18n="qualityStandard">标准</option>
             </select>
           </div>
           <div class="field">
-            <label for="text-count" data-i18n="countLabel">生成数量</label>
+            <label for="text-count" data-i18n="labelCount">生成数量</label>
             <select id="text-count" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
               <option value="1">1</option>
               <option value="2">2</option>
@@ -464,7 +464,7 @@
         <!-- Image mode -->
         <div class="mode-section" data-mode="image">
           <div class="field">
-            <label data-i18n="uploadLabel">上传参考图</label>
+            <label data-i18n="labelUploadImage">上传参考图</label>
             <div class="upload-zone" id="image-upload-zone" tabindex="0" role="button">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <div class="label" data-i18n="imgUploadHint">上传参考图片</div>
@@ -474,8 +474,8 @@
             <div class="preview-list" id="image-preview-list"></div>
           </div>
           <div class="field">
-            <label for="image-prompt" data-i18n="promptLabel">提示词</label>
-            <textarea id="image-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何修改参考图…"></textarea>
+            <label for="image-prompt" data-i18n="labelPrompt">提示词</label>
+            <textarea id="image-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何修改参考图…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderImagePrompt"></textarea>
           </div>
           <div class="field">
             <select id="image-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
@@ -519,8 +519,8 @@
             <div class="preview-list" id="multi-preview-list"></div>
           </div>
           <div class="field">
-            <label for="multi-prompt" data-i18n="promptLabel">提示词</label>
-            <textarea id="multi-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何融合这些参考图…"></textarea>
+            <label for="multi-prompt" data-i18n="labelPrompt">提示词</label>
+            <textarea id="multi-prompt" rows="4" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" placeholder="描述如何融合这些参考图…" data-i18n-attr="placeholder" data-i18n-placeholder="placeholderMultiPrompt"></textarea>
           </div>
           <div class="field">
             <select id="multi-size" style="width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);background:var(--bg);color:var(--text);">
@@ -559,14 +559,14 @@
           </div>
         </div>
 
-        <button type="button" class="btn btn-primary" id="generate-btn" data-i18n="generateBtn">生成</button>
+        <button type="button" class="btn btn-primary" id="generate-btn" data-i18n="actionGenerate">生成</button>
       </div>
 
       <!-- Right Panel -->
       <div class="generator-result">
         <div class="status info" id="status-info" hidden>
           <div class="spinner"></div>
-          <span data-i18n="generating">正在生成…</span>
+          <span data-i18n="statusGenerating">正在生成…</span>
         </div>
         <div class="status error" id="status-error" hidden>
           <span id="error-message"></span>
@@ -575,10 +575,10 @@
         <div class="progress-monitor" id="progress-monitor" hidden>
           <div class="progress-header">
             <div class="progress-steps">
-              <span class="step" data-step="0"><span class="dot"></span> <span data-i18n="progressPrepare">准备请求</span></span>
-              <span class="step" data-step="1"><span class="dot"></span> <span data-i18n="progressSubmit">提交上游</span></span>
-              <span class="step" data-step="2"><span class="dot"></span> <span data-i18n="progressGenerating">生成中</span></span>
-              <span class="step" data-step="3"><span class="dot"></span> <span data-i18n="progressReceive">接收结果</span></span>
+              <span class="step" data-step="0"><span class="dot"></span> <span data-i18n="progressStepPrepare">准备请求</span></span>
+              <span class="step" data-step="1"><span class="dot"></span> <span data-i18n="progressStepSubmit">提交上游</span></span>
+              <span class="step" data-step="2"><span class="dot"></span> <span data-i18n="progressStepWait">生成中</span></span>
+              <span class="step" data-step="3"><span class="dot"></span> <span data-i18n="progressStepReceive">接收结果</span></span>
             </div>
             <span class="elapsed" id="elapsed">0s</span>
           </div>
@@ -611,7 +611,7 @@
     <!-- History -->
     <div class="history-header">
       <h2 data-i18n="historyTitle">生成历史</h2>
-      <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="clearHistory">清空历史</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="clear-history-btn" data-i18n="actionClearHistory">清空历史</button>
     </div>
     <div class="history-empty" id="history-empty" data-i18n="historyEmpty">暂无历史记录</div>
     <div class="history-grid" id="history-grid" hidden></div>
@@ -898,8 +898,8 @@
         div.className = 'result-item';
         div.innerHTML = '<img src="' + url + '" alt="" loading="lazy" />' +
           '<div class="result-actions">' +
-            '<a href="' + url + '" class="btn btn-primary btn-sm" download target="_blank">下载</a>' +
-            '<button type="button" class="btn btn-secondary btn-sm" data-copy="' + url + '">复制链接</button>' +
+            '<a href="' + url + '" class="btn btn-primary btn-sm" download target="_blank">' + I18N.t('actionDownload', '下载') + '</a>' +
+            '<button type="button" class="btn btn-secondary btn-sm" data-copy="' + url + '">' + I18N.t('actionCopy', '复制链接') + '</button>' +
           '</div>';
         div.querySelector('[data-copy]').addEventListener('click', function() {
           if (navigator.clipboard && window.isSecureContext) {
@@ -1071,7 +1071,7 @@
       var presets = loadPresets();
       grid.innerHTML = '';
       if (presets.length === 0) {
-        grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:var(--space-8);">暂无预设。</div>';
+        grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:var(--space-8);">' + I18N.t('presetEditEmpty', '暂无预设') + '</div>';
         return;
       }
       presets.forEach(function(p) {
@@ -1106,7 +1106,7 @@
       if (imgSrc) {
         imgContainer.innerHTML = '<img src="' + imgSrc + '" alt="' + (preset.name||'') + '" style="max-width:100%;max-height:500px;object-fit:contain;display:block;" onerror="this.parentElement.innerHTML=\'<div style=\\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:var(--text-sm);\\\'>' + (preset.name||'') + '</div>\'" />';
       } else {
-        imgContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:var(--text-sm);">' + (preset.name||'预设') + '</div>';
+        imgContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:var(--text-sm);">' + (preset.name||I18N.t('presetStyleLabel', '预设风格')) + '</div>';
       }
       document.getElementById('preset-preview-name').textContent = preset.name || '';
       document.getElementById('preset-preview-desc').textContent = (preset.label||'') + (preset.aspect ? ' · ' + preset.aspect : '');
@@ -1155,7 +1155,6 @@
     // ─── Init ──────────────────────────────────────────────
     Auth.requireAuth();
     Auth.renderUserMenu('#user-menu');
-    if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
     renderPresets(); initImgCache();
     renderHistory();
     updateTitle();

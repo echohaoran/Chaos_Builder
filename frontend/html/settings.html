@@ -538,10 +538,10 @@
     <!-- Non-admin notice (shown when user is NOT admin) -->
     <div class="settings-card non-admin-notice" id="non-admin-notice" style="display:none;">
       <div class="non-admin-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </div>
-      <p class="non-admin-title" data-i18n="settingsNonAdminTitle">设置由管理员统一管理</p>
-      <p class="non-admin-desc" data-i18n="settingsNonAdminDesc">你的模型供应商和 API 密钥由系统管理员配置，无需自行设置。如需修改请与管理员联系。</p>
+      <p class="non-admin-title" data-i18n="settingsUserSettingsTitle">个人设置</p>
+      <p class="non-admin-desc" data-i18n="settingsUserSettingsDesc">配置你自己的 API 密钥和模型偏好。管理员可额外管理文本模型和用户权限。</p>
     </div>
 
     <form class="settings-layout" id="settings-form">
@@ -770,7 +770,7 @@
           data.users.forEach(function(u) {
             var initial = String(u.username || '?').charAt(0).toUpperCase();
             var role = u.role === 'admin' ? 'admin' : 'user';
-            var roleLabel = role === 'admin' ? '管理员' : '用户';
+            var roleLabel = role === 'admin' ? I18N.t('settingsUserAdmin', '管理员') : I18N.t('settingsUserUser', '用户');
             var isMe = u.id === myId;
             var isDisabled = u.disabled === 1 || u.disabled === true;
             var row = document.createElement('div');
@@ -781,62 +781,62 @@
                 '<div class="user-name-line">' +
                   '<strong>' + esc(u.username || '') + '</strong>' +
                   '<span class="role-badge role-' + role + '">' + esc(roleLabel) + '</span>' +
-                  (isMe ? '<span class="role-badge" style="background:rgba(59,130,246,0.12);color:#3b82f6;">我</span>' : '') +
+                  (isMe ? '<span class="role-badge" style="background:rgba(59,130,246,0.12);color:#3b82f6;">' + esc(I18N.t('settingsUserMe', '我')) + '</span>' : '') +
                 '</div>' +
                 '<div class="user-stats">' +
-                  '调用 ' + (u.api_calls || 0) + ' 次 · ' +
-                  esc(formatDate(u.created_at)) + ' 注册' +
-                  (u.last_api_call ? ' · 最后 ' + esc(formatDate(u.last_api_call)) : '') +
+                  I18N.t('settingsUserCalls', '调用 {n} 次', {n: u.api_calls || 0}) + ' · ' +
+                  esc(formatDate(u.created_at)) + ' ' + I18N.t('settingsUserRegistered', '注册') +
+                  (u.last_api_call ? ' · ' + I18N.t('settingsUserLastCall', '最后') + ' ' + esc(formatDate(u.last_api_call)) : '') +
                 '</div>' +
               '</div>' +
               '<div class="user-actions">' +
-                '<button type="button" class="btn-icon-sm" title="切换角色" data-action="role" data-id="' + u.id + '" data-role="' + role + '">' +
+                '<button type="button" class="btn-icon-sm" title="' + esc(I18N.t('settingsUserRoleToggle', '切换角色')) + '" data-action="role" data-id="' + u.id + '" data-role="' + role + '">' +
                   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 20 14 23 11"/><path d="M20 14V4"/></svg>' +
                 '</button>' +
-                '<button type="button" class="btn-icon-sm warning" title="' + (isDisabled ? '启用' : '禁用') + '" data-action="toggle" data-id="' + u.id + '" data-disabled="' + (isDisabled ? 0 : 1) + '">' +
+                '<button type="button" class="btn-icon-sm warning" title="' + esc(isDisabled ? I18N.t('settingsUserEnable', '启用') : I18N.t('settingsUserDisable', '禁用')) + '" data-action="toggle" data-id="' + u.id + '" data-disabled="' + (isDisabled ? 0 : 1) + '">' +
                   (isDisabled
                     ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
                     : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>') +
                 '</button>' +
-                (!isMe ? '<button type="button" class="btn-icon-sm danger" title="删除" data-action="delete" data-id="' + u.id + '" data-name="' + esc(u.username) + '">' +
+                (!isMe ? '<button type="button" class="btn-icon-sm danger" title="' + esc(I18N.t('settingsUserDelete', '删除')) + '" data-action="delete" data-id="' + u.id + '" data-name="' + esc(u.username) + '">' +
                   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
                 '</button>' : '') +
               '</div>';
             row.querySelector('[data-action="role"]').onclick = function() {
               var btn = this;
               var newRole = btn.dataset.role === 'admin' ? 'user' : 'admin';
-              var newLabel = newRole === 'admin' ? '管理员' : '用户';
-              if (!confirm('确认将「' + u.username + '」的角色切换为「' + newLabel + '」？')) return;
+              var newLabel = newRole === 'admin' ? I18N.t('settingsUserAdmin', '管理员') : I18N.t('settingsUserUser', '用户');
+              if (!confirm(I18N.t('settingsUserRoleConfirm', '确认将「{name}」的角色切换为「{role}」？', {name: u.username, role: newLabel}))) return;
               fetch(baseUrl + '/api/settings/admin/users/' + u.id + '/role', {
                 method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: newRole })
               }).then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 loadUsers();
-              }).catch(function(e) { alert('角色切换失败：' + e.message); });
+              }).catch(function(e) { alert(I18N.t('settingsUserRoleFail', '角色切换失败：{msg}', {msg: e.message})); });
             };
             row.querySelector('[data-action="toggle"]').onclick = function() {
               var btn = this;
               var willDisable = btn.dataset.disabled === '1';
-              if (!confirm('确认' + (willDisable ? '禁用' : '启用') + '用户「' + u.username + '」？' + (willDisable ? '禁用后该用户将无法登录和调用 API。' : ''))) return;
+              if (!confirm(I18N.t('settingsUserToggleConfirm', '确认{action}用户「{name}」？', {action: willDisable ? I18N.t('settingsUserDisable', '禁用') : I18N.t('settingsUserEnable', '启用'), name: u.username}) + (willDisable ? I18N.t('settingsUserDisableHint', '禁用后该用户将无法登录和调用 API。') : ''))) return;
               fetch(baseUrl + '/api/settings/admin/users/' + u.id + '/disabled', {
                 method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ disabled: willDisable ? 1 : 0 })
               }).then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 loadUsers();
-              }).catch(function(e) { alert('操作失败：' + e.message); });
+              }).catch(function(e) { alert(I18N.t('settingsUserActionFail', '操作失败：{msg}', {msg: e.message})); });
             };
             if (!isMe) {
               row.querySelector('[data-action="delete"]').onclick = function() {
                 var btn = this;
-                if (!confirm('确认删除用户「' + btn.dataset.name + '」？\n此操作不可撤销，该用户的所有数据（历史记录、设置等）都将被永久删除。')) return;
+                if (!confirm(I18N.t('settingsUserDeleteConfirm', '确认删除用户「{name}」？\n此操作不可撤销，该用户的所有数据（历史记录、设置等）都将被永久删除。', {name: btn.dataset.name}))) return;
                 fetch(baseUrl + '/api/settings/admin/users/' + u.id, {
                   method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
                 }).then(function(r) {
                   if (!r.ok) throw new Error('HTTP ' + r.status);
                   loadUsers();
-                }).catch(function(e) { alert('删除失败：' + e.message); });
+                }).catch(function(e) { alert(I18N.t('settingsUserDeleteFail', '删除失败：{msg}', {msg: e.message})); });
               };
             }
             list.appendChild(row);
@@ -899,9 +899,9 @@
             textApiBaseUrl: (document.getElementById('textApiBaseUrl') || {}).value || '',
           }).then(function(ok) {
             if (ok) { showToast(); }
-            else { alert('保存失败：无管理员权限，请退出后重新登录。'); }
+            else { alert(I18N.t('settingsSaveFailAdmin', '保存失败：无管理员权限，请退出后重新登录。')); }
           }).catch(function(e) {
-            alert('保存失败：' + (e.message || '请退出后重新登录'));
+            alert(I18N.t('settingsSaveFail', '保存失败：{msg}', {msg: e.message || I18N.t('settingsRelogin', '请退出后重新登录')}));
           });
         } else {
           showToast();
@@ -1103,18 +1103,16 @@
         updateTitle();
         updateToggleLabel();
         if (window.I18N) I18N.apply();
-        var isAdmin = Auth.isAdmin && Auth.isAdmin();
-        if (!isAdmin) { window.location.href = 'landing.html'; return; }
         loadSettings();
 
         var isAdmin = Auth.isAdmin && Auth.isAdmin();
-        var adminSections = ['admin-text-config', 'admin-user-section', 'admin-image-config'];
+        var adminSections = ['admin-text-config', 'admin-user-section'];
         adminSections.forEach(function(id) {
           var el = document.getElementById(id);
           if (el) el.style.display = isAdmin ? '' : 'none';
         });
         var nonAdminNotice = document.getElementById('non-admin-notice');
-        if (nonAdminNotice) nonAdminNotice.style.display = isAdmin ? 'none' : '';
+        if (nonAdminNotice) nonAdminNotice.style.display = 'none';
 
         if (isAdmin) {
           loadAdminSettings();

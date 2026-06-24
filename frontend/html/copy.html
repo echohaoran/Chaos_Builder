@@ -509,7 +509,7 @@
         <!-- Prompt input -->
         <div class="field">
           <label for="prompt" data-i18n="copyPromptLabel">输入文案需求</label>
-          <textarea id="prompt" name="prompt" rows="5" placeholder="例如：一款轻奢香水的情人节推广文案，面向25-35岁女性，突出浪漫与精致。" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;"></textarea>
+          <textarea id="prompt" name="prompt" rows="5" placeholder="例如：一款轻奢香水的情人节推广文案，面向25-35岁女性，突出浪漫与精致。" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--border-radius);font-size:var(--text-sm);resize:vertical;background:var(--bg);color:var(--text);font-family:inherit;" data-i18n-attr="placeholder" data-i18n-placeholder="copyPromptPlaceholder"></textarea>
         </div>
 
         <!-- File upload -->
@@ -596,9 +596,9 @@
       <div class="modal-body">
         <div class="style-edit-area" id="style-edit-area">
           <label data-i18n="copyStyleEditName">风格名称</label>
-          <input type="text" id="edit-style-name" placeholder="例如：知乎专栏" />
+          <input type="text" id="edit-style-name" placeholder="例如：知乎专栏" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyNamePlaceholder" />
           <label data-i18n="copyStyleEditPrompt">风格描述</label>
-          <textarea id="edit-style-prompt" rows="3" placeholder="描述该风格的写作特点，例如：深度分析风格，逻辑严谨，数据支撑，适合干货类内容。"></textarea>
+          <textarea id="edit-style-prompt" rows="3" placeholder="描述该风格的写作特点，例如：深度分析风格，逻辑严谨，数据支撑，适合干货类内容。" data-i18n-attr="placeholder" data-i18n-placeholder="presetStylesCopyDescPlaceholder"></textarea>
           <div class="edit-actions">
             <button type="button" class="btn btn-primary" id="edit-save-btn">保存</button>
             <button type="button" class="btn btn-ghost" id="edit-cancel-btn">取消</button>
@@ -641,10 +641,10 @@
         <div class="copy-content" id="hm-content" contenteditable="true"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="hm-copy-btn">一键复制</button>
-        <button type="button" class="btn btn-primary" id="hm-edit-btn">编辑</button>
-        <button type="button" class="btn btn-ghost" id="hm-delete-btn">删除</button>
-        <button type="button" class="btn btn-ghost" id="hm-close-btn2">关闭</button>
+        <button type="button" class="btn btn-secondary" id="hm-copy-btn" data-i18n="copyHistoryCopyBtn">一键复制</button>
+        <button type="button" class="btn btn-primary" id="hm-edit-btn" data-i18n="copyHistoryEditBtn">编辑</button>
+        <button type="button" class="btn btn-ghost" id="hm-delete-btn" data-i18n="copyHistoryDeleteBtn">删除</button>
+        <button type="button" class="btn btn-ghost" id="hm-close-btn2" data-i18n="copyHistoryCloseBtn">关闭</button>
       </div>
     </div>
   </div>
@@ -1124,7 +1124,6 @@ function loadTextConfig() {
     // ─── Init ──────────────────────────────────────────────
     Auth.requireAuth();
     Auth.renderUserMenu('#user-menu');
-    if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
     renderStyleDropdown('weibo');
     renderHistory();
     updateTitle();

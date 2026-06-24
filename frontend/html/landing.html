@@ -736,7 +736,6 @@
 
       Auth.requireAuth();
       Auth.renderUserMenu('#user-menu');
-      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
 
       // workflow-preview 轮播:内置 5 张 + 用户预设混排,每次启动随机选 5 张
       (function initWorkflowCarousel() {

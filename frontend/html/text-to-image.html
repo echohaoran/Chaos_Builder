@@ -1022,7 +1022,6 @@
 
       Auth.requireAuth();
       Auth.renderUserMenu('#user-menu');
-      if (!Auth.isAdmin || !Auth.isAdmin()) document.querySelectorAll('a[href="settings.html"]').forEach(function(e){e.style.display='none';});
       applyPreset();
       renderHistory();
 
