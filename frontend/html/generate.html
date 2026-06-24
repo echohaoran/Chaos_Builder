@@ -828,25 +828,17 @@
     }
 
     // ─── File upload handlers ──────────────────────────────
-    function setupUpload(zoneId, inputId, listId, isMulti) {
+    function setupUpload(zoneId, inputId, listId, fileArray) {
       var zone = document.getElementById(zoneId);
       var input = document.getElementById(inputId);
       var list = document.getElementById(listId);
 
       function handleDrop(files) {
-        if (isMulti) {
-          Array.from(files).forEach(function(f) {
-            if (multiFiles.length >= MAX_FILES) return;
-            multiFiles.push(f);
-          });
-          renderPreview(list, multiFiles);
-        } else {
-          Array.from(files).forEach(function(f) {
-            if (imageFiles.length >= MAX_FILES) return;
-            imageFiles.push(f);
-          });
-          renderPreview(list, imageFiles);
-        }
+        Array.from(files).forEach(function(f) {
+          if (fileArray.length >= MAX_FILES) return;
+          fileArray.push(f);
+        });
+        renderPreview(list, fileArray);
       }
 
       zone.addEventListener('click', function() { input.click(); });
@@ -887,7 +879,7 @@
       });
     }
 
-    setupUpload('image-upload-zone', 'image-file-input', 'image-preview-list', true);
+    setupUpload('image-upload-zone', 'image-file-input', 'image-preview-list', imageFiles);
 
     // ─── Progress monitor ──────────────────────────────────
     function startProgress() {
