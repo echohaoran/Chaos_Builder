@@ -1408,6 +1408,7 @@
                 function showError(msg) {
                     errorMsg.textContent = msg;
                     statusError.hidden = false;
+                    if (window.ChaosAPI && ChaosAPI.appLog) ChaosAPI.appLog('error', msg);
                 }
 
                 generateBtn.addEventListener("click", function () {

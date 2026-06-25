@@ -1333,6 +1333,36 @@ function createProgressMonitor(rootEl) {
   return { reset, setStep, finish, destroy };
 }
 
+// ─── Application Log ───
+var LOG_KEY = 'chaos_builder_app_log';
+
+function appLog(level, msg, data) {
+  try {
+    var list = loadAppLog();
+    list.unshift({
+      level: level || 'info',
+      msg: String(msg || ''),
+      data: data || null,
+      time: Date.now(),
+      ts: new Date().toISOString(),
+    });
+    // 保留最多 200 条
+    if (list.length > 200) list.length = 200;
+    localStorage.setItem(LOG_KEY, JSON.stringify(list));
+  } catch(e) {}
+}
+
+function loadAppLog() {
+  try {
+    var raw = localStorage.getItem(LOG_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function clearAppLog() {
+  localStorage.removeItem(LOG_KEY);
+}
+
 window.ChaosAPI = {
   DEFAULT_CONFIG,
   PROVIDERS,

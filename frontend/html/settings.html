@@ -1156,6 +1156,19 @@
                     ></div>
                 </div>
             </section>
+
+        <!-- 应用日志 -->
+        <section class="settings-card" id="log-section" style="grid-column:1/-1;">
+            <h2 data-i18n="logTitle">应用日志</h2>
+            <p class="settings-hint" data-i18n="logHint">最近的错误和应用日志（最多 200 条）</p>
+            <div id="log-list" style="max-height:300px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-xs);font-family:monospace;line-height:1.6;">
+                <div style="color:var(--muted);text-align:center;padding:var(--space-4);">加载中…</div>
+            </div>
+            <div class="settings-actions">
+                <button type="button" class="btn btn-ghost btn-sm" id="refresh-log-btn" data-i18n="logRefresh">刷新</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="clear-log-btn" data-i18n="logClear">清空日志</button>
+            </div>
+        </section>
         </main>
 
   <div class="layout-footer"></div>
@@ -2372,6 +2385,28 @@
                             alert('获取模型列表失败: ' + (err.message || err));
                             fetchBtn.disabled = false; fetchBtn.textContent = '获取模型';
                         });
+                    });
+                })();
+
+                // ─── Log viewer ───
+                (function initLogViewer() {
+                    var listEl = document.getElementById('log-list');
+                    var refreshBtn = document.getElementById('refresh-log-btn');
+                    var clearBtn = document.getElementById('clear-log-btn');
+                    if (!listEl) return;
+                    function renderLog() {
+                        var log = (ChaosAPI && ChaosAPI.loadAppLog) ? ChaosAPI.loadAppLog() : [];
+                        if (!log.length) { listEl.innerHTML = '<div style="color:var(--muted);text-align:center;padding:var(--space-4);font-family:inherit;">暂无日志</div>'; return; }
+                        listEl.innerHTML = log.map(function(e) {
+                            var color = e.level === 'error' ? '#dc2626' : (e.level === 'warn' ? '#eab308' : 'var(--muted)');
+                            var time = e.ts ? e.ts.slice(0, 19).replace('T', ' ') : '';
+                            return '<div style="margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:4px;"><span style="color:' + color + ';font-weight:600;">[' + e.level + ']</span> <span style="color:var(--meta);">' + time + '</span> ' + e.msg + '</div>';
+                        }).join('');
+                    }
+                    renderLog();
+                    if (refreshBtn) refreshBtn.addEventListener('click', renderLog);
+                    if (clearBtn) clearBtn.addEventListener('click', function() {
+                        if (ChaosAPI && ChaosAPI.clearAppLog) { ChaosAPI.clearAppLog(); renderLog(); }
                     });
                 })();
 
