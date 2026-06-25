@@ -949,49 +949,16 @@
                 var lastResult = null;
                 var textConfig = null; // { provider, model, apiKey, apiBaseUrl }
 
-                // ─── Fetch admin text model config ──────────────────────
+                // ─── Load text model config ─────────────────────────
                 function loadTextConfig() {
-                    var fallback = function () {
-                        textConfig = {
-                            provider: "openai",
-                            model: "gpt-4o-mini",
-                            apiKey: "",
-                            apiBaseUrl: "https://api.openai.com/v1",
-                        };
-                        if (providerIndicator)
-                            providerIndicator.textContent =
-                                "OpenAI · gpt-4o-mini (默认)";
-                    };
-                    if (!window.ChaosAPI || !ChaosAPI.fetchAdminSettings) {
-                        fallback();
-                        return;
-                    }
-                    ChaosAPI.fetchAdminSettings()
-                        .then(function (settings) {
-                            if (settings && settings.textProvider) {
-                                textConfig = {
-                                    provider: settings.textProvider || "openai",
-                                    model: settings.textModel || "gpt-4o-mini",
-                                    apiKey: settings.textApiKey || "",
-                                    apiBaseUrl:
-                                        settings.textApiBaseUrl ||
-                                        "https://api.openai.com/v1",
-                                };
-                                if (providerIndicator)
-                                    providerIndicator.textContent =
-                                        settings.textProvider
-                                            .charAt(0)
-                                            .toUpperCase() +
-                                        settings.textProvider.slice(1) +
-                                        " · " +
-                                        (settings.textModel || "gpt-4o-mini");
-                            } else {
-                                fallback();
-                            }
-                        })
-                        .catch(function () {
-                            fallback();
-                        });
+                    var cfg = (ChaosAPI && ChaosAPI.getConfig) ? ChaosAPI.getConfig() : {};
+                    var provider = cfg.textProvider || "agnes";
+                    var model = cfg.textModel || "agnes-image-2.1-flash";
+                    var apiKey = cfg.textApiKey || "";
+                    var apiBaseUrl = cfg.textApiBaseUrl || "https://apihub.agnes-ai.com";
+                    textConfig = { provider: provider, model: model, apiKey: apiKey, apiBaseUrl: apiBaseUrl };
+                    if (providerIndicator)
+                        providerIndicator.textContent = provider.charAt(0).toUpperCase() + provider.slice(1) + " · " + (model || "");
                 }
 
                 // ─── Style persistence ─────────────────────────────────

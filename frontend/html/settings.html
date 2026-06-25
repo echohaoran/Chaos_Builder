@@ -1246,25 +1246,18 @@
                 }
 
                 function loadAdminSettings() {
-                    if (!ChaosAPI.fetchAdminSettings) return;
                     loadCustomProviderOptions();
-                    ChaosAPI.fetchAdminSettings().then(function (settings) {
-                        if (!settings) return;
-                        if (document.getElementById("textProvider")) {
-                            document.getElementById("textProvider").value =
-                                settings.textProvider || "openai";
-                            applyTextProviderDefaults(document.getElementById("textProvider").value);
-                        }
-                        if (document.getElementById("textModel"))
-                            document.getElementById("textModel").value =
-                                settings.textModel || "";
-                        if (document.getElementById("textApiKey"))
-                            document.getElementById("textApiKey").value =
-                                settings.textApiKey || "";
-                        if (document.getElementById("textApiBaseUrl"))
-                            document.getElementById("textApiBaseUrl").value =
-                                settings.textApiBaseUrl || "";
-                    });
+                    var cfg = (ChaosAPI && ChaosAPI.getConfig) ? ChaosAPI.getConfig() : {};
+                    if (document.getElementById("textProvider")) {
+                        document.getElementById("textProvider").value = cfg.textProvider || "agnes";
+                        applyTextProviderDefaults(document.getElementById("textProvider").value);
+                    }
+                    if (document.getElementById("textModel"))
+                        document.getElementById("textModel").value = cfg.textModel || "";
+                    if (document.getElementById("textApiKey"))
+                        document.getElementById("textApiKey").value = cfg.textApiKey || "";
+                    if (document.getElementById("textApiBaseUrl"))
+                        document.getElementById("textApiBaseUrl").value = cfg.textApiBaseUrl || "";
                 }
 
                 function loadUsers() {
@@ -1748,14 +1741,14 @@
                     loadSettings();
                 });
                 document.getElementById("save-text-config").addEventListener("click", function () {
-                    if (ChaosAPI.saveAdminSettings) {
-                        ChaosAPI.saveAdminSettings({
+                    try {
+                        ChaosAPI.saveConfig({
                             textProvider: (document.getElementById("textProvider") || {}).value || "agnes",
                             textModel: (document.getElementById("textModel") || {}).value || "",
                             textApiKey: (document.getElementById("textApiKey") || {}).value || "",
                             textApiBaseUrl: (document.getElementById("textApiBaseUrl") || {}).value || "",
                         });
-                    }
+                    } catch(e) {}
                     showToast();
                 });
                 document.getElementById("save-output-config").addEventListener("click", function () {
