@@ -381,6 +381,79 @@ You may obtain a copy of the License at
 
 ---
 
+## 🔧 API 配置说明
+
+### 配置入口
+在「设置」页面的「图片模型配置」和「文本模型配置」卡片中自行配置。
+
+### 文生图（Text-to-Image）
+默认使用 **Agnes Image** 供应商，参数如下：
+
+| 参数 | 值 |
+|------|-----|
+| 供应商 | `agnes` |
+| API 地址 | `https://apihub.agnes-ai.com` |
+| 模型 | `agnes-image-2.1-flash` |
+| API Key | 在 [Agnes AI](https://agnes-ai.com) 注册获取 |
+
+**API 请求格式**：
+```json
+POST /v1/images/generations
+{
+  "model": "agnes-image-2.1-flash",
+  "prompt": "图片描述",
+  "size": "1024x1024",
+  "extra_body": { "response_format": "url" }
+}
+```
+
+### 图生图（Image-to-Image）
+使用 **Agnes Image 2.0 Flash** 模型，与文生图共用同一个 API Key：
+
+| 参数 | 值 |
+|------|-----|
+| 供应商 | `agnes`（同一配置） |
+| 模型 | `agnes-image-2.0-flash`（自动切换） |
+| 附加参数 | `tags: ["img2img"]` |
+
+**API 请求格式**：
+```json
+POST /v1/images/generations
+{
+  "model": "agnes-image-2.0-flash",
+  "tags": ["img2img"],
+  "prompt": "编辑描述",
+  "size": "1024x1024",
+  "extra_body": {
+    "image": ["data:image/png;base64,..."],
+    "response_format": "url"
+  }
+}
+```
+
+> **注意**：图生图请求通过后端代理转发（解决浏览器 CORS 限制），图片数据以 base64 格式传输。
+
+### 自定义供应商
+在设置页面点击供应商下拉菜单旁的 ✎ 按钮，可添加自定义供应商：
+1. **图片供应商**：粘贴完整 HTTP 请求 JSON，自动解析 URL、模型、API Key
+2. **文本供应商**：填入 API 地址、Key、模型名即可
+3. 所有自定义供应商独立存储，可在弹窗中编辑/删除
+
+### 模型选择参考
+| 用途 | 模型 | 备注 |
+|------|------|------|
+| 文生图（高密度） | `agnes-image-2.1-flash` | 默认，适合复杂构图 |
+| 图生图/编辑 | `agnes-image-2.0-flash` | 自动切换，需 tags:img2img |
+| 文生图（兼容） | `agnes-image-2.0-flash` | 适用于简单生成 |
+
+### 常见问题
+- **429 Too Many Requests**：Agnes API 速率限制，稍后重试
+- **401 Unauthorized**：API Key 错误或过期，在设置页重新填写
+- **CORS 错误**：已通过后端代理修复，确保 backend:3001 运行正常
+- **图生图 5xx**：确认使用的是 `agnes-image-2.0-flash` 模型，且上传了参考图片
+
+---
+
 ## 📮 联系 & 镜像
 
 - **GitHub 主页**: <https://github.com/echohaoran/Chaos_Builder>
