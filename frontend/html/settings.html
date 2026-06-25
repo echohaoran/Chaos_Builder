@@ -2163,45 +2163,32 @@
                     btn.addEventListener("click", function () {
                         setBusy(true);
                         resultEl.hidden = true;
-                        fetch(REPO_API + "/releases/latest", {
-                            headers: { Accept: "application/json" },
-                        })
-                            .then(function (r) {
-                                if (r.status === 404) {
-                                    return fetch(REPO_API + "/commits/main", {
-                                        headers: { Accept: "application/json" },
-                                    }).then(function (r2) {
-                                        if (!r2.ok)
-                                            throw new Error(
-                                                "HTTP " + r2.status,
-                                            );
-                                        return r2.json().then(function (c) {
-                                            return { kind: "commit", data: c };
-                                        });
-                                    });
+                        var baseUrl = (window.ChaosAPI && window.ChaosAPI.AUTH_SERVER_URL) || window.location.origin;
+                        var token = Auth.getToken ? Auth.getToken() : null;
+                        var headers = { 'Accept': 'application/json' };
+                        if (token) headers['Authorization'] = 'Bearer ' + token;
+                        fetch(baseUrl + '/api/admin/check', { headers: headers })
+                            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                            .then(function (data) {
+                                if (!data) throw new Error('Empty response');
+                                var current = data.current || '';
+                                var latest = data.latest || '';
+                                if (latest && current !== latest) {
+                                    showResult('has-update',
+                                        '<strong>' + I18N.t('settingsUpdateNew', '有新版本') + '</strong>: ' + I18N.t('settingsUpdateNewVersion', '版本 {hash}', { hash: latest.slice(0, 7) }),
+                                        I18N.t('settingsUpdateFromTo', '当前 {c} → 最新 {l}', { c: current.slice(0, 7), l: latest.slice(0, 7) }),
+                                        '<button type="button" class="btn btn-primary" id="run-update-btn">' + I18N.t('settingsUpdateApply', '立即更新') + '</button>'
+                                    );
+                                    document.getElementById('run-update-btn').addEventListener('click', function () { runServerUpdate(this); });
+                                } else {
+                                    current = current.slice(0, 7);
+                                    showResult('up-to-date', I18N.t('settingsUpdateLatest', '已是最新版本'), I18N.t('settingsUpdateCurrent', '当前版本 {hash}', { hash: current }));
                                 }
-                                if (!r.ok) throw new Error("HTTP " + r.status);
-                                return r.json().then(function (j) {
-                                    return { kind: "release", data: j };
-                                });
-                            })
-                            .then(function (out) {
-                                if (out.kind === "release")
-                                    handleRelease(out.data);
-                                else handleCommit(out.data);
                             })
                             .catch(function (err) {
-                                showError(
-                                    err.message ||
-                                        I18N.t(
-                                            "settingsUpdateError",
-                                            "检查失败",
-                                        ),
-                                );
+                                showError(err.message || I18N.t('settingsUpdateError', '检查失败'));
                             })
-                            .then(function () {
-                                setBusy(false);
-                            });
+                            .then(function () { setBusy(false); });
                     });
                 })();
 
