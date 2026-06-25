@@ -651,7 +651,7 @@ async function generateImage(prompt, options = {}) {
   try {
     const req = provider.buildGenerationRequest({ config, prompt, options, payload });
     const controller = new AbortController();
-    const timeout = setTimeout(function() { controller.abort(); }, 120000);
+    const timeout = setTimeout(function() { controller.abort(); }, 300000);
     const res = await fetch(req.url, { method: req.method, headers: req.headers, body: req.body, signal: controller.signal });
     clearTimeout(timeout);
     return await parseResponse(res);
@@ -697,7 +697,7 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
       hasMask: !!options.mask,
     });
     const controller = new AbortController();
-    const timeout = setTimeout(function() { controller.abort(); }, 120000);
+    const timeout = setTimeout(function() { controller.abort(); }, 300000);
     const res = await fetch(req.url, { method: req.method, headers: req.headers, body: req.body, signal: controller.signal });
     clearTimeout(timeout);
     return await parseResponse(res);
