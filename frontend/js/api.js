@@ -100,7 +100,6 @@ const PROVIDERS = {
         headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
         body: JSON.stringify({
           model: this.editModel,
-          tags: ['img2img'],
           prompt,
           size: payload.size,
           extra_body: { image: [], response_format: 'url' },

@@ -23,10 +23,9 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     let body;
     if (imageData && imageData.length) {
-      // Image-to-image: force edit model + tags (忽略请求体中的文生图模型)
+      // Image-to-image
       body = {
         model: cfg.editModel || model || cfg.defaultModel,
-        tags: ['img2img'],
         prompt,
         size: size || '1024x1024',
         extra_body: {
