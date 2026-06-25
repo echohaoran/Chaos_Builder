@@ -1,13 +1,6 @@
-// ─── Shared header/footer loader (synchronous) ───
-(function() {
-  function loadSync(url) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false);
-    try { xhr.send(); if (xhr.status === 200 || xhr.status === 0) return xhr.responseText; } catch(e) {}
-    return '';
-  }
-  var h = document.querySelector('.layout-header');
-  var f = document.querySelector('.layout-footer');
-  if (h) { var html = loadSync('../html/header.html'); if (html) h.outerHTML = html; }
-  if (f) { var html = loadSync('../html/footer.html'); if (html) f.outerHTML = html; }
+(function(){
+var h=document.querySelector('.layout-header');
+var f=document.querySelector('.layout-footer');
+if(h) h.outerHTML='<header class="nav"><div class="container nav-inner"><a href="landing.html" class="nav-logo"><img src="../assets/presets/logo透明.png" alt="混沌艺术" class="nav-logo-img" style="height:32px;width:auto;display:block" /></a><nav class="nav-links" aria-label="主导航" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu"><a href="generate.html" data-i18n="navGenerate">图片生成</a><a href="copy.html" data-i18n="navCopy">文案生成</a><a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a></nav><div class="nav-actions"><button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button><span class="nav-link-wrap"><a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a><span class="update-badge" id="update-badge"></span></span><div class="user-menu" id="user-menu"></div></div><button class="btn btn-ghost btn-icon nav-mobile-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="navMenu" aria-label="打开菜单"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></header>';
+if(f) f.outerHTML='<footer class="footer"><div class="container footer-inner"><div class="footer-logo" data-i18n="brandName">混沌艺术</div><nav class="footer-links"><a href="landing.html" data-i18n="navHome">首页</a><a href="generate.html" data-i18n="navGenerate">图片生成</a><a href="copy.html" data-i18n="navCopy">文案生成</a><a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a><span class="nav-link-wrap"><a href="settings.html" data-i18n="navSettings">设置</a><span class="update-badge" id="update-badge"></span></span></nav><span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span></div></footer>';
 })();
