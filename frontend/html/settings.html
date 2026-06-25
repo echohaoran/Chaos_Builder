@@ -674,6 +674,44 @@
                 color: var(--fg);
             }
 
+            /* ── Provider editor ── */
+            .provider-edit-row { display:flex; gap:var(--space-2); align-items:center; }
+            .text-model-row { display:flex; gap:var(--space-2); align-items:center; }
+            .text-model-row input { flex:1; }
+            .btn-icon-sm { width:32px; height:32px; display:grid; place-items:center; border:1px solid var(--border); border-radius:var(--radius-md); background:transparent; color:var(--muted); cursor:pointer; font-size:14px; transition:color .15s, border-color .15s; flex-shrink:0; }
+            .btn-icon-sm:hover { border-color:var(--accent); color:var(--fg); }
+
+            /* ── Provider modals ── */
+            .provider-modal { position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); }
+            .provider-modal[hidden] { display:none; }
+            .provider-modal-card { width:100%; max-width:520px; max-height:80vh; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-lg); display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.25); }
+            .modal-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-4) var(--space-6); border-bottom:1px solid var(--border); }
+            .modal-header h2 { margin:0; font-size:var(--text-lg); }
+            .modal-close { background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted); padding:var(--space-1); }
+            .modal-close:hover { color:var(--fg); }
+            .modal-body { flex:1; overflow-y:auto; padding:var(--space-4) var(--space-6); }
+            .modal-footer { display:flex; gap:var(--space-3); padding:var(--space-4) var(--space-6); border-top:1px solid var(--border); align-items:center; }
+            .modal-footer .field { flex:1; }
+            .modal-footer .field input { width:100%; font-size:var(--text-sm); padding:var(--space-2) var(--space-3); border:1.5px solid var(--border); border-radius:var(--radius-md); background:var(--bg); color:var(--fg); margin-bottom:var(--space-2); }
+            .modal-footer .field input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in oklab, var(--accent), transparent 75%); }
+
+            /* ── Custom provider list items ── */
+            .custom-provider-item { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:var(--space-2); transition:background .15s, border-color .15s; }
+            .custom-provider-item:hover { background:var(--surface); border-color:var(--accent); }
+            .custom-provider-item .cpi-info { flex:1; min-width:0; }
+            .custom-provider-item .cpi-name { font-weight:600; font-size:var(--text-sm); color:var(--fg); }
+            .custom-provider-item .cpi-url { font-size:var(--text-xs); color:var(--meta); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+            .custom-provider-item .cpi-delete { width:28px; height:28px; display:grid; place-items:center; border:1px solid transparent; border-radius:var(--radius-sm); background:transparent; color:var(--muted); cursor:pointer; font-size:14px; transition:color .15s, border-color .15s; }
+            .custom-provider-item .cpi-delete:hover { border-color:var(--danger); color:var(--danger); background:rgba(220,38,38,0.06); }
+            .custom-provider-item .cpi-edit { width:28px; height:28px; display:grid; place-items:center; border:1px solid transparent; border-radius:var(--radius-sm); background:transparent; color:var(--muted); cursor:pointer; font-size:14px; transition:color .15s, border-color .15s; }
+            .custom-provider-item .cpi-edit:hover { border-color:var(--accent); color:var(--accent); }
+            .custom-provider-item.builtin { opacity:0.7; }
+            .custom-provider-item.hidden-p { opacity:0.4; background:var(--surface-warm); }
+            .custom-provider-item .cpi-hide, .custom-provider-item .cpi-unhide { font-size:11px; border:1px solid var(--border); border-radius:var(--radius-sm); background:transparent; color:var(--muted); cursor:pointer; padding:2px 8px; align-self:center; flex-shrink:0; transition:color .15s, border-color .15s; }
+            .custom-provider-item .cpi-hide:hover { border-color:var(--muted); color:var(--fg); }
+            .custom-provider-item .cpi-unhide { color:var(--accent); border-color:var(--accent); }
+            .custom-provider-item .cpi-unhide:hover { background:var(--accent); color:var(--accent-on); }
+
             @media (max-width: 991px) {
                 .page-header {
                 }
@@ -842,38 +880,14 @@
                                 ><span class="provider-badge-text"></span
                             ></span>
                         </label>
+                        <div class="provider-edit-row">
                         <select id="provider" name="provider">
-                            <option value="ppio" data-i18n="providerPpio">
-                                PPIO · gpt-image-2
-                            </option>
                             <option value="agnes" data-i18n="providerAgnes">
                                 Agnes Image (apihub)
                             </option>
-                            <option value="openai" data-i18n="providerOpenai">
-                                OpenAI (DALL·E / gpt-image-1)
-                            </option>
-                            <option
-                                value="anthropic"
-                                data-i18n="providerAnthropic"
-                            >
-                                Anthropic (via gateway)
-                            </option>
-                            <option
-                                value="seedream"
-                                data-i18n="providerSeedream"
-                            >
-                                Seedream · 火山方舟
-                            </option>
-                            <option value="banana" data-i18n="providerBanana">
-                                Banana (serverless ComfyUI)
-                            </option>
-                            <option value="comfy" data-i18n="providerComfy">
-                                ComfyUI (self-hosted)
-                            </option>
-                            <option value="sd" data-i18n="providerSd">
-                                Stable Diffusion (WebUI / SD.Next)
-                            </option>
                         </select>
+                        <button type="button" class="btn-icon-sm provider-edit-trigger" data-provider="image" title="管理自定义供应商">✎</button>
+                        </div>
                         <span class="field-help" data-i18n="providerHint"
                             >切换供应商以接入不同的图像生成模型</span
                         >
@@ -944,6 +958,19 @@
                             >例如 gpt-image-2</span
                         >
                     </div>
+
+                    <details class="custom-provider-add" style="grid-column:1/-1;margin-top:var(--space-2);">
+                        <summary style="cursor:pointer;font-size:var(--text-sm);color:var(--accent);">+ 粘贴请求体添加自定义供应商</summary>
+                        <div style="margin-top:var(--space-3);">
+                            <label style="font-size:var(--text-xs);color:var(--muted);display:block;margin-bottom:var(--space-2);">粘贴完整的 HTTP 请求 JSON</label>
+                            <textarea id="provider-json-input" rows="8" style="width:100%;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--radius-md);font-family:monospace;font-size:var(--text-xs);background:var(--bg);color:var(--text);resize:vertical;"></textarea>
+                            <div style="display:flex;gap:var(--space-3);margin-top:var(--space-2);">
+                                <input type="text" id="provider-custom-id" placeholder="供应商ID (英文)" style="flex:1;padding:var(--space-2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:var(--text-sm);" />
+                                <button type="button" class="btn btn-primary btn-sm" id="add-custom-provider-btn">添加</button>
+                            </div>
+                            <div id="provider-parse-result" style="font-size:var(--text-xs);margin-top:var(--space-2);color:var(--muted);"></div>
+                        </div>
+                    </details>
                 </section>
 
                 <!-- 文本模型配置（第2列，admin only） -->
@@ -962,35 +989,8 @@
                             ></span>
                         </label>
                         <select id="textProvider" name="textProvider">
-                            <option value="ppio" data-i18n="providerPpio">
-                                PPIO · gpt-image-2
-                            </option>
                             <option value="agnes" data-i18n="providerAgnes">
                                 Agnes Image (apihub)
-                            </option>
-                            <option value="openai" data-i18n="providerOpenai">
-                                OpenAI (DALL·E / gpt-image-1)
-                            </option>
-                            <option
-                                value="anthropic"
-                                data-i18n="providerAnthropic"
-                            >
-                                Anthropic (via gateway)
-                            </option>
-                            <option
-                                value="seedream"
-                                data-i18n="providerSeedream"
-                            >
-                                Seedream · 火山方舟
-                            </option>
-                            <option value="banana" data-i18n="providerBanana">
-                                Banana (serverless ComfyUI)
-                            </option>
-                            <option value="comfy" data-i18n="providerComfy">
-                                ComfyUI (self-hosted)
-                            </option>
-                            <option value="sd" data-i18n="providerSd">
-                                Stable Diffusion (WebUI / SD.Next)
                             </option>
                         </select>
                     </div>
@@ -998,12 +998,16 @@
                         <label for="textModel" data-i18n="settingTextModel"
                             >文本模型</label
                         >
+                        <div class="text-model-row">
                         <input
                             type="text"
                             id="textModel"
                             name="textModel"
                             placeholder="gpt-4o-mini"
                         />
+                        <button type="button" id="fetch-models-btn" class="btn btn-ghost btn-sm">获取模型</button>
+                        <button type="button" class="btn-icon-sm provider-edit-trigger" data-provider="text" title="管理自定义供应商">✎</button>
+                        </div>
                     </div>
                     <div class="field">
                         <label for="textApiKey" data-i18n="settingTextApiKey"
@@ -1127,6 +1131,44 @@
                     </p>
                     <div id="user-list" class="user-list"></div>
                 </section>
+
+                <div class="provider-modal" id="provider-modal" hidden>
+                    <div class="provider-modal-card">
+                        <div class="modal-header">
+                            <h2>管理自定义供应商</h2>
+                            <button type="button" class="modal-close" id="provider-modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body" id="provider-modal-body"></div>
+                        <div class="modal-footer">
+                            <div class="field" style="flex:1;">
+                                <input type="text" id="new-provider-name" placeholder="供应商名称 (英文)" />
+                                <input type="text" id="new-provider-url" placeholder="API Base URL" />
+                                <input type="text" id="new-provider-key" placeholder="API Key" />
+                                <input type="text" id="new-provider-model" placeholder="默认模型名称" />
+                            </div>
+                            <button type="button" class="btn btn-primary" id="add-provider-btn">添加</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="provider-modal" id="provider-modal-text" hidden>
+                    <div class="provider-modal-card">
+                        <div class="modal-header">
+                            <h2>管理自定义供应商</h2>
+                            <button type="button" class="modal-close" id="provider-modal-close-text">&times;</button>
+                        </div>
+                        <div class="modal-body" id="provider-modal-body-text"></div>
+                        <div class="modal-footer">
+                            <div class="field" style="flex:1;">
+                                <input type="text" id="new-provider-name-text" placeholder="供应商名称 (英文)" />
+                                <input type="text" id="new-provider-url-text" placeholder="API Base URL" />
+                                <input type="text" id="new-provider-key-text" placeholder="API Key" />
+                                <input type="text" id="new-provider-model-text" placeholder="默认模型名称" />
+                            </div>
+                            <button type="button" class="btn btn-primary" id="add-provider-btn-text">添加</button>
+                        </div>
+                    </div>
+                </div>
             </form>
 
             <section
@@ -1226,6 +1268,7 @@
                 }
 
                 function loadSettings() {
+                    loadCustomProviderOptions();
                     const config = ChaosAPI.getConfig();
                     const slot = (config && config[config.provider]) || {};
                     form.provider.value = config.provider || "ppio";
@@ -1240,13 +1283,47 @@
                     form.defaultQuality.value = config.defaultQuality;
                 }
 
+                function loadCustomProviderOptions() {
+                    ['provider', 'textProvider'].forEach(function(id) {
+                        var s = document.getElementById(id);
+                        if (!s) return;
+                        try {
+                            s.querySelectorAll('.custom-provider-opt').forEach(function(o) { o.remove(); });
+                            var custom = {};
+                            try { custom = ChaosAPI.loadCustomProviders ? ChaosAPI.loadCustomProviders() : {}; } catch(e) {}
+                            Object.keys(custom).forEach(function(key) {
+                                var opt = document.createElement('option');
+                                opt.value = key;
+                                opt.className = 'custom-provider-opt';
+                                opt.textContent = (custom[key] && custom[key].label) || key;
+                                s.appendChild(opt);
+                            });
+                        } catch(e) { console.warn('loadCustomProviderOptions error:', e); }
+                    });
+                }
+
+                function applyHiddenProviders() {
+                    var hidden = ChaosAPI.loadHiddenProviders ? ChaosAPI.loadHiddenProviders() : [];
+                    ['provider', 'textProvider'].forEach(function(id) {
+                        var sel = document.getElementById(id);
+                        if (!sel) return;
+                        hidden.forEach(function(h) {
+                            var opt = sel.querySelector('option[value="' + h.replace(/[^a-z0-9_-]/g,'') + '"]');
+                            if (opt) opt.style.display = 'none';
+                        });
+                    });
+                }
+
                 function loadAdminSettings() {
                     if (!ChaosAPI.fetchAdminSettings) return;
+                    loadCustomProviderOptions();
                     ChaosAPI.fetchAdminSettings().then(function (settings) {
                         if (!settings) return;
-                        if (document.getElementById("textProvider"))
+                        if (document.getElementById("textProvider")) {
                             document.getElementById("textProvider").value =
                                 settings.textProvider || "openai";
+                            applyTextProviderDefaults(document.getElementById("textProvider").value);
+                        }
                         if (document.getElementById("textModel"))
                             document.getElementById("textModel").value =
                                 settings.textModel || "";
@@ -1607,20 +1684,28 @@
                 }
 
                 function applyProviderDefaults(providerKey) {
-                    const meta =
-                        ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[providerKey];
+                    var meta = null;
+                    var isCustom = false;
+                    // 自定义供应商优先（用户手动添加的配置覆盖内置默认）
+                    var custom = ChaosAPI.loadCustomProviders ? ChaosAPI.loadCustomProviders() : {};
+                    if (custom[providerKey]) { meta = custom[providerKey]; isCustom = true; }
+                    else { meta = ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[providerKey]; }
                     if (!meta) return;
-                    // 优先用该供应商已保存的配置,fallback 到 PROVIDER 默认
                     const cfg = ChaosAPI.getConfig();
                     const slot = (cfg && cfg[providerKey]) || {};
+                    var saved = isCustom && meta._savedMeta ? meta._savedMeta : {};
                     if (slot.apiBaseUrl)
                         form.apiBaseUrl.value = slot.apiBaseUrl;
+                    else if (saved.apiBaseUrl)
+                        form.apiBaseUrl.value = saved.apiBaseUrl;
                     else if (meta.apiBaseUrl)
                         form.apiBaseUrl.value = meta.apiBaseUrl;
                     if (slot.model) form.model.value = slot.model;
                     else if (meta.defaultModel)
                         form.model.value = meta.defaultModel;
+                    else if (saved.model) form.model.value = saved.model;
                     if (slot.apiKey) form.apiKey.value = slot.apiKey;
+                    else if (saved.apiKey) form.apiKey.value = saved.apiKey;
                     if (meta.apiKeyHint)
                         form.apiKey.placeholder = meta.apiKeyHint;
                     // Agnes 时显示 Key 获取入口 + 教程,其他供应商隐藏
@@ -1633,6 +1718,28 @@
                     if (agnesLink) agnesLink.hidden = providerKey !== "agnes";
                     if (agnesTutorialLink)
                         agnesTutorialLink.hidden = providerKey !== "agnes";
+                }
+
+                function applyTextProviderDefaults(providerKey) {
+                    var meta = null;
+                    var isCustom = false;
+                    var custom = ChaosAPI.loadCustomProviders ? ChaosAPI.loadCustomProviders() : {};
+                    if (custom[providerKey]) { meta = custom[providerKey]; isCustom = true; }
+                    else { meta = ChaosAPI.PROVIDERS && ChaosAPI.PROVIDERS[providerKey]; }
+                    if (!meta) return;
+                    const cfg = ChaosAPI.getConfig();
+                    const slot = (cfg && cfg[providerKey]) || {};
+                    var saved = isCustom && meta._savedMeta ? meta._savedMeta : {};
+                    var urlInput = document.getElementById('textApiBaseUrl');
+                    var keyInput = document.getElementById('textApiKey');
+                    var modelInput = document.getElementById('textModel');
+                    // 尝试从 meta.apiBaseUrl(自定义供应商属性) / saved(添加时保存) / cfg(全局) 读取
+                    var newUrl = slot.apiBaseUrl || saved.apiBaseUrl || meta.apiBaseUrl || cfg.apiBaseUrl || '';
+                    var newKey = slot.apiKey || saved.apiKey || cfg.apiKey || '';
+                    var newModel = slot.model || meta.defaultModel || saved.model || meta.label || cfg.model || '';
+                    if (urlInput) urlInput.value = newUrl;
+                    if (keyInput) keyInput.value = newKey;
+                    if (modelInput) modelInput.value = newModel;
                 }
 
                 function showToast() {
@@ -1689,6 +1796,13 @@
                 form.provider.addEventListener("change", function () {
                     applyProviderDefaults(form.provider.value);
                 });
+
+                var textProviderSel = document.getElementById('textProvider');
+                if (textProviderSel) {
+                    textProviderSel.addEventListener('change', function() {
+                        applyTextProviderDefaults(textProviderSel.value);
+                    });
+                }
 
                 btn.addEventListener("click", function () {
                     I18N.toggle();
@@ -2066,6 +2180,260 @@
                     });
                 })();
 
+                (function initProviderModal() {
+                    var editBtns = document.querySelectorAll('.provider-edit-trigger[data-provider="image"]');
+                    var modal = document.getElementById('provider-modal');
+                    var closeBtn = document.getElementById('provider-modal-close');
+                    var body = document.getElementById('provider-modal-body');
+                    var addBtn = document.getElementById('add-provider-btn');
+                    var nameInput = document.getElementById('new-provider-name');
+                    var urlInput = document.getElementById('new-provider-url');
+                    var keyInput = document.getElementById('new-provider-key');
+                    var modelInput = document.getElementById('new-provider-model');
+                    if (!editBtns.length || !modal) return;
+
+                    function renderProviderList() {
+                        if (!body) return;
+                        var custom = ChaosAPI.loadCustomProviders();
+                        var builtinFull = ChaosAPI.PROVIDERS || {};
+                        var builtin = { agnes: builtinFull.agnes };
+                        var hidden = ChaosAPI.loadHiddenProviders ? ChaosAPI.loadHiddenProviders() : [];
+                        var html = '';
+                        Object.keys(builtin).forEach(function(key) {
+                            var c = builtin[key];
+                            var isHidden = hidden.indexOf(key) >= 0;
+                            html += '<div class="custom-provider-item ' + (isHidden ? 'hidden-p' : 'builtin') + '">' +
+                                '<div class="cpi-info"><div class="cpi-name">' + (c.label||key) + '</div>' +
+                                '<div class="cpi-url">' + (c.apiBaseUrl||'-') + '</div></div>' +
+                                (isHidden ? '<button type="button" class="cpi-unhide" data-key="' + key + '">恢复</button>' : '<button type="button" class="cpi-hide" data-key="' + key + '">隐藏</button>') +
+                                '</div>';
+                        });
+                        Object.keys(custom).forEach(function(key) {
+                            var c = custom[key];
+                            html += '<div class="custom-provider-item">' +
+                                '<div class="cpi-info"><div class="cpi-name">' + (c.label||key) + '</div>' +
+                                '<div class="cpi-url">' + (c.apiBaseUrl||'-') + '</div></div>' +
+                                '<button type="button" class="cpi-edit" data-key="' + key + '">编辑</button>' +
+                                '<button type="button" class="cpi-delete" data-key="' + key + '">✕</button></div>';
+                        });
+                        if (!Object.keys(builtin).length && !Object.keys(custom).length) {
+                            html = '<p style="color:var(--meta);text-align:center;padding:var(--space-6) 0;">暂无供应商。</p>';
+                        }
+                        body.innerHTML = html;
+                        body.querySelectorAll('.cpi-delete').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && confirm('确认删除供应商「' + k + '」？')) {
+                                    ChaosAPI.removeCustomProvider(k);
+                                    renderProviderList();
+                                    loadCustomProviderOptions();
+                                }
+                            });
+                        });
+                        body.querySelectorAll('.cpi-edit').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (!k) return;
+                                var p = ChaosAPI.loadCustomProviders()[k];
+                                if (!p) return;
+                                nameInput.value = (p._savedMeta && p._savedMeta.label) || p.label || k;
+                                urlInput.value = p.apiBaseUrl || '';
+                                keyInput.value = (p._savedMeta && p._savedMeta.apiKey) || '';
+                                modelInput.value = (p._savedMeta && p._savedMeta.model) || p.defaultModel || '';
+                            });
+                        });
+                        body.querySelectorAll('.cpi-hide').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && ChaosAPI.hideProvider) { ChaosAPI.hideProvider(k); renderProviderList(); loadCustomProviderOptions(); applyHiddenProviders(); }
+                            });
+                        });
+                        body.querySelectorAll('.cpi-unhide').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && ChaosAPI.unhideProvider) { ChaosAPI.unhideProvider(k); renderProviderList(); loadCustomProviderOptions(); applyHiddenProviders(); }
+                            });
+                        });
+                    }
+
+                    editBtns.forEach(function(btn) { btn.addEventListener('click', function() { renderProviderList(); modal.hidden = false; }); });
+                    closeBtn.addEventListener('click', function() { modal.hidden = true; });
+                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.hidden = true; });
+                    addBtn.addEventListener('click', function() {
+                        var name = (nameInput.value || '').trim();
+                        var url = (urlInput.value || '').trim();
+                        var key = (keyInput.value || '').trim();
+                        var model = (modelInput.value || '').trim();
+                        if (!name) { alert('请输入供应商名称'); return; }
+                        if (!url) { alert('请输入 API Base URL'); return; }
+                        var id = name.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                        ChaosAPI.addCustomProvider(id, { label:name, apiBaseUrl:url, apiKey:key, model:model, apiKeyHint:'API Key' });
+                        nameInput.value = ''; urlInput.value = ''; keyInput.value = ''; modelInput.value = '';
+                        renderProviderList(); loadCustomProviderOptions();
+                    });
+                })();
+
+                (function initProviderModalText() {
+                    var editBtns = document.querySelectorAll('.provider-edit-trigger[data-provider="text"]');
+                    var modal = document.getElementById('provider-modal-text');
+                    var closeBtn = document.getElementById('provider-modal-close-text');
+                    var body = document.getElementById('provider-modal-body-text');
+                    var addBtn = document.getElementById('add-provider-btn-text');
+                    var nameInput = document.getElementById('new-provider-name-text');
+                    var urlInput = document.getElementById('new-provider-url-text');
+                    var keyInput = document.getElementById('new-provider-key-text');
+                    var modelInput = document.getElementById('new-provider-model-text');
+                    if (!editBtns.length || !modal) return;
+
+                    function renderProviderList() {
+                        if (!body) return;
+                        var custom = ChaosAPI.loadCustomProviders();
+                        var builtinFull = ChaosAPI.PROVIDERS || {};
+                        var builtin = { agnes: builtinFull.agnes };
+                        var hidden = ChaosAPI.loadHiddenProviders ? ChaosAPI.loadHiddenProviders() : [];
+                        var html = '';
+                        Object.keys(builtin).forEach(function(key) {
+                            var c = builtin[key];
+                            var isHidden = hidden.indexOf(key) >= 0;
+                            html += '<div class="custom-provider-item ' + (isHidden ? 'hidden-p' : 'builtin') + '">' +
+                                '<div class="cpi-info"><div class="cpi-name">' + (c.label||key) + '</div>' +
+                                '<div class="cpi-url">' + (c.apiBaseUrl||'-') + '</div></div>' +
+                                (isHidden ? '<button type="button" class="cpi-unhide" data-key="' + key + '">恢复</button>' : '<button type="button" class="cpi-hide" data-key="' + key + '">隐藏</button>') +
+                                '</div>';
+                        });
+                        Object.keys(custom).forEach(function(key) {
+                            var c = custom[key];
+                            html += '<div class="custom-provider-item">' +
+                                '<div class="cpi-info"><div class="cpi-name">' + (c.label||key) + '</div>' +
+                                '<div class="cpi-url">' + (c.apiBaseUrl||'-') + '</div></div>' +
+                                '<button type="button" class="cpi-edit" data-key="' + key + '">编辑</button>' +
+                                '<button type="button" class="cpi-delete" data-key="' + key + '">✕</button></div>';
+                        });
+                        if (!Object.keys(builtin).length && !Object.keys(custom).length) {
+                            html = '<p style="color:var(--meta);text-align:center;padding:var(--space-6) 0;">暂无供应商。</p>';
+                        }
+                        body.innerHTML = html;
+                        body.querySelectorAll('.cpi-delete').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && confirm('确认删除供应商「' + k + '」？')) {
+                                    ChaosAPI.removeCustomProvider(k);
+                                    renderProviderList();
+                                    loadCustomProviderOptions();
+                                }
+                            });
+                        });
+                        body.querySelectorAll('.cpi-edit').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (!k) return;
+                                var p = ChaosAPI.loadCustomProviders()[k];
+                                if (!p) return;
+                                nameInput.value = (p._savedMeta && p._savedMeta.label) || p.label || k;
+                                urlInput.value = p.apiBaseUrl || '';
+                                keyInput.value = (p._savedMeta && p._savedMeta.apiKey) || '';
+                                modelInput.value = (p._savedMeta && p._savedMeta.model) || p.defaultModel || '';
+                            });
+                        });
+                        body.querySelectorAll('.cpi-hide').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && ChaosAPI.hideProvider) { ChaosAPI.hideProvider(k); renderProviderList(); loadCustomProviderOptions(); applyHiddenProviders(); }
+                            });
+                        });
+                        body.querySelectorAll('.cpi-unhide').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var k = btn.getAttribute('data-key');
+                                if (k && ChaosAPI.unhideProvider) { ChaosAPI.unhideProvider(k); renderProviderList(); loadCustomProviderOptions(); applyHiddenProviders(); }
+                            });
+                        });
+                    }
+
+                    editBtns.forEach(function(btn) { btn.addEventListener('click', function() { renderProviderList(); modal.hidden = false; }); });
+                    closeBtn.addEventListener('click', function() { modal.hidden = true; });
+                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.hidden = true; });
+                    addBtn.addEventListener('click', function() {
+                        var name = (nameInput.value || '').trim();
+                        var url = (urlInput.value || '').trim();
+                        var key = (keyInput.value || '').trim();
+                        var model = (modelInput.value || '').trim();
+                        if (!name) { alert('请输入供应商名称'); return; }
+                        if (!url) { alert('请输入 API Base URL'); return; }
+                        var id = name.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                        ChaosAPI.addCustomProvider(id, { label:name, apiBaseUrl:url, apiKey:key, model:model, apiKeyHint:'API Key' });
+                        nameInput.value = ''; urlInput.value = ''; keyInput.value = ''; modelInput.value = '';
+                        renderProviderList(); loadCustomProviderOptions();
+                    });
+                })();
+
+                (function initJsonProviderImport() {
+                    var addBtn = document.getElementById('add-custom-provider-btn');
+                    var jsonInput = document.getElementById('provider-json-input');
+                    var idInput = document.getElementById('provider-custom-id');
+                    var resultEl = document.getElementById('provider-parse-result');
+                    if (!addBtn || !jsonInput || !idInput) return;
+                    addBtn.addEventListener('click', function() {
+                        resultEl.textContent = '';
+                        var providerId = (idInput.value || '').trim();
+                        if (!providerId) { resultEl.textContent = '请输入供应商 ID'; return; }
+                        var raw;
+                        try { raw = JSON.parse(jsonInput.value); } catch(e) { resultEl.textContent = 'JSON 解析失败：' + e.message; return; }
+                        if (!raw || typeof raw !== 'object') { resultEl.textContent = 'JSON 必须是一个对象'; return; }
+                        var url = raw.url || '';
+                        var reqHeaders = raw.headers || {};
+                        var reqBody = raw.body || {};
+                        if (!url) { resultEl.textContent = 'JSON 中缺少 url 字段'; return; }
+                        var baseUrl = url.replace(/\/v\d\/.*$/, '').replace(/\/$/, '');
+                        var model = reqBody.model || '';
+                        var apiKey = '';
+                        if (reqHeaders.Authorization) { apiKey = reqHeaders.Authorization.replace(/^Bearer\s+/i, ''); }
+                        ChaosAPI.addCustomProvider(providerId, { label:providerId, apiBaseUrl:baseUrl, apiKey:apiKey, model:model, apiKeyHint:'API Key' });
+                        resultEl.textContent = '✅ 已添加供应商「' + providerId + '」（模型：' + (model || '未设置') + '）';
+                        idInput.value = ''; jsonInput.value = '';
+                        loadCustomProviderOptions();
+                    });
+                })();
+
+                (function initFetchModels() {
+                    var fetchBtn = document.getElementById('fetch-models-btn');
+                    var textModelInput = document.getElementById('textModel');
+                    if (!fetchBtn || !textModelInput) return;
+                    fetchBtn.addEventListener('click', function() {
+                        var baseUrl = (document.getElementById('textApiBaseUrl') || {}).value || '';
+                        var apiKey = (document.getElementById('textApiKey') || {}).value || '';
+                        if (!baseUrl) { alert('请先填写 API 服务地址'); return; }
+                        if (!apiKey) { alert('请先填写 API 密钥'); return; }
+                        fetchBtn.disabled = true; fetchBtn.textContent = '获取中…';
+                        var endpoint = baseUrl.replace(/\/+$/, '') + '/v1/models';
+                        fetch(endpoint, { headers: { 'Authorization': 'Bearer ' + apiKey } })
+                        .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+                        .then(function(data) {
+                            var models = data && data.data;
+                            if (!models || !Array.isArray(models) || !models.length) throw new Error('未找到可用模型');
+                            var parent = textModelInput.parentNode;
+                            var select = document.createElement('select');
+                            select.style.flex = '1'; select.style.padding = 'var(--space-2) var(--space-3)';
+                            select.style.border = '1px solid var(--border)'; select.style.borderRadius = 'var(--radius-md)';
+                            select.style.background = 'var(--bg)'; select.style.color = 'var(--text)';
+                            select.innerHTML = '<option value="">-- 选择模型 --</option>';
+                            models.forEach(function(m) {
+                                var id = m.id || m;
+                                var opt = document.createElement('option'); opt.value = id; opt.textContent = id;
+                                select.appendChild(opt);
+                            });
+                            select.addEventListener('change', function() { textModelInput.value = select.value; });
+                            textModelInput.style.display = 'none';
+                            parent.insertBefore(select, textModelInput);
+                            select.focus();
+                            fetchBtn.disabled = false; fetchBtn.textContent = '获取模型';
+                        })
+                        .catch(function(err) {
+                            alert('获取模型列表失败: ' + (err.message || err));
+                            fetchBtn.disabled = false; fetchBtn.textContent = '获取模型';
+                        });
+                    });
+                })();
+
                 Auth.requireAuth();
                 Auth.renderUserMenu("#user-menu");
                 // 刷新用户数据以获得最新 role
@@ -2083,6 +2451,7 @@
                     updateToggleLabel();
                     if (window.I18N) I18N.apply();
                     loadSettings();
+                    applyHiddenProviders();
 
                     var isAdmin = Auth.isAdmin && Auth.isAdmin();
                     var adminSections = [

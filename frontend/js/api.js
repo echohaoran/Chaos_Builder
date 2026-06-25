@@ -16,7 +16,7 @@ function configKey() {
 }
 
 const DEFAULT_CONFIG = {
-  provider: 'ppio',
+  provider: 'agnes',
   // 顶层保留作为兑底/向后兼容老格式 localStorage
   apiBaseUrl: 'https://api.ppio.com',
   apiKey: '',
@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
   defaultQuality: 'hd',
   defaultOrientation: 'square',
   // 各供应商独立的 API 配置
-  ppio:     { apiBaseUrl: 'https://api.ppio.com',                       apiKey: '', model: 'gpt-image-2' },
+  ppio:     { apiBaseUrl: 'https://api.ppio.com/openai',                       apiKey: '', model: 'gpt-image-2' },
   agnes:    { apiBaseUrl: 'https://apihub.agnes-ai.com',              apiKey: '', model: 'agnes-image-2.1-flash' },
   openai:   { apiBaseUrl: 'https://api.openai.com/v1',                apiKey: '', model: 'gpt-image-1' },
   anthropic:{ apiBaseUrl: 'https://api.anthropic.com/v1',            apiKey: '', model: 'claude-3-5-sonnet' },
@@ -73,24 +73,21 @@ function openaiCompatibleProvider(meta) {
 }
 
 const PROVIDERS = {
-  ppio: {
-    label: 'PPIO · gpt-image-2',
-    apiBaseUrl: 'https://api.ppio.com',
-    defaultModel: 'gpt-image-2',
-    apiKeyHint: 'sk-... (PPIO API 密钥,Bearer 格式)',
-    // PPIO GPT Image 2 协议(直连,非 OpenAI 兼容):
-    //   T2I: POST /v3/gpt-image-2-text-to-image
-    //   I2I: POST /v3/gpt-image-2-edit
-    //   body: {prompt, n, size, quality(low/medium/high), background?, output_format?}
-    //   resp: {images: [url1, url2, ...]}  // 直接 URL 列表,不是 {data: [{url}]}
+  agnes: {
+    label: 'Agnes Image (apihub)',
+    apiBaseUrl: 'https://apihub.agnes-ai.com',
+    defaultModel: 'agnes-image-2.1-flash',
+    apiKeyHint: 'Agnes API Key (必填)',
     buildGenerationRequest({ config, prompt, payload }) {
-      const body = ppioNormalizeBody(prompt, payload, /* edit */ false);
-      return {
-        url: buildUrl(config, '/v3/gpt-image-2-text-to-image'),
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify(body),
-      };
+      // Agnes 协议:response_format 必须放进 extra_body,且只支持 url / b64_json
+      const body = {
+        model: payload.model,
+        prompt,
+        size: payload.size,
+        extra_body: {
+          response_format: 'url',
+        }
+};
     },
     async buildEditRequest({ config, imageFiles, prompt, payload, options, hasMask }) {
       // PPIO 接收单张图片(URL/base64)或图片数组,JSON 提交(非 multipart)
@@ -210,7 +207,78 @@ const PROVIDERS = {
 
 function getProvider(config) {
   const key = (config && config.provider) || DEFAULT_CONFIG.provider;
-  return PROVIDERS[key] || PROVIDERS[DEFAULT_CONFIG.provider];
+  // 先查内置 PROVIDERS,再查用户自定义
+  if (PROVIDERS[key]) return PROVIDERS[key];
+  const custom = loadCustomProviders();
+  if (custom[key]) return custom[key];
+  return PROVIDERS[DEFAULT_CONFIG.provider];
+}
+
+// ── 用户自定义供应商 ──
+var CUSTOM_PROVIDERS_KEY = 'chaos_builder_custom_providers';
+
+function loadCustomProviders() {
+  try {
+    var raw = localStorage.getItem(CUSTOM_PROVIDERS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+var HIDDEN_PROVIDERS_KEY = 'chaos_builder_hidden_providers';
+
+function loadHiddenProviders() {
+  try {
+    var raw = localStorage.getItem(HIDDEN_PROVIDERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveHiddenProviders(list) {
+  localStorage.setItem(HIDDEN_PROVIDERS_KEY, JSON.stringify(list));
+  emitConfigChange(getConfig());
+}
+
+function hideProvider(id) {
+  var list = loadHiddenProviders();
+  if (list.indexOf(id) === -1) list.push(id);
+  saveHiddenProviders(list);
+}
+
+function unhideProvider(id) {
+  var list = loadHiddenProviders();
+  var idx = list.indexOf(id);
+  if (idx >= 0) list.splice(idx, 1);
+  saveHiddenProviders(list);
+}
+
+function saveCustomProviders(providers) {
+  localStorage.setItem(CUSTOM_PROVIDERS_KEY, JSON.stringify(providers));
+  // 触发 config 变更以刷新 UI
+  emitConfigChange(getConfig());
+}
+
+function addCustomProvider(id, meta) {
+  var custom = loadCustomProviders();
+  var provider = openaiCompatibleProvider({
+    label: meta.label || id,
+    apiBaseUrl: meta.apiBaseUrl || '',
+    defaultModel: meta.model || '',
+    apiKeyHint: meta.apiKeyHint || 'API Key',
+  });
+  // 保留添加时的信息,供切换供应商时自动填充表单
+  provider._savedMeta = {
+    apiKey: meta.apiKey || '',
+    apiBaseUrl: meta.apiBaseUrl || '',
+    model: meta.model || '',
+  };
+  custom[id] = provider;
+  saveCustomProviders(custom);
+}
+
+function removeCustomProvider(id) {
+  var custom = loadCustomProviders();
+  delete custom[id];
+  saveCustomProviders(custom);
 }
 
 function fileToDataURI(file) {
@@ -1305,4 +1373,12 @@ window.ChaosAPI = {
   onDataChange,
   classifyError,
   showErrorModal,
+  loadCustomProviders,
+  saveCustomProviders,
+  addCustomProvider,
+  removeCustomProvider,
+  loadHiddenProviders,
+  hideProvider,
+  unhideProvider,
+  PROVIDERS,
 };

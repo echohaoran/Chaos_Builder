@@ -13,10 +13,10 @@ const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { adminMiddleware } = require('../middleware');
 
 const UPDATE_SCRIPT = path.resolve(__dirname, '..', '..', 'script', 'update.sh');
 const LOG_FILE = path.join(os.tmpdir(), 'chaos-update.log');
-// 项目目录:优先环境变量,其次推断(本地开发用 __dirname/../..)
 const PROJECT_DIR = process.env.CHAOS_PROJECT_DIR || path.resolve(__dirname, '../..');
 const DEFAULT_REMOTE = process.env.CHAOS_UPDATE_REMOTE || 'origin';
 const DEFAULT_BRANCH = process.env.CHAOS_UPDATE_BRANCH || 'main';
@@ -35,8 +35,30 @@ function getShortHash(commit) {
   return commit ? commit.substring(0, 7) : 'unknown';
 }
 
+function checkAuthCompat(req, res, next) {
+  // 兼容 EventSource(不支持自定义 headers): token 可从 query 传入
+  if (!req.headers.authorization && req.query.token) {
+    req.headers.authorization = 'Bearer ' + req.query.token;
+  }
+  // 不传 token 则尝试用自托管 checkAuth
+  if (!req.headers.authorization) {
+    const expected = process.env.ADMIN_TOKEN;
+    if (expected) {
+      const provided = req.headers['x-admin-token'] || req.query.admin_token;
+      if (provided !== expected) {
+        return res.status(403).json({ error: 'forbidden', message: 'invalid admin token' });
+      }
+      return next();
+    }
+    // 没设 ADMIN_TOKEN 且没传 JWT → 要求鉴权
+    return res.status(403).json({ error: 'forbidden', message: 'authentication required' });
+  }
+  // 走标准的 adminMiddleware(JWT 鉴权)
+  return adminMiddleware(req, res, next);
+}
+
 // 检查是否有更新
-router.get('/check', checkAuth, (req, res) => {
+router.get('/check', checkAuthCompat, (req, res) => {
   try {
     const current = execSync('git rev-parse HEAD', { cwd: PROJECT_DIR, encoding: 'utf-8' }).trim();
     // 远程 HEAD 容错:可能没 fetch;尝试 fetch 一次
@@ -77,7 +99,7 @@ router.get('/check', checkAuth, (req, res) => {
 });
 
 // 触发更新(后台进程)
-router.post('/update', checkAuth, (req, res) => {
+router.post('/update', checkAuthCompat, (req, res) => {
   // 清理旧日志
   try { fs.unlinkSync(LOG_FILE); } catch (e) { /* ignore */ }
 
@@ -104,7 +126,7 @@ router.post('/update', checkAuth, (req, res) => {
 });
 
 // SSE 流式日志
-router.get('/update/stream', checkAuth, (req, res) => {
+router.get('/update/stream', checkAuthCompat, (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Connection', 'keep-alive');
