@@ -1003,6 +1003,7 @@
         var meta = { prompt: getCurrentPrompt(), size: getCurrentSize(), quality: getCurrentQuality() };
         if (ChaosAPI.syncSaveHistory) ChaosAPI.syncSaveHistory(historyType, url, meta);
       });
+      renderHistory();
     }
 
     function renderCarousel() {
