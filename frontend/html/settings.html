@@ -2099,8 +2099,8 @@
                             .then(function (data) {
                                 if (!data) throw new Error('Empty response');
                                 var current = data.current || '';
-                                var latest = data.latest || '';
-                                if (latest && current !== latest) {
+                                var latest = data.remote || '';
+                                if (data.hasUpdate) {
                                     showResult('has-update',
                                         '<strong>' + I18N.t('settingsUpdateNew', '有新版本') + '</strong>: ' + I18N.t('settingsUpdateNewVersion', '版本 {hash}', { hash: latest.slice(0, 7) }),
                                         I18N.t('settingsUpdateFromTo', '当前 {c} → 最新 {l}', { c: current.slice(0, 7), l: latest.slice(0, 7) }),
