@@ -501,6 +501,9 @@ function classifyError(err) {
   if (status === 401 || status === 403) {
     return makeGenError('auth', 'API Key 无效或已过期', '在 设置 页检查 API Key 是否正确,或重新生成 Key。');
   }
+  if (status === 429 || /too many/i.test(msg)) {
+    return makeGenError('rate_limit', '请求过于频繁', '请稍后重试。如果持续出现,请联系供应商提高 API 速率限制。');
+  }
   if (status === 402 || /balance|quota|insufficient|credit|payment|billing/i.test(msg)) {
     return makeGenError('quota', 'API 余额不足', [
       '供应商账户已欠费或余额耗尽。',
@@ -724,8 +727,10 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
     clearTimeout(timeout);
     var data = await res.json();
     if (!res.ok) {
-      var errMsg = data && (data.error || data.message || res.statusText);
-      throw new Error(errMsg || ('HTTP ' + res.status));
+      var errData = data || {};
+      var statusErr = new Error(errData.error || errData.message || res.statusText || ('HTTP ' + res.status));
+      statusErr.status = res.status;
+      throw statusErr;
     }
     // 将代理响应转换为标准格式 { data: [{ url }] }
     if (data && Array.isArray(data.images)) {
