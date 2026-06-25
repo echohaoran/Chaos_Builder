@@ -921,11 +921,10 @@
                             type="url"
                             id="apiBaseUrl"
                             name="apiBaseUrl"
-                            value="https://api.ppio.com"
+                            value="https://apihub.agnes-ai.com"
                         />
                         <span class="field-help" data-i18n="apiBaseUrlHint"
-                            >PPIO 直连 https://api.ppio.com(端点
-                            /v3/gpt-image-2-text-to-image)</span
+                            >Agnes 直连 https://apihub.agnes-ai.com</span
                         >
                     </div>
 
@@ -952,10 +951,10 @@
                             type="text"
                             id="model"
                             name="model"
-                            value="gpt-image-2"
+                            value="agnes-image-2.1-flash"
                         />
                         <span class="field-help" data-i18n="modelHint"
-                            >例如 gpt-image-2</span
+                            >例如 agnes-image-2.1-flash</span
                         >
                     </div>
 
@@ -970,7 +969,9 @@
                             </div>
                             <div id="provider-parse-result" style="font-size:var(--text-xs);margin-top:var(--space-2);color:var(--muted);"></div>
                         </div>
-                    </details>
+                    <div class="settings-actions">
+                        <button type="button" class="btn btn-primary" id="save-img-config" data-i18n="settingSaveUseImage">保存并使用</button>
+                    </div>
                 </section>
 
                 <!-- 文本模型配置（第2列，admin only） -->
@@ -1032,6 +1033,9 @@
                             name="textApiBaseUrl"
                             placeholder="https://api.openai.com/v1"
                         />
+                    </div>
+                <div class="settings-actions">
+                        <button type="button" class="btn btn-primary" id="save-text-config" data-i18n="settingSaveUseText">保存并使用</button>
                     </div>
                 </section>
 
@@ -1105,21 +1109,7 @@
                     </div>
 
                     <div class="settings-actions">
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                            data-i18n="settingSave"
-                        >
-                            保存设置
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="reset-btn"
-                            data-i18n="resetDefaults"
-                        >
-                            恢复默认
-                        </button>
+                        <button type="button" class="btn btn-primary" id="save-output-config" data-i18n="settingSaveUse">保存并使用</button>
                     </div>
                 </section>
 
@@ -1252,7 +1242,6 @@
                 const btn = document.getElementById("lang-toggle");
                 const titleEl = document.querySelector("title");
                 const form = document.getElementById("settings-form");
-                const resetBtn = document.getElementById("reset-btn");
                 const toast = document.getElementById("toast");
 
                 function updateTitle() {
@@ -1787,12 +1776,6 @@
                     }
                 });
 
-                resetBtn.addEventListener("click", function () {
-                    ChaosAPI.resetConfig();
-                    loadSettings();
-                    showToast();
-                });
-
                 form.provider.addEventListener("change", function () {
                     applyProviderDefaults(form.provider.value);
                 });
@@ -1806,6 +1789,46 @@
 
                 btn.addEventListener("click", function () {
                     I18N.toggle();
+                });
+
+                document.getElementById("save-img-config").addEventListener("click", function () {
+                    try {
+                        ChaosAPI.saveConfig({
+                            provider: form.provider.value,
+                            apiBaseUrl: form.apiBaseUrl.value.trim(),
+                            apiKey: form.apiKey.value.trim(),
+                            model: form.model.value.trim(),
+                            defaultSize: form.defaultSize.value,
+                            defaultQuality: form.defaultQuality.value,
+                        });
+                    } catch(e) {}
+                    showToast();
+                    loadSettings();
+                });
+                document.getElementById("save-text-config").addEventListener("click", function () {
+                    if (ChaosAPI.saveAdminSettings) {
+                        ChaosAPI.saveAdminSettings({
+                            textProvider: (document.getElementById("textProvider") || {}).value || "agnes",
+                            textModel: (document.getElementById("textModel") || {}).value || "",
+                            textApiKey: (document.getElementById("textApiKey") || {}).value || "",
+                            textApiBaseUrl: (document.getElementById("textApiBaseUrl") || {}).value || "",
+                        });
+                    }
+                    showToast();
+                });
+                document.getElementById("save-output-config").addEventListener("click", function () {
+                    try {
+                        ChaosAPI.saveConfig({
+                            provider: form.provider.value,
+                            apiBaseUrl: form.apiBaseUrl.value.trim(),
+                            apiKey: form.apiKey.value.trim(),
+                            model: form.model.value.trim(),
+                            defaultSize: form.defaultSize.value,
+                            defaultQuality: form.defaultQuality.value,
+                        });
+                    } catch(e) {}
+                    showToast();
+                    loadSettings();
                 });
 
                 document.addEventListener("i18n:changed", function () {
