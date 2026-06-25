@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3001;
 // 登录/注册速率限制：每分钟最多 10 次
 const authLimiter = require('express-rate-limit')({
   windowMs: 60 * 1000,
-  max: 10,
+  max: 30,
   message: { error: 'Too many auth attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false
@@ -45,7 +45,9 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth', authRoutes);
 app.use('/api/history', apiLimiter, historyRoutes);
 app.use('/api/presets', apiLimiter, presetsRoutes);
 app.use('/api/settings', apiLimiter, settingsRoutes);
