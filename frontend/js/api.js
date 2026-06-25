@@ -686,6 +686,7 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
   const config = getConfig();
   const provider = getProvider(config);
   const payload = normalizePayload(config, options);
+  const key = config.provider || DEFAULT_CONFIG.provider;
 
   try {
     const req = await provider.buildEditRequest({
@@ -696,11 +697,42 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
       payload,
       hasMask: !!options.mask,
     });
-    const controller = new AbortController();
-    const timeout = setTimeout(function() { controller.abort(); }, 300000);
-    const res = await fetch(req.url, { method: req.method, headers: req.headers, body: req.body, signal: controller.signal });
+
+    // 使用后端代理转发请求（解决 CORS 问题）
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 300000);
+    var proxyUrl = AUTH_SERVER_URL + '/api/proxy/generate';
+    var imageData = [];
+    for (var i = 0; i < imageFiles.length; i++) {
+      imageData.push(await fileToDataURI(imageFiles[i]));
+    }
+    var body = {
+      provider: key,
+      prompt: prompt,
+      size: payload.size,
+      quality: payload.quality,
+      model: payload.model,
+      apiKey: providerConfig(config).apiKey,
+      imageData: imageData,
+    };
+    var res = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + (getAuthToken() || ''), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
     clearTimeout(timeout);
-    return await parseResponse(res);
+    var data = await res.json();
+    if (!res.ok) {
+      var errMsg = data && (data.error || data.message || res.statusText);
+      throw new Error(errMsg || ('HTTP ' + res.status));
+    }
+    // 将代理响应转换为标准格式 { data: [{ url }] }
+    if (data && Array.isArray(data.images)) {
+      return { data: data.images.map(function(u) { return { url: u }; }) };
+    }
+    if (data && data.data) return data;
+    return { data: [{ url: String(data) }] };
   } catch (err) {
     throw classifyError(err);
   }

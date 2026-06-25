@@ -8,6 +8,7 @@ const historyRoutes = require('./routes/history');
 const presetsRoutes = require('./routes/presets');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
+const proxyRoutes = require('./routes/proxy');
 const { apiLimiter } = require('./middleware');
 
 const app = express();
@@ -43,7 +44,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(morgan('combined'));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
@@ -51,7 +52,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/history', apiLimiter, historyRoutes);
 app.use('/api/presets', apiLimiter, presetsRoutes);
 app.use('/api/settings', apiLimiter, settingsRoutes);
-app.use('/api/admin', adminRoutes); // 一键更新端点(不限流)
+app.use('/api/admin', adminRoutes);
+app.use('/api/proxy', proxyRoutes); // 一键更新端点(不限流)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
