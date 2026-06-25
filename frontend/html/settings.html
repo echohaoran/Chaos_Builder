@@ -2427,7 +2427,9 @@
                         if (!baseUrl) { alert('请先填写 API 服务地址'); return; }
                         if (!apiKey) { alert('请先填写 API 密钥'); return; }
                         fetchBtn.disabled = true; fetchBtn.textContent = '获取中…';
-                        var endpoint = baseUrl.replace(/\/+$/, '') + '/v1/models';
+                        // 去掉尾部 /v1 (如果有) 再统一加 /v1/models 避免双 /v1
+                        var clean = baseUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
+                        var endpoint = clean + '/v1/models';
                         fetch(endpoint, { headers: { 'Authorization': 'Bearer ' + apiKey } })
                         .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
                         .then(function(data) {
