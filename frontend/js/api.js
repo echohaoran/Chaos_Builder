@@ -77,6 +77,7 @@ const PROVIDERS = {
     label: 'Agnes Image (apihub)',
     apiBaseUrl: 'https://apihub.agnes-ai.com',
     defaultModel: 'agnes-image-2.1-flash',
+    editModel: 'agnes-image-2.0-flash',
     apiKeyHint: 'Agnes API Key (必填)',
     buildGenerationRequest({ config, prompt, payload }) {
       const body = {
@@ -92,19 +93,18 @@ const PROVIDERS = {
         body: JSON.stringify(body),
       };
     },
-    async buildEditRequest({ config, imageFiles, prompt, payload }) {
-      const imageArray = await Promise.all(imageFiles.map(fileToDataURI));
-      const body = {
-        model: payload.model,
-        prompt,
-        size: payload.size,
-        extra_body: { image: imageArray, response_format: 'url' },
-      };
+    buildEditRequest({ config, imageFiles, prompt, payload }) {
       return {
         url: buildUrl(config, '/v1/images/generations'),
         method: 'POST',
         headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          model: this.editModel,
+          tags: ['img2img'],
+          prompt,
+          size: payload.size,
+          extra_body: { image: [], response_format: 'url' },
+        }),
       };
     },
   },

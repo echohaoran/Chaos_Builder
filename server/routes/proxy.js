@@ -6,6 +6,7 @@ const PROVIDER_CONFIGS = {
   agnes: {
     baseUrl: 'https://apihub.agnes-ai.com',
     defaultModel: 'agnes-image-2.1-flash',
+    editModel: 'agnes-image-2.0-flash',
   },
 };
 
@@ -22,9 +23,10 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     let body;
     if (imageData && imageData.length) {
-      // Image-to-image
+      // Image-to-image: use edit model + tags
       body = {
-        model: model || cfg.defaultModel,
+        model: model || cfg.editModel || cfg.defaultModel,
+        tags: ['img2img'],
         prompt,
         size: size || '1024x1024',
         extra_body: {
