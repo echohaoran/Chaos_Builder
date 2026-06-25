@@ -1,13 +1,12 @@
 /**
- * Chaos_Builder API client
+ * ChaosBuilder Frontend API Client
  * Reads backend config from localStorage (set in settings.html) and
- * provides helpers for text-to-image, image-to-image, and multi-image edits.
+ * provides helpers for text-to-image and image-to-image.
  *
- * Multi-provider: each provider adapts the request to its own protocol.
- *   ppio  — OpenAI-compatible, two endpoints (generations + edits multipart)
- *   agnes — Unified /v1/images/generations with extra_body.image / response_format
+ * Only Agnes Image (apihub) provider. All requests go through
+ * backend /api/proxy/generate (handles Agnes extra_body protocol).
  *
- * Selected via config.provider (default: 'ppio').
+ * Selected via config.provider (default: 'agnes').
  * Optional header: Authorization: Bearer <apiKey>.
  */
 
@@ -18,95 +17,20 @@ function configKey() {
 const DEFAULT_CONFIG = {
   provider: 'agnes',
   // 顶层保留作为兑底/向后兼容老格式 localStorage
-  apiBaseUrl: 'https://api.ppio.com',
+  apiBaseUrl: 'https://apihub.agnes-ai.com',
   apiKey: '',
-  model: 'gpt-image-2',
+  model: 'agnes-image-2.1-flash',
   defaultSize: '1024x1024',
-  defaultQuality: 'hd',
+  defaultQuality: 'standard',
   defaultOrientation: 'square',
   // 各供应商独立的 API 配置
-  ppio:     { apiBaseUrl: 'https://api.ppio.com/openai',                       apiKey: '', model: 'gpt-image-2' },
   agnes:    { apiBaseUrl: 'https://apihub.agnes-ai.com',              apiKey: '', model: 'agnes-image-2.1-flash' },
-  openai:   { apiBaseUrl: 'https://api.openai.com/v1',                apiKey: '', model: 'gpt-image-1' },
-  anthropic:{ apiBaseUrl: 'https://api.anthropic.com/v1',            apiKey: '', model: 'claude-3-5-sonnet' },
-  seedream: { apiBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',  apiKey: '', model: 'doubao-seedream-3-0-t2i-250415' },
-  banana:   { apiBaseUrl: 'http://localhost:8000',                    apiKey: '', model: 'workflow-default' },
-  comfy:    { apiBaseUrl: 'http://127.0.0.1:8000',                    apiKey: '', model: 'sdxl-base' },
-  sd:       { apiBaseUrl: 'http://127.0.0.1:7860',                    apiKey: '', model: 'sdxl_base' },
 };
 
-// Provider adapters — each one knows its own URL, default model, and how to
-// turn a normalized (prompt + options) request into an actual HTTP request.
-// ────────── 工厂:OpenAI Images 兼容协议 ──────────
-// 几乎所有现代生图服务都支持 OpenAI Images API(/v1/images/generations + /v1/images/edits)
-// 工厂生成统一 adapter,差异化在 baseURL / model / apiKeyHint
-function openaiCompatibleProvider(meta) {
-  return {
-    label: meta.label,
-    apiBaseUrl: meta.apiBaseUrl,
-    defaultModel: meta.defaultModel,
-    apiKeyHint: meta.apiKeyHint,
-    buildGenerationRequest({ config, prompt, payload }) {
-      return {
-        url: buildUrl(config, '/v1/images/generations'),
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify(Object.assign({}, payload, { prompt })),
-      };
-    },
-    buildEditRequest({ config, imageFiles, prompt, payload, options, hasMask }) {
-      const form = new FormData();
-      imageFiles.forEach(function (f) { form.append('image', f); });
-      form.append('prompt', prompt);
-      form.append('size', payload.size);
-      if (payload.quality) form.append('quality', payload.quality);
-      form.append('response_format', 'url');
-      if (hasMask && options && options.mask) form.append('mask', options.mask);
-      return {
-        url: buildUrl(config, '/v1/images/edits'),
-        method: 'POST',
-        headers: buildHeaders(config),
-        body: form,
-      };
-    },
-  };
-}
-
+// 兼容老代码:getProvider 引用 PROVIDERS(其实只用 DEFAULT_CONFIG.agnes)
+// 保留这个 const 以便 export 不报错
 const PROVIDERS = {
-  agnes: {
-    label: 'Agnes Image (apihub)',
-    apiBaseUrl: 'https://apihub.agnes-ai.com',
-    defaultModel: 'agnes-image-2.1-flash',
-    editModel: 'agnes-image-2.0-flash',
-    apiKeyHint: 'Agnes API Key (必填)',
-    buildGenerationRequest({ config, prompt, payload }) {
-      const body = {
-        model: payload.model,
-        prompt,
-        size: payload.size,
-        extra_body: { response_format: 'url' },
-      };
-      return {
-        url: buildUrl(config, '/v1/images/generations'),
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify(body),
-      };
-    },
-    buildEditRequest({ config, imageFiles, prompt, payload }) {
-      return {
-        url: buildUrl(config, '/v1/images/generations'),
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify({
-          model: this.editModel,
-          prompt,
-          size: payload.size,
-          extra_body: { image: [], response_format: 'url' },
-        }),
-      };
-    },
-  },
+  agnes: DEFAULT_CONFIG.agnes,
 };
 
 function getProvider(config) {
@@ -183,6 +107,40 @@ function removeCustomProvider(id) {
   var custom = loadCustomProviders();
   delete custom[id];
   saveCustomProviders(custom);
+}
+
+// 把 File 转 dataURL 并缩放到目标尺寸(stretch 模式,输出 = exactly targetW × targetH)
+async function fileToResizedDataURI(file, targetW, targetH) {
+  const dataUrl = await new Promise(function (resolve, reject) {
+    const r = new FileReader();
+    r.onload = function () { resolve(r.result); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  return new Promise(function (resolve, reject) {
+    const img = new Image();
+    img.onload = function () {
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, targetW, targetH);
+        // 直接缩放到 targetW × targetH(3 参数版,简单可靠)
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        resolve(canvas.toDataURL('image/png', 0.9));
+      } catch (e) { reject(e); }
+    };
+    img.onerror = function () { reject(new Error('image load failed')); };
+    img.src = dataUrl;
+  });
+}
+
+// Parse "1024x1024" → [1024, 1024]
+function parseSize(s) {
+  var m = /^(\d+)x(\d+)$/.exec(s || '');
+  return m ? [parseInt(m[1], 10), parseInt(m[2], 10)] : [1024, 1024];
 }
 
 function fileToDataURI(file) {
@@ -417,24 +375,6 @@ function normalizePayload(config, options) {
   };
 }
 
-// PPIO 专用:把通用 payload 映射成 PPIO 文档要求的 body
-//   - quality: 'standard' → 'medium', 'hd' → 'high'(PPIO 用 low/medium/high)
-//   - 去掉 response_format(PPIO 不支持,只输出 url)
-//   - model 保留(用于 PPIO 路由,但 PPIO v3 端点忽略 model 字段)
-function ppioNormalizeBody(prompt, payload, isEdit) {
-  const qualityMap = { low: 'low', medium: 'medium', high: 'high', standard: 'medium', hd: 'high' };
-  const quality = qualityMap[payload.quality] || 'high';
-  const body = {
-    prompt: prompt,
-    n: payload.n || 1,
-  };
-  if (payload.size) body.size = payload.size;
-  body.quality = quality;
-  // PPIO 支持 background / output_format,可按需开启
-  // body.background = 'auto';
-  // body.output_format = 'png';
-  return body;
-}
 
 async function parseResponse(res) {
   const text = await res.text();
@@ -454,11 +394,6 @@ async function parseResponse(res) {
     err.status = res.status;
     err.body = data;
     throw err;
-  }
-  // PPIO 协议适配:返回 {images: [url1, ...]} → 统一成 {data: [{url}, ...]}
-  // 上层(resultToImageUrl / 错误弹窗)依赖 OpenAI 风格的 data 数组
-  if (data && Array.isArray(data.images) && !Array.isArray(data.data)) {
-    return { data: data.images.map(function (u) { return { url: u }; }) };
   }
   return data;
 }
@@ -640,23 +575,46 @@ async function testConnection(config) {
 }
 
 /**
- * Text-to-image generation.
+ * Text-to-image generation(走后端 /api/proxy/generate,后端处理 agnes 协议)
  * @param {string} prompt
  * @param {Object} options
- * @returns {Promise<Object>} API response { created, data: [{url}|{b64_json}] }
+ * @returns {Promise<Object>}
  */
 async function generateImage(prompt, options = {}) {
   const config = getConfig();
-  const provider = getProvider(config);
+  const key = config.provider || DEFAULT_CONFIG.provider;
   const payload = normalizePayload(config, options);
 
   try {
-    const req = provider.buildGenerationRequest({ config, prompt, options, payload });
-    const controller = new AbortController();
-    const timeout = setTimeout(function() { controller.abort(); }, 300000);
-    const res = await fetch(req.url, { method: req.method, headers: req.headers, body: req.body, signal: controller.signal });
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 300000);
+    var body = {
+      provider: key,
+      prompt: prompt,
+      size: payload.size,
+      quality: payload.quality,
+      model: payload.model,
+      apiKey: providerConfig(config).apiKey,
+    };
+    var res = await fetch(AUTH_SERVER_URL + '/api/proxy/generate', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + (getAuthToken() || ''), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
     clearTimeout(timeout);
-    return await parseResponse(res);
+    var data = await res.json();
+    if (!res.ok) {
+      var errData = data || {};
+      var statusErr = new Error(errData.error || errData.message || res.statusText || ('HTTP ' + res.status));
+      statusErr.status = res.status;
+      throw statusErr;
+    }
+    if (data && Array.isArray(data.images)) {
+      return { data: data.images.map(function(u) { return typeof u === 'string' ? { url: u } : u; }) };
+    }
+    if (data && data.data) return data;
+    return { data: [{ url: String(data) }] };
   } catch (err) {
     throw classifyError(err);
   }
@@ -671,7 +629,7 @@ async function generateImage(prompt, options = {}) {
  * @returns {Promise<Object>}
  */
 async function editImage(imageFile, prompt, options = {}) {
-  // 单参考图的图生图 = 多图生图 [file],统一走 provider 路由(PPIO multipart / Agnes JSON+extra_body)
+  // 单参考图的图生图 = 多图生图 [file],统一走后端 /api/proxy/generate(agnes 协议)
   return multiImageEdit([imageFile], prompt, options);
 }
 
@@ -691,22 +649,14 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
   const key = config.provider || DEFAULT_CONFIG.provider;
 
   try {
-    const req = await provider.buildEditRequest({
-      config,
-      imageFiles,
-      prompt,
-      options,
-      payload,
-      hasMask: !!options.mask,
-    });
-
-    // 使用后端代理转发请求（解决 CORS 问题）
+    // 走 /api/proxy/generate(后端处理 agnes 协议的 extra_body)
     var controller = new AbortController();
     var timeout = setTimeout(function() { controller.abort(); }, 300000);
-    var proxyUrl = AUTH_SERVER_URL + '/api/proxy/generate';
+    // 把上传图按目标 size resize(保持 aspect ratio),agnes 不用再 resize → 快
+    var sizeArr = parseSize(payload.size);
     var imageData = [];
     for (var i = 0; i < imageFiles.length; i++) {
-      imageData.push(await fileToDataURI(imageFiles[i]));
+      imageData.push(await fileToResizedDataURI(imageFiles[i], sizeArr[0], sizeArr[1]));
     }
     var body = {
       provider: key,
@@ -717,7 +667,7 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
       apiKey: providerConfig(config).apiKey,
       imageData: imageData,
     };
-    var res = await fetch(proxyUrl, {
+    var res = await fetch(AUTH_SERVER_URL + '/api/proxy/generate', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + (getAuthToken() || ''), 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -731,7 +681,6 @@ async function multiImageEdit(imageFiles, prompt, options = {}) {
       statusErr.status = res.status;
       throw statusErr;
     }
-    // 将代理响应转换为标准格式 { data: [{ url }] }
     if (data && Array.isArray(data.images)) {
       return { data: data.images.map(function(u) { return { url: u }; }) };
     }
@@ -895,15 +844,21 @@ function saveHistory(type, imageUrl, meta) {
 
 function deleteHistory(type, entry) {
   if (!entry) return;
-  const list = getHistory(type);
-  const filtered = list.filter(function (e) {
-    return !(e.url === entry.url && e.createdAt === entry.createdAt);
+  // 遍历所有 type 删(entry 可能存在任意 type 下)
+  var types = ['text', 'image', 'text-to-image', 'preset'];
+  types.forEach(function (t) {
+    var list = getHistory(t);
+    var filtered = list.filter(function (e) {
+      return !(e.url === entry.url && e.createdAt === entry.createdAt);
+    });
+    if (filtered.length !== list.length) {
+      try {
+        localStorage.setItem(historyKey(t), JSON.stringify(filtered));
+      } catch (e) {
+        console.warn('Failed to delete history from local storage:', e);
+      }
+    }
   });
-  try {
-    localStorage.setItem(historyKey(type), JSON.stringify(filtered));
-  } catch (e) {
-    console.warn('Failed to delete history from local storage:', e);
-  }
   if (entry.id) deleteServerHistory(entry.id);
 }
 
@@ -1057,7 +1012,7 @@ async function syncSaveHistory(type, imageUrl, meta) {
       headers: authHeaders(),
       body: JSON.stringify({
         prompt: meta && meta.prompt || '',
-        model: meta && meta.model || 'gpt-image-2',
+        model: meta && meta.model || 'agnes-image-2.1-flash',
         size: meta && meta.size || '',
         quality: meta && meta.quality || '',
         n: meta && meta.n || 1,
