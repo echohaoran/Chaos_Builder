@@ -7,6 +7,8 @@
   <title>混沌艺术 · 名为制造混乱，实则制造艺术</title>
   <link rel="stylesheet" href="../css/design-system.css" />
   <style>
+    .update-badge { position:absolute;top:-4px;right:-4px;width:8px;height:8px;background:#e53e3e;border-radius:50%;display:none; }
+    .nav-link-wrap { position:relative;display:inline-block; }
     /* Hero */
     .hero {
       position: relative;
@@ -769,7 +771,7 @@
       </nav>
       <div class="nav-actions">
         <button type="button" class="btn btn-ghost lang-toggle" id="lang-toggle" data-i18n-attr="aria-label" data-i18n-aria-label="langSwitch" data-i18n="langEn">EN</button>
-        <a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a>
+        <span class="nav-link-wrap"><a href="settings.html" class="btn btn-ghost" data-i18n="navSettings">设置</a><span class="update-badge" id="update-badge"></span></span>
         <a href="generate.html" class="btn btn-primary" data-i18n="navStart">开始创作</a>
         <div class="user-menu" id="user-menu"></div>
       </div>
@@ -925,7 +927,7 @@
         <a href="generate.html" data-i18n="navGenerate">图片生成</a>
         <a href="copy.html" data-i18n="navCopy">文案生成</a>
         <a href="preset-styles.html" data-i18n="navStyleManage">风格管理</a>
-        <a href="settings.html" data-i18n="navSettings">设置</a>
+        <span class="nav-link-wrap"><a href="settings.html" data-i18n="navSettings">设置</a><span class="update-badge" id="update-badge"></span></span>
       </nav>
       <span class="body-sm brand-copyright" data-i18n="brandCopyright">Developed By ECHOHAORAN</span>
     </div>
