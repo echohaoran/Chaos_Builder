@@ -79,54 +79,11 @@ const PROVIDERS = {
     defaultModel: 'agnes-image-2.1-flash',
     apiKeyHint: 'Agnes API Key (必填)',
     buildGenerationRequest({ config, prompt, payload }) {
-      // Agnes 协议:response_format 必须放进 extra_body,且只支持 url / b64_json
       const body = {
         model: payload.model,
         prompt,
         size: payload.size,
-        extra_body: {
-          response_format: 'url',
-        }
-};
-    },
-    async buildEditRequest({ config, imageFiles, prompt, payload, options, hasMask }) {
-      // PPIO 接收单张图片(URL/base64)或图片数组,JSON 提交(非 multipart)
-      const imageArray = await Promise.all(imageFiles.map(fileToDataURI));
-      // fileToDataURI 返回 'data:image/...;base64,xxx',PPIO 直接接受 data URI
-      let imageField;
-      if (imageArray.length === 1) {
-        imageField = imageArray[0];
-      } else {
-        imageField = imageArray;
-      }
-      const body = ppioNormalizeBody(prompt, payload, /* edit */ true);
-      body.image = imageField;
-      if (hasMask && options && options.mask) {
-        body.mask = options.mask;  // PNG with alpha channel
-      }
-      return {
-        url: buildUrl(config, '/v3/gpt-image-2-edit'),
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, buildHeaders(config)),
-        body: JSON.stringify(body),
-      };
-    },
-  },
-
-  agnes: {
-    label: 'Agnes Image (apihub)',
-    apiBaseUrl: 'https://apihub.agnes-ai.com',
-    defaultModel: 'agnes-image-2.1-flash',
-    apiKeyHint: 'Agnes API Key (必填)',
-    buildGenerationRequest({ config, prompt, payload }) {
-      // Agnes 协议:response_format 必须放进 extra_body,且只支持 url / b64_json
-      const body = {
-        model: payload.model,
-        prompt,
-        size: payload.size,
-        extra_body: {
-          response_format: 'url',
-        },
+        extra_body: { response_format: 'url' },
       };
       return {
         url: buildUrl(config, '/v1/images/generations'),
@@ -136,16 +93,12 @@ const PROVIDERS = {
       };
     },
     async buildEditRequest({ config, imageFiles, prompt, payload }) {
-      // Agnes 图生图:把 File 转 data URI base64,放进 extra_body.image 数组
       const imageArray = await Promise.all(imageFiles.map(fileToDataURI));
       const body = {
         model: payload.model,
         prompt,
         size: payload.size,
-        extra_body: {
-          image: imageArray,
-          response_format: 'url',
-        },
+        extra_body: { image: imageArray, response_format: 'url' },
       };
       return {
         url: buildUrl(config, '/v1/images/generations'),
@@ -155,54 +108,6 @@ const PROVIDERS = {
       };
     },
   },
-  // ── OpenAI (DALL·E 3, gpt-image-1) ──
-  openai: openaiCompatibleProvider({
-    label: 'OpenAI (DALL·E / gpt-image-1)',
-    apiBaseUrl: 'https://api.openai.com/v1',
-    defaultModel: 'gpt-image-1',
-    apiKeyHint: 'sk-... (OpenAI API Key)',
-  }),
-
-  // ── Anthropic (无原生 images endpoint,需走兼容网关) ──
-  anthropic: openaiCompatibleProvider({
-    label: 'Anthropic (via compatible gateway)',
-    apiBaseUrl: 'https://api.anthropic.com/v1',
-    defaultModel: 'claude-3-5-sonnet',
-    apiKeyHint: 'sk-ant-... (Anthropic Key,需走兼容网关)',
-  }),
-
-  // ── Seedream / 火山方舟 / bytedance ──
-  seedream: openaiCompatibleProvider({
-    label: 'Seedream · 火山方舟 (doubao-seedream)',
-    apiBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
-    defaultModel: 'doubao-seedream-3-0-t2i-250415',
-    apiKeyHint: 'ARK API Key (sk-...)',
-  }),
-
-  // ── Banana (serverless ComfyUI) ──
-  banana: openaiCompatibleProvider({
-    label: 'Banana (serverless ComfyUI)',
-    apiBaseUrl: 'http://localhost:8000',
-    defaultModel: 'workflow-default',
-    apiKeyHint: 'Banana API Key (留空如果未启用鉴权)',
-  }),
-
-  // ── ComfyUI (自部署,需启用 OpenAI 兼容接口) ──
-  comfy: openaiCompatibleProvider({
-    label: 'ComfyUI (self-hosted)',
-    apiBaseUrl: 'http://127.0.0.1:8000',
-    defaultModel: 'sdxl-base',
-    apiKeyHint: '(留空,ComfyUI 鉴权按你的配置)',
-  }),
-
-  // ── Stable Diffusion WebUI / SD.Next ──
-  sd: openaiCompatibleProvider({
-    label: 'Stable Diffusion (WebUI / SD.Next)',
-    apiBaseUrl: 'http://127.0.0.1:7860',
-    defaultModel: 'sdxl_base',
-    apiKeyHint: '(留空,SD WebUI 鉴权按你的配置)',
-  }),
-
 };
 
 function getProvider(config) {
