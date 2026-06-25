@@ -23,15 +23,13 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     let body;
     if (imageData && imageData.length) {
-      // Image-to-image
+      // Image-to-image — 遵循标准 OpenAI 兼容格式
       body = {
         model: cfg.editModel || model || cfg.defaultModel,
         prompt,
         size: size || '1024x1024',
-        extra_body: {
-          image: imageData,
-          response_format: 'url',
-        },
+        image: imageData[0] || '',
+        extra_body: { response_format: 'url' },
       };
     } else {
       // Text-to-image
